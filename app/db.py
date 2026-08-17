@@ -122,6 +122,7 @@ class Files(db.Model):
         db.Index('idx_files_library_id', 'library_id'),
         db.Index('idx_files_filename', 'filename'),
         db.Index('idx_files_identified', 'identified'),
+        db.Index('idx_files_identification_type', 'identification_type'),
     )
 
 class Titles(db.Model):
@@ -232,8 +233,8 @@ class TitleRequestViews(db.Model):
 
 class AccessEvents(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    at = db.Column(db.DateTime, nullable=False, default=utc_now)
-    kind = db.Column(db.String, nullable=False)
+    at = db.Column(db.DateTime, nullable=False, default=utc_now, index=True)
+    kind = db.Column(db.String, nullable=False, index=True)
     user = db.Column(db.String)
     remote_addr = db.Column(db.String)
     user_agent = db.Column(db.String)
@@ -509,6 +510,48 @@ def delete_access_events(kind=None, kinds=None):
         return False
 
 
+def prune_access_events_older_than(days, batch_size=5000):
+    """Delete access events older than `days` in bounded batches.
+
+    Batching keeps each transaction short so retention cleanup never holds
+    the write lock across millions of rows.
+    """
+    try:
+        days = int(days)
+    except (TypeError, ValueError):
+        return 0
+    if days <= 0:
+        return 0
+    cutoff = utc_now() - datetime.timedelta(days=days)
+    total_deleted = 0
+    try:
+        while True:
+            batch_ids = [
+                row.id
+                for row in db.session.query(AccessEvents.id)
+                .filter(AccessEvents.at < cutoff)
+                .limit(batch_size)
+                .all()
+            ]
+            if not batch_ids:
+                break
+            deleted = (
+                db.session.query(AccessEvents)
+                .filter(AccessEvents.id.in_(batch_ids))
+                .delete(synchronize_session=False)
+            )
+            db.session.commit()
+            total_deleted += int(deleted or 0)
+            if len(batch_ids) < batch_size:
+                break
+    except Exception as e:
+        db.session.rollback()
+        logger.warning("Access-event retention cleanup failed: %s", e)
+    if total_deleted:
+        logger.info("Access-event retention: deleted %s events older than %s days.", total_deleted, days)
+    return total_deleted
+
+
 def delete_access_events_excluding(kinds=None):
     """Delete access events excluding the provided kinds."""
     flush_access_events_buffer(force=True)
@@ -564,12 +607,23 @@ def ensure_performance_schema():
         """))
         db.session.commit()
 
+        # Backfill the complete intended index set: fresh DBs (create_all) and
+        # migrated DBs (alembic) each historically ended up with a different
+        # subset, so every index is created here idempotently.
         ddl_statements = [
             "CREATE INDEX IF NOT EXISTS idx_app_files_file_id ON app_files(file_id)",
             "CREATE INDEX IF NOT EXISTS idx_apps_title_app_type ON apps(title_id, app_type)",
             "CREATE INDEX IF NOT EXISTS idx_apps_type_owned ON apps(app_type, owned)",
             "CREATE INDEX IF NOT EXISTS idx_apps_type_version_num ON apps(app_type, app_version_num)",
             "CREATE INDEX IF NOT EXISTS idx_apps_appid_type_version_num ON apps(app_id, app_type, app_version_num)",
+            "CREATE INDEX IF NOT EXISTS idx_apps_owned ON apps(owned)",
+            "CREATE INDEX IF NOT EXISTS idx_apps_app_id ON apps(app_id)",
+            "CREATE INDEX IF NOT EXISTS idx_files_library_id ON files(library_id)",
+            "CREATE INDEX IF NOT EXISTS idx_files_filename ON files(filename)",
+            "CREATE INDEX IF NOT EXISTS idx_files_identified ON files(identified)",
+            "CREATE INDEX IF NOT EXISTS idx_files_identification_type ON files(identification_type)",
+            "CREATE INDEX IF NOT EXISTS ix_access_events_at ON access_events(at)",
+            "CREATE INDEX IF NOT EXISTS ix_access_events_kind ON access_events(kind)",
         ]
         for ddl in ddl_statements:
             db.session.execute(text(ddl))

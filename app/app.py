@@ -302,6 +302,23 @@ def init():
         interval=timedelta(seconds=30),
         log_level='debug'
     )
+    access_events_retention_days = _read_int_env(
+        'AEROFOIL_ACCESS_EVENTS_RETENTION_DAYS', 90, minimum=0, maximum=36500
+    )
+
+    def access_events_retention_job():
+        if access_events_retention_days <= 0:
+            return
+        with app.app_context():
+            prune_access_events_older_than(access_events_retention_days)
+
+    # Retention for the activity log; 0 disables cleanup entirely.
+    app.scheduler.add_job(
+        job_id='access_events_retention_job',
+        func=access_events_retention_job,
+        interval=timedelta(hours=24),
+    )
+
     maintenance_interval_minutes = _get_maintenance_interval_minutes(app_settings)
     app.scheduler.add_job(
         job_id=LIBRARY_MAINTENANCE_JOB_ID,
