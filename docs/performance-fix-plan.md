@@ -25,7 +25,7 @@ Conventions:
 | PR-9 | TitleDB lookup: thread-local connections, identify_appId memoization, real LRU, meta_only probe memo | F7, F22, F29 | **done** | see `git log --grep=PR-9` |
 | PR-10 | Index completeness (both creation tracks) + access_events retention | F16, F17, F19 | **done** | see `git log --grep=PR-10` |
 | PR-11 | Hot-path hygiene: state-token TTL, media index, per-file log levels, extension check | F10, F24, F26, F27 | **done** | see `git log --grep=PR-11` |
-| PR-12 | Downloads job: title-scoped size subquery | F18 | planned | |
+| PR-12 | Downloads job: title-scoped size subquery | F18 | **done** | see `git log --grep=PR-12` |
 
 Batch 3 items from the analysis (watcher queueing, mtime short-circuit scanning, TitleDB
 description indexing, dedicated writer thread, shop `all` cap) are **not implemented here**

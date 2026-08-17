@@ -987,12 +987,22 @@ def add_title_id_in_db(title_id):
         db.session.commit()
 
 def get_all_title_apps(title_id):
+    # Scope the size aggregation to this title's apps: the unfiltered variant
+    # grouped the entire app_files x files join, and callers loop this over
+    # every title (downloads job runs it per title every 5 minutes).
+    title_app_pks = (
+        db.session.query(Apps.id)
+        .join(Titles, Apps.title_id == Titles.id)
+        .filter(Titles.title_id == title_id)
+        .subquery()
+    )
     size_subquery = (
         db.session.query(
             app_files.c.app_id.label('app_pk'),
             func.coalesce(func.sum(Files.size), 0).label('size'),
         )
         .outerjoin(Files, Files.id == app_files.c.file_id)
+        .filter(app_files.c.app_id.in_(db.session.query(title_app_pks.c.id)))
         .group_by(app_files.c.app_id)
         .subquery()
     )
