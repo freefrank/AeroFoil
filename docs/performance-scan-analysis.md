@@ -9,18 +9,23 @@
 > file batch being re-ingested after a completed full scan, a frozen Web UI, and
 > `Skipping in-memory shop sections cache (15747019 bytes > 4194304 bytes)`.
 
-## 0. Benchmark baseline (20k files / 10k titles, local disk, empty files, no keys)
+## 0. Benchmark (20k files / 10k titles, local disk, empty files, no keys)
 
-| Stage | First run | Steady state (no changes) | Notes |
+"Before" is the state this analysis was written against; "after" is the same benchmark
+re-run once the PR-1…PR-12 fixes from `performance-fix-plan.md` landed on this branch.
+
+| Stage | Before | After | Notes |
 |---|---|---|---|
-| File discovery `scan_library_path` | 16.0s | **0.30s** | diffing works; directory walk still full |
-| Identification (filename fallback) | 66.5s (3.3ms/file, pure DB/CPU) | 0.02s | **never converges with keys loaded**, see F2 |
-| `add_missing_apps_to_db` | 4.4s | same order | 2+N SQLite connections per title |
-| `update_titles` full sweep | 20.2s | **20.9s (full sweep with zero changes)** | runs on every rebuild |
-| `generate_library` | 7.5s | 0.20s (cache hit) | cache busts too easily, see F13 |
-| TitleDB load | 4.2s, **+420MB RSS** | unloaded 30s after each rebuild, reloaded next time | US.en.json 89MB + cnmts ~100MB |
-| 20k INFO log lines (format+write only) | 0.8s | — | worse through Docker pipes |
-| `file_exists_in_db` single call | 0.39ms | — | called per file on watchdog mass events |
+| Initial scan (ingest 20k files) | 16.0s | **3.2s** | I/O gathered outside write transactions (PR-2), per-file logging demoted (PR-11) |
+| Steady-state rescan (no changes) | 0.30s | 0.17s | diffing was already incremental; directory walk still full (batch-3 item) |
+| Identification (filename fallback) | 66.5s | **37.3s** | connection reuse + identify_appId memoization (PR-9); with keys loaded, failed files now back off instead of retrying every cycle (PR-6) |
+| `add_missing_apps_to_db` full | 4.4s | **1.25s** | thread-local index connections (PR-9); real rebuilds now scope it to dirty titles (PR-7) |
+| `update_titles` full sweep | 20.2s | **0.66s** | set-based title cleanup + diff-only owned sync (PR-7) |
+| `update_titles`, nothing changed | 20.9s | **0.53s** (6ms when scoped) | real rebuilds skip it entirely via dirty tracking (PR-7) |
+| `generate_library` warm | 0.20s | 0.14s | (cold rebuild not re-measured: the re-run hit the disk cache) |
+| `/api/titles` default sort, warm | ~2.7s | **0.32s** | slim-projection sort + negative lookup caching (PR-8) |
+| TitleDB load | 4.2s, **+420MB RSS** | unchanged | descriptions/images stay fully resident — batch-3 item F14 |
+| 20k INFO log lines (format+write only) | 0.8s | now DEBUG | per-file lines demoted; INFO shows progress every 500 files |
 
 Real-world numbers amplify this empty-file baseline: identification opens the container and
 AES-XTS-decrypts headers (NSP ≈ 10 scattered seeks / hundreds of KB; XCI decrypts a header
