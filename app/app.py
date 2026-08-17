@@ -415,6 +415,23 @@ def init():
         run_first=True
     )
 
+    # Users typically log in seconds after startup, before the first scheduled
+    # rebuild has warmed anything; pre-pay the TitleDB load and metadata build
+    # off the request path so the first page load stays fast.
+    def startup_cache_warmup():
+        with app.app_context():
+            try:
+                start_ts = time.time()
+                logger.info('Warming library view caches in the background...')
+                _get_cached_titles_metadata()
+                _get_discovery_sections(limit=12)
+                logger.info(f'Library view caches warmed in {time.time() - start_ts:.1f}s.')
+            except Exception:
+                logger.exception('Library view cache warmup failed')
+
+    warmup_thread = threading.Thread(target=startup_cache_warmup, daemon=True)
+    warmup_thread.start()
+
 os.makedirs(CONFIG_DIR, exist_ok=True)
 os.makedirs(DATA_DIR, exist_ok=True)
 
@@ -8040,6 +8057,9 @@ def _run_post_library_change_locked():
                 now = time.time()
                 payload = _build_shop_sections_payload(50)
                 _store_shop_sections_cache(payload, 50, now, state_token, persist_disk=True)
+            # Rebuild the web metadata cache here rather than on the first
+            # /api/titles request after the invalidation above.
+            _get_cached_titles_metadata()
         finally:
             titles.release_titledb()
             _release_process_memory()
