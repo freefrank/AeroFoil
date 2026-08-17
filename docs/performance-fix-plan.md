@@ -19,7 +19,7 @@ Conventions:
 | PR-3 | Lock convergence: rebuild re-entrancy guard, guarded scan entry, TOCTOU fix | F4 | **done** | see `git log --grep=PR-3` |
 | PR-4 | Shop sections cache: stop the oversized-payload thrash loop | F12 | **done** | see `git log --grep=PR-4` |
 | PR-5 | File watcher robustness: exception guard, drop O(E²) per-event stability scan | F5 | **done** | see `git log --grep=PR-5` |
-| PR-6 | Identification retry backoff + orphan-trap fix | F2 | planned | |
+| PR-6 | Identification retry backoff + orphan-trap fix | F2 | **done** | see `git log --grep=PR-6` |
 | PR-7 | Dirty-tracked rebuild: scoped update_titles/add_missing_apps, set-based title cleanup, diff-only owned-flag sync | F6, F7, F8 | planned | |
 | PR-8 | /api/titles name sort without full materialization | F11, F25 | planned | |
 | PR-9 | TitleDB lookup: thread-local connections, identify_appId memoization, real LRU, meta_only probe memo | F7, F22, F29 | planned | |

@@ -343,6 +343,26 @@ def scan_library_path(library_path):
             files_removed=missing_count
         )
 
+# Retry backoff for identification: base 2h doubling per failed attempt,
+# capped at 7 days. Without this, files that persistently fail identification
+# (corrupt dumps, unknown app IDs) were re-opened and re-decrypted every cycle
+# forever — the attempts/last_attempt columns were written but never read.
+_IDENTIFY_BACKOFF_BASE_HOURS = 2
+_IDENTIFY_BACKOFF_CAP_HOURS = 7 * 24
+
+def _identification_retry_due(attempts, last_attempt, now=None):
+    if not attempts or last_attempt is None:
+        return True
+    now = now or datetime.datetime.now()
+    delay_hours = min(
+        _IDENTIFY_BACKOFF_BASE_HOURS * (2 ** (min(int(attempts), 16) - 1)),
+        _IDENTIFY_BACKOFF_CAP_HOURS,
+    )
+    try:
+        return (now - last_attempt).total_seconds() >= delay_hours * 3600
+    except TypeError:
+        return True
+
 def _get_identification_file_ids_batch(library_id, include_filename_retry, include_orphaned, last_id, batch_size):
     orphaned_condition = ~db.session.query(app_files.c.file_id).filter(app_files.c.file_id == Files.id).exists()
     query = db.session.query(Files.id).filter(
@@ -424,12 +444,18 @@ def identify_library_files(library):
             # SQLite write lock is not held while containers are opened and
             # decrypted (which can take seconds per file on network mounts).
             batch_rows = (
-                db.session.query(Files.id, Files.filepath, Files.filename)
+                db.session.query(
+                    Files.id, Files.filepath, Files.filename,
+                    Files.identification_attempts, Files.last_attempt,
+                )
                 .filter(Files.id.in_(batch_ids))
                 .all()
             )
             identify_results = []
+            retry_now = datetime.datetime.now()
             for row in batch_rows:
+                if not _identification_retry_due(row.identification_attempts, row.last_attempt, retry_now):
+                    continue
                 filename = row.filename or row.filepath or str(row.id)
                 filepath = row.filepath
                 processed += 1
@@ -512,8 +538,19 @@ def identify_library_files(library):
 
                             file.multicontent = nb_content > 1
                             file.nb_content = nb_content
-                            file.identified = True
-                            file.identification_error = None
+                            if nb_content > 0:
+                                file.identified = True
+                                file.identification_error = None
+                            else:
+                                # Every content resolved to an app ID unknown to
+                                # TitleDB. Marking such files identified used to
+                                # leave them with zero app links, matching the
+                                # orphaned predicate and re-identifying them every
+                                # cycle forever; keep them unidentified so the
+                                # retry backoff governs them instead.
+                                logger.warning(f"No recognized content in file {filename}; will retry with backoff.")
+                                file.identified = False
+                                file.identification_error = 'No recognized content (app IDs unknown to TitleDB)'
                         else:
                             logger.warning(f"Error identifying file {filename}: {error}")
                             file.identification_error = error
@@ -525,7 +562,13 @@ def identify_library_files(library):
                         logger.warning(f"Error identifying file {filename}: {e}")
                         file.identification_error = str(e)
                         file.identified = False
-                    file.identification_attempts = (file.identification_attempts or 0) + 1
+                    if file.identified and identification == 'cnmt':
+                        # Fully identified: nothing left to retry.
+                        file.identification_attempts = 0
+                    else:
+                        # Failed, or filename-only identification that a later
+                        # pass may upgrade via CNMT — both follow the backoff.
+                        file.identification_attempts = (file.identification_attempts or 0) + 1
                     file.last_attempt = datetime.datetime.now()
                 db.session.commit()
 
