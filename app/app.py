@@ -280,10 +280,10 @@ def init():
     init_scheduler(app)
 
     def downloads_job():
-        run_downloads_job(scan_cb=scan_library, post_cb=post_library_change)
+        run_downloads_job(scan_cb=run_guarded_scan, post_cb=post_library_change)
 
     def downloads_pending_job():
-        check_completed_downloads(scan_cb=scan_library, post_cb=post_library_change)
+        check_completed_downloads(scan_cb=run_guarded_scan, post_cb=post_library_change)
 
     def maintenance_job():
         run_library_maintenance()
@@ -350,21 +350,12 @@ def init():
             )
             return
         logger.info("Starting scheduled library scan job...")
-        global scan_in_progress
-        with scan_lock:
-            if scan_in_progress:
-                logger.info(f'Skipping scheduled library scan: scan already in progress.')
-                return # Skip the scan if already in progress
-            scan_in_progress = True
         try:
-            scan_library()
-            post_library_change()
-            logger.info("Scheduled library scan job completed.")
+            if run_guarded_scan():
+                post_library_change()
+                logger.info("Scheduled library scan job completed.")
         except Exception as e:
             logger.error(f"Error during scheduled library scan job: {e}")
-        finally:
-            with scan_lock:
-                scan_in_progress = False
 
     # Update job: run update_titledb then scan_library once on startup
     def update_db_and_scan_job():
@@ -398,6 +389,9 @@ def run_library_maintenance():
     try:
         if _is_conversion_running():
             logger.info("Skipping scheduled library maintenance: conversion job is running.")
+            return
+        if _is_scan_in_progress():
+            logger.info("Skipping scheduled library maintenance: library scan is running.")
             return
         current_settings = load_settings()
         library_cfg = current_settings.get('library', {})
@@ -467,6 +461,8 @@ library_rebuild_status = {
     'updated_at': 0
 }
 library_rebuild_lock = threading.Lock()
+# Serializes actual rebuild work; library_rebuild_lock only guards the status dict.
+library_rebuild_run_lock = threading.Lock()
 shop_sections_cache = {
     'limit': None,
     'timestamp': 0,
@@ -4419,14 +4415,14 @@ def manage_delete_orphaned_addons():
 @app.post('/api/manage/check-downloads')
 @access_required('admin')
 def manage_check_downloads():
-    ok, message = check_completed_downloads(scan_cb=scan_library, post_cb=post_library_change)
+    ok, message = check_completed_downloads(scan_cb=run_guarded_scan, post_cb=post_library_change)
     return jsonify({'success': ok, 'message': message})
 
 
 @app.post('/api/downloads/check-completed')
 @access_required('admin')
 def downloads_check_completed():
-    ok, message = check_completed_downloads(scan_cb=scan_library, post_cb=post_library_change)
+    ok, message = check_completed_downloads(scan_cb=run_guarded_scan, post_cb=post_library_change)
     return jsonify({'success': ok, 'message': message})
 
 
@@ -6572,6 +6568,18 @@ def _run_post_library_change():
     if _is_conversion_running():
         logger.info("Skipping library rebuild: conversion job is running.")
         return
+    # One rebuild at a time. A request arriving mid-rebuild schedules a
+    # trailing debounced run instead of doubling the full sweep.
+    if not library_rebuild_run_lock.acquire(blocking=False):
+        logger.info("Library rebuild already running; scheduling a trailing rebuild.")
+        post_library_change()
+        return
+    try:
+        _run_post_library_change_locked()
+    finally:
+        library_rebuild_run_lock.release()
+
+def _run_post_library_change_locked():
     with library_rebuild_lock:
         if not library_rebuild_status['in_progress']:
             library_rebuild_status['started_at'] = time.time()
@@ -6637,26 +6645,14 @@ def scan_library_api():
         logger.info('Skipping scan_library_api call: conversion job is running.')
         return jsonify({'success': False, 'errors': [_('Conversion in progress. Try again after conversion finishes.')]})
 
-    global scan_in_progress
-    with scan_lock:
-        if scan_in_progress:
+    try:
+        if not run_guarded_scan(path):
             logger.info('Skipping scan_library_api call: Scan already in progress')
             return {'success': False, 'errors': []}
-    # Set the scan status to in progress
-    scan_in_progress = True
-
-    try:
-        if path is None:
-            scan_library()
-        else:
-            scan_library_path(path)
     except Exception as e:
         errors.append(e)
         success = False
         logger.error(f"Error during library scan: {e}")
-    finally:
-        with scan_lock:
-            scan_in_progress = False
 
     post_library_change()
     resp = {
@@ -6670,6 +6666,36 @@ def scan_library():
     libraries = get_libraries()
     for library in libraries:
         scan_library_path(library.path) # Only scan, identification will be done globally
+
+def _is_scan_in_progress():
+    with scan_lock:
+        return scan_in_progress
+
+def run_guarded_scan(path=None):
+    """Run a library scan unless one is already in progress.
+
+    The single entry point for every scan trigger (scheduler, API, download
+    manager) so concurrent full scans cannot interleave writes. Returns True
+    if the scan ran, False if it was skipped.
+    """
+    global scan_in_progress
+    if _is_conversion_running():
+        logger.info('Skipping library scan: conversion job is running.')
+        return False
+    with scan_lock:
+        if scan_in_progress:
+            logger.info('Skipping library scan: scan already in progress.')
+            return False
+        scan_in_progress = True
+    try:
+        if path is None:
+            scan_library()
+        else:
+            scan_library_path(path)
+        return True
+    finally:
+        with scan_lock:
+            scan_in_progress = False
 
 if __name__ == '__main__':
     logger.info('Starting initialization of AeroFoil...')
