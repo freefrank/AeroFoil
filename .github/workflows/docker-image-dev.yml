@@ -55,11 +55,12 @@ jobs:
           build-args: |
             AEROFOIL_VERSION=${{ steps.meta.outputs.aerofoil_version }}
           tags: |
-            luketanti/aerofoil:dev
-            luketanti/aerofoil:sha-${{ steps.meta.outputs.sha_tag }}
+            freefrank/aerofoil:dev
+            freefrank/aerofoil:sha-${{ steps.meta.outputs.sha_tag }}
           cache-from: type=gha,scope=${{ github.ref_name }}
           cache-to: type=gha,mode=max,scope=${{ github.ref_name }}
           provenance: false
+
 
       - name: Job failed
         if: failure()
