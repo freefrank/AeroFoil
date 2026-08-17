@@ -62,11 +62,11 @@ jobs:
           # SHA tag
           echo "sha_tag=${GITHUB_SHA::7}" >> "$GITHUB_OUTPUT"
 
-          # Pre-release tags (e.g. v2.7.0-dev) publish only the exact version
-          # and SHA tags; latest/major/minor stay pointing at stable releases.
-          TAGS="freefrank/aerofoil:${VERSION}"$'\n'"freefrank/aerofoil:sha-${GITHUB_SHA::7}"
+          # latest tracks every release including pre-releases (e.g. v2.7.0-dev);
+          # stable plus major/minor tags move only on stable releases.
+          TAGS="freefrank/aerofoil:${VERSION}"$'\n'"freefrank/aerofoil:sha-${GITHUB_SHA::7}"$'\n'"freefrank/aerofoil:latest"
           if [[ "$VERSION" != *-* ]]; then
-            TAGS="$TAGS"$'\n'"freefrank/aerofoil:latest"$'\n'"freefrank/aerofoil:${MAJOR}"$'\n'"freefrank/aerofoil:${MINOR}"
+            TAGS="$TAGS"$'\n'"freefrank/aerofoil:stable"$'\n'"freefrank/aerofoil:${MAJOR}"$'\n'"freefrank/aerofoil:${MINOR}"
           fi
           {
             echo "tags<<TAGS_EOF"
