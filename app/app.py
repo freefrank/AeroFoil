@@ -71,6 +71,8 @@ _media_cache_index = {
     'banner': {}, # title_id -> filename
 }
 _media_cache_last_reset = 0
+_media_cache_last_full_refresh = {'icon': 0.0, 'banner': 0.0}
+_MEDIA_INDEX_REFRESH_MIN_INTERVAL_S = 5.0
 
 _media_resize_lock = threading.Lock()
 
@@ -220,15 +222,34 @@ def _get_cached_media_filename(cache_dir, title_id, media_kind='icon'):
             with _media_cache_lock:
                 _media_cache_index.get(media_kind, {}).pop(title_id, None)
 
+    # On a miss, refresh the whole per-kind index from one os.listdir instead
+    # of scanning the directory per miss (the post-rebuild icon stampede was
+    # ~10k listdir+linear-scans). Throttled so absent media cannot force a
+    # listdir per request.
+    global _media_cache_last_full_refresh
+    now = time.time()
+    if cache_enabled:
+        with _media_cache_lock:
+            last_refresh = _media_cache_last_full_refresh.get(media_kind, 0.0)
+        if (now - last_refresh) < _MEDIA_INDEX_REFRESH_MIN_INTERVAL_S:
+            return None
     try:
-        for name in os.listdir(cache_dir):
-            if name.startswith(f"{title_id}."):
-                if cache_enabled:
-                    with _media_cache_lock:
-                        _media_cache_index.setdefault(media_kind, {})[title_id] = name
-                return name
+        entries = os.listdir(cache_dir)
     except Exception:
         return None
+    if cache_enabled:
+        rebuilt = {}
+        for name in entries:
+            stem, sep, _rest = name.partition('.')
+            if sep:
+                rebuilt.setdefault(stem.upper(), name)
+        with _media_cache_lock:
+            _media_cache_index[media_kind] = rebuilt
+            _media_cache_last_full_refresh[media_kind] = now
+        return rebuilt.get(title_id)
+    for name in entries:
+        if name.startswith(f"{title_id}."):
+            return name
     return None
 
 def _remember_cached_media_filename(title_id, filename, media_kind='icon'):

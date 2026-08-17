@@ -37,7 +37,7 @@ _library_state_token_cache = {
     'token': None,
     'updated_at': 0.0,
 }
-_LIBRARY_STATE_TOKEN_CACHE_TTL_S = 1.0
+_LIBRARY_STATE_TOKEN_CACHE_TTL_S = 30.0
 
 def _diag_phase_start(phase, **metadata):
     now = time.time()
@@ -246,7 +246,11 @@ def add_files_to_library(library, files, check_existing=True):
             logger.debug(f'File already in database, skipping: {filepath}')
             continue
         file = filepath.replace(library_path, "")
-        logger.info(f'Getting file info ({n+1}/{nb_to_identify}): {file}')
+        # Per-file lines at DEBUG: a 100k-file scan otherwise emits 100k+
+        # eagerly formatted INFO lines; INFO gets a periodic progress summary.
+        if (n + 1) % 500 == 0 or (n + 1) == nb_to_identify:
+            logger.info(f'Getting file info ({n+1}/{nb_to_identify})')
+        logger.debug(f'Getting file info ({n+1}/{nb_to_identify}): {file}')
 
         file_info = titles_lib.get_file_info(filepath)
 
@@ -465,7 +469,9 @@ def identify_library_files(library):
                     )
                     identify_results.append((row.id, filename, True, None, False, None, None))
                     continue
-                logger.info(f'Identifying file ({processed}/{nb_to_identify}): {filename}')
+                if processed % 500 == 0 or processed == nb_to_identify:
+                    logger.info(f'Identifying files: {processed}/{nb_to_identify}')
+                logger.debug(f'Identifying file ({processed}/{nb_to_identify}): {filename}')
                 try:
                     identification, success, file_contents, error = titles_lib.identify_file(filepath)
                 except Exception as e:
@@ -511,7 +517,7 @@ def identify_library_files(library):
 
                             nb_content = 0
                             for file_content in file_contents:
-                                logger.info(
+                                logger.debug(
                                     "Identified %s - content Title ID: %s App ID : %s Title Type: %s Version: %s",
                                     filename,
                                     file_content.get("title_id"),
@@ -1022,7 +1028,10 @@ def is_library_unchanged():
     if not saved_state_token:
         return False
 
-    current_state_token = get_library_cache_state_token(force_refresh=True)
+    # The memoized token is fine here: every rebuild invalidates it up front,
+    # and the fingerprint query is a multi-table full scan worth avoiding on
+    # the request path.
+    current_state_token = get_library_cache_state_token()
     return saved_state_token == current_state_token
 
 def save_library_to_disk(library_data):
