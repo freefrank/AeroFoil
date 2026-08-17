@@ -1,0 +1,3415 @@
+# Chinese (Simplified) translations for AeroFoil.
+# Copyright (C) 2026 ORGANIZATION
+# This file is distributed under the same license as the AeroFoil project.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2026.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: AeroFoil VERSION\n"
+"Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
+"POT-Creation-Date: 2026-08-17 14:21+0000\n"
+"PO-Revision-Date: 2026-08-17 14:21+0000\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language: zh_Hans\n"
+"Language-Team: zh_Hans <LL@li.org>\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.18.0\n"
+
+#: app/app.py:1362
+msgid "Title ID is required"
+msgstr "必须填写游戏 ID"
+
+#: app/app.py:1365
+#, python-format
+msgid "Title ID must be %(length)s characters"
+msgstr "游戏 ID 必须为 %(length)s 个字符"
+
+#: app/app.py:1367
+msgid "Title ID must contain only hexadecimal characters"
+msgstr "游戏 ID 只能包含十六进制字符"
+
+#: app/app.py:1373 app/app.py:1381
+msgid "File size is unknown"
+msgstr "文件大小未知"
+
+#: app/app.py:1375
+#, python-format
+msgid "File size exceeds maximum limit of %(size)sMB"
+msgstr "文件大小超过 %(size)sMB 的上限"
+
+#: app/app.py:1383
+#, python-format
+msgid "File size exceeds maximum limit of %(size)sGB"
+msgstr "文件大小超过 %(size)sGB 的上限"
+
+#: app/app.py:1411
+msgid "Save sync requires username/password authentication."
+msgstr "存档同步需要用户名/密码认证。"
+
+#: app/app.py:1415
+msgid "Invalid save sync credentials."
+msgstr "存档同步凭据无效。"
+
+#: app/app.py:1418 app/app.py:2026 app/app.py:3143
+msgid "Account is frozen."
+msgstr "账户已被冻结。"
+
+#: app/app.py:1423
+#, python-format
+msgid "User \"%(username)s\" does not have access to the shop."
+msgstr "用户 \"%(username)s\" 没有访问商店的权限。"
+
+#: app/app.py:1426
+msgid "Backup access is required for save sync."
+msgstr "存档同步需要备份权限。"
+
+#: app/app.py:1728 app/app.py:4962 app/app.py:5046 app/app.py:5134
+#: app/app.py:5173
+msgid "Save sync authorization failed."
+msgstr "存档同步授权失败。"
+
+#: app/app.py:1907
+#, python-format
+msgid "Upload too large. Maximum allowed is %(size)sGB per file."
+msgstr "上传文件过大。单个文件最大允许 %(size)sGB。"
+
+#: app/app.py:3101 app/app.py:3259 app/auth.py:581 app/auth.py:587
+#: app/auth.py:605 app/auth.py:620 app/auth.py:622
+msgid "Forbidden"
+msgstr "禁止访问"
+
+#: app/app.py:3340
+msgid "An error occurred processing the request"
+msgstr "处理请求时发生错误"
+
+#: app/app.py:3356
+msgid "Invalid request_ids."
+msgstr "request_ids 无效。"
+
+#: app/app.py:3360
+msgid "Nothing to mark."
+msgstr "没有可标记的内容。"
+
+#: app/app.py:3427
+msgid "Marked seen."
+msgstr "已标记为已读。"
+
+#: app/app.py:3440
+msgid "Invalid request_id."
+msgstr "request_id 无效。"
+
+#: app/app.py:3445
+msgid "Request not found."
+msgstr "未找到该求档。"
+
+#: app/app.py:3539
+msgid "Missing title_id or title_name."
+msgstr "缺少 title_id 或 title_name。"
+
+#: app/app.py:3545 app/app.py:4257
+msgid "Prowlarr is not configured."
+msgstr "未配置 Prowlarr。"
+
+#: app/app.py:3779
+msgid "Failed to clear client history."
+msgstr "清除客户端历史失败。"
+
+#: app/app.py:3797
+msgid "Failed to clear access history."
+msgstr "清除访问历史失败。"
+
+#: app/app.py:3809
+msgid "Missing IP."
+msgstr "缺少 IP。"
+
+#: app/app.py:3864
+msgid "TitleDB has not been initialized yet. Please wait for the initial update to complete or trigger it manually."
+msgstr "TitleDB 尚未初始化。请等待首次更新完成，或手动触发更新。"
+
+#: app/app.py:3874
+#, python-format
+msgid "The region/language pair %(region)s/%(language)s is not available."
+msgstr "区域/语言组合 %(region)s/%(language)s 不可用。"
+
+#: app/app.py:4183
+#, python-format
+msgid "Missing indexer IDs: %(ids)s"
+msgstr "缺少索引器 ID：%(ids)s"
+
+#: app/app.py:4186
+#, python-format
+msgid "Prowlarr OK (%(version)s)"
+msgstr "Prowlarr 正常 (%(version)s)"
+
+#: app/app.py:4207
+#, python-format
+msgid "Download path not found: %(path)s"
+msgstr "未找到下载路径：%(path)s"
+
+#: app/app.py:4209
+#, python-format
+msgid "Download path not writable: %(path)s"
+msgstr "下载路径不可写：%(path)s"
+
+#: app/app.py:4219 app/app.py:4233
+msgid "Missing title ID or version."
+msgstr "缺少游戏 ID 或版本。"
+
+#: app/app.py:4252
+msgid "Missing query."
+msgstr "缺少查询内容。"
+
+#: app/app.py:4302
+msgid "Missing download URL."
+msgstr "缺少下载 URL。"
+
+#: app/app.py:4476 app/app.py:4559
+msgid "Missing file id."
+msgstr "缺少文件 ID。"
+
+#: app/app.py:4609 app/app.py:4618
+msgid "Job not found."
+msgstr "未找到该任务。"
+
+#: app/app.py:4789
+msgid "No file provided"
+msgstr "未提供文件"
+
+#: app/app.py:4860
+#, python-format
+msgid "Unable to parse upload request: %(error)s"
+msgstr "无法解析上传请求：%(error)s"
+
+#: app/app.py:4867
+msgid "No files uploaded."
+msgstr "没有已上传的文件。"
+
+#: app/app.py:4878
+msgid "No library path configured."
+msgstr "未配置游戏库路径。"
+
+#: app/app.py:4886
+#, python-format
+msgid "Cannot access library path: %(path)s"
+msgstr "无法访问游戏库路径：%(path)s"
+
+#: app/app.py:4901
+msgid "A file has an invalid or empty filename."
+msgstr "有文件的文件名无效或为空。"
+
+#: app/app.py:4917
+#, python-format
+msgid "%(filename)s: unsupported extension '%(ext)s'."
+msgstr "%(filename)s：不支持的扩展名 '%(ext)s'。"
+
+#: app/app.py:4937
+#, python-format
+msgid "Uploaded %(count)s file(s)."
+msgstr "已上传 %(count)s 个文件。"
+
+#: app/app.py:4939
+#, python-format
+msgid "Skipped %(count)s."
+msgstr "已跳过 %(count)s 个。"
+
+#: app/app.py:4944
+msgid "All selected files were skipped."
+msgstr "所选文件全部被跳过。"
+
+#: app/app.py:4946 app/templates/upload.html:187
+msgid "Upload failed."
+msgstr "上传失败。"
+
+#: app/app.py:5031
+msgid "Failed to list saves."
+msgstr "获取存档列表失败。"
+
+#: app/app.py:5050
+msgid "Invalid title_id for save upload."
+msgstr "存档上传的 title_id 无效。"
+
+#: app/app.py:5053 app/app.py:5057
+msgid "No save archive provided."
+msgstr "未提供存档压缩包。"
+
+#: app/app.py:5064
+msgid "Save archive is empty."
+msgstr "存档压缩包为空。"
+
+#: app/app.py:5067
+#, python-format
+msgid "Save archive exceeds maximum limit of %(size)sGB."
+msgstr "存档压缩包超过 %(size)sGB 的上限。"
+
+#: app/app.py:5080
+msgid "Uploaded file is not a valid zip archive."
+msgstr "上传的文件不是有效的 zip 压缩包。"
+
+#: app/app.py:5090
+msgid "Failed to store save archive."
+msgstr "保存存档压缩包失败。"
+
+#: app/app.py:5123
+msgid "Save uploaded successfully."
+msgstr "存档上传成功。"
+
+#: app/app.py:5138
+msgid "Invalid title_id for save download."
+msgstr "存档下载的 title_id 无效。"
+
+#: app/app.py:5144 app/app.py:5148 app/app.py:5193
+msgid "Save archive not found."
+msgstr "未找到存档压缩包。"
+
+#: app/app.py:5177
+msgid "Invalid title_id for save delete."
+msgstr "存档删除的 title_id 无效。"
+
+#: app/app.py:5183
+msgid "Invalid save_id for save delete."
+msgstr "存档删除的 save_id 无效。"
+
+#: app/app.py:5204
+msgid "Save backup deleted successfully."
+msgstr "存档备份删除成功。"
+
+#: app/app.py:6603
+msgid "Conversion in progress. Try again after conversion finishes."
+msgstr "转换正在进行中。请在转换完成后重试。"
+
+#: app/auth.py:588 app/auth.py:772
+msgid "Access denied from this network during initial setup."
+msgstr "初始设置期间禁止从此网络访问。"
+
+#: app/auth.py:590
+msgid "Reverse proxy detected; configure security.trusted_proxies and enable security.trust_proxy_headers."
+msgstr "检测到反向代理；请配置 security.trusted_proxies 并启用 security.trust_proxy_headers。"
+
+#: app/auth.py:597
+msgid "Setup required: create the first admin user at /users."
+msgstr "需要初始设置：请在 /users 页面创建第一个管理员用户。"
+
+#: app/auth.py:879 app/auth.py:999 app/auth.py:1022 app/auth.py:1064
+#: app/auth.py:1118
+msgid "User not found."
+msgstr "未找到该用户。"
+
+#: app/auth.py:892
+msgid "Failed to load user history."
+msgstr "加载用户历史失败。"
+
+#: app/auth.py:958
+msgid "Failed to list auth lockouts."
+msgstr "获取认证锁定列表失败。"
+
+#: app/auth.py:967
+msgid "Missing ip."
+msgstr "缺少 ip。"
+
+#: app/auth.py:993 app/auth.py:1056 app/auth.py:1112
+msgid "Missing user id."
+msgstr "缺少用户 ID。"
+
+#: app/auth.py:995
+msgid "Missing frozen state."
+msgstr "缺少冻结状态。"
+
+#: app/auth.py:1018
+msgid "Missing user_id."
+msgstr "缺少 user_id。"
+
+#: app/auth.py:1028
+msgid "Cannot delete the last admin account."
+msgstr "无法删除最后一个管理员账户。"
+
+#: app/auth.py:1039 app/templates/index.html:2050 app/templates/index.html:2063
+#: app/templates/requests.html:408
+msgid "Delete failed."
+msgstr "删除失败。"
+
+#: app/auth.py:1058 app/templates/users.html:59 app/templates/users.html:147
+#: app/templates/users.html:846 app/templates/users.html:928
+#: app/templates/users.html:942
+msgid "Username is required."
+msgstr "必须填写用户名。"
+
+#: app/auth.py:1060
+msgid "Missing access configuration."
+msgstr "缺少访问权限配置。"
+
+#: app/auth.py:1069 app/templates/users.html:850 app/templates/users.html:946
+msgid "Username already exists."
+msgstr "用户名已存在。"
+
+#: app/auth.py:1074
+msgid "Cannot remove the last admin account."
+msgstr "无法移除最后一个管理员账户。"
+
+#: app/auth.py:1114 app/templates/users.html:64 app/templates/users.html:187
+#: app/templates/users.html:858 app/templates/users.html:1056
+msgid "Password is required."
+msgstr "必须填写密码。"
+
+#: app/templates/activity.html:454 app/templates/activity.html:531
+#: app/templates/nav.html:79
+msgid "Activity"
+msgstr "活动记录"
+
+#: app/templates/activity.html:455
+msgid "Audit and monitoring"
+msgstr "审计与监控"
+
+#: app/templates/activity.html:461 app/templates/activity.html:541
+msgid "Toggle activity sidebar"
+msgstr "切换活动记录侧边栏"
+
+#: app/templates/activity.html:470 app/templates/activity.html:649
+msgid "Overview"
+msgstr "总览"
+
+#: app/templates/activity.html:472
+msgid "KPIs and section shortcuts"
+msgstr "关键指标与栏目快捷入口"
+
+#: app/templates/activity.html:479
+msgid "Realtime"
+msgstr "实时"
+
+#: app/templates/activity.html:481
+msgid "Live sessions and connected clients"
+msgstr "实时会话与已连接客户端"
+
+#: app/templates/activity.html:488 app/templates/activity.html:814
+msgid "Access History"
+msgstr "访问历史"
+
+#: app/templates/activity.html:490
+msgid "Transfer and shop audit trail"
+msgstr "传输与商店审计记录"
+
+#: app/templates/activity.html:497 app/templates/activity.html:1105
+msgid "Blocked IPs"
+msgstr "被拦截 IP"
+
+#: app/templates/activity.html:499
+msgid "Permanent blacklist hits"
+msgstr "永久黑名单命中记录"
+
+#: app/templates/activity.html:506 app/templates/activity.html:988
+msgid "Client History"
+msgstr "客户端历史"
+
+#: app/templates/activity.html:508
+msgid "Devices, user-agents, and metadata"
+msgstr "设备、User-Agent 与元数据"
+
+#: app/templates/activity.html:515
+msgid "Lockouts"
+msgstr "锁定"
+
+#: app/templates/activity.html:517
+msgid "Failed-login IP lockouts"
+msgstr "登录失败导致的 IP 锁定"
+
+#: app/templates/activity.html:533
+msgid "Realtime monitoring, persistent audit logs, and access control telemetry in one workspace"
+msgstr "在同一工作区查看实时监控、持久审计日志与访问控制遥测数据"
+
+#: app/templates/activity.html:543 app/templates/settings.html:319
+msgid "Sections"
+msgstr "栏目"
+
+#: app/templates/activity.html:548 app/templates/activity.html:1333
+msgid "Last update: -"
+msgstr "最后更新：-"
+
+#: app/templates/activity.html:551
+msgid "Live: 2.5s"
+msgstr "实时：2.5 秒"
+
+#: app/templates/activity.html:554
+msgid "History: 15s"
+msgstr "历史：15 秒"
+
+#: app/templates/activity.html:561
+msgid "Refresh now"
+msgstr "立即刷新"
+
+#: app/templates/activity.html:583
+msgid "Live Transfers"
+msgstr "实时传输"
+
+#: app/templates/activity.html:596
+msgid "Connected Clients"
+msgstr "已连接客户端"
+
+#: app/templates/activity.html:609
+msgid "Access Rows"
+msgstr "访问记录条数"
+
+#: app/templates/activity.html:622
+msgid "Client History Rows"
+msgstr "客户端历史条数"
+
+#: app/templates/activity.html:635
+msgid "Locked IPs"
+msgstr "被锁定 IP"
+
+#: app/templates/activity.html:653
+msgid "Use the left sidebar to focus on one data set at a time"
+msgstr "使用左侧边栏可逐个查看各数据集"
+
+#: app/templates/activity.html:670
+msgid "Realtime Monitor"
+msgstr "实时监控"
+
+#: app/templates/activity.html:672
+msgid "Current transfer sessions and recently seen clients"
+msgstr "当前传输会话与最近出现的客户端"
+
+#: app/templates/activity.html:685
+msgid "Live transfers"
+msgstr "实时传输"
+
+#: app/templates/activity.html:702
+msgid "Started"
+msgstr "开始时间"
+
+#: app/templates/activity.html:705 app/templates/activity.html:769
+#: app/templates/activity.html:917 app/templates/activity.html:1066
+#: app/templates/login.html:47 app/templates/requests.html:62
+#: app/templates/users.html:103 app/templates/users.html:750
+msgid "User"
+msgstr "用户"
+
+#: app/templates/activity.html:708 app/templates/activity.html:772
+#: app/templates/activity.html:924 app/templates/activity.html:1067
+#: app/templates/activity.html:1149
+msgid "Remote"
+msgstr "远程地址"
+
+#: app/templates/activity.html:711 app/templates/activity.html:775
+#: app/templates/activity.html:931 app/templates/activity.html:1069
+#: app/templates/activity.html:1151
+msgid "Location"
+msgstr "位置"
+
+#: app/templates/activity.html:714 app/templates/activity.html:938
+#: app/templates/downloads.html:80 app/templates/index.html:358
+#: app/templates/index.html:624 app/templates/index.html:1168
+#: app/templates/requests.html:61 app/templates/requests.html:96
+#: app/templates/saves.html:38 app/templates/saves.html:257
+#: app/templates/users.html:268
+msgid "Title"
+msgstr "游戏"
+
+#: app/templates/activity.html:717 app/templates/activity.html:945
+#: app/templates/users.html:269
+msgid "File"
+msgstr "文件"
+
+#: app/templates/activity.html:720 app/templates/users.html:272
+msgid "Sent"
+msgstr "已发送"
+
+#: app/templates/activity.html:732 app/templates/activity.html:793
+#: app/templates/activity.html:969 app/templates/activity.html:1086
+#: app/templates/activity.html:1166 app/templates/activity.html:1261
+#: app/templates/downloads.html:60 app/templates/downloads.html:75
+#: app/templates/downloads.html:88 app/templates/downloads.html:156
+#: app/templates/downloads.html:230 app/templates/requests.html:341
+#: app/templates/saves.html:46 app/templates/saves.html:53
+#: app/templates/saves.html:392 app/templates/saves.html:393
+msgid "Loading..."
+msgstr "加载中..."
+
+#: app/templates/activity.html:749
+msgid "Connected clients"
+msgstr "已连接客户端"
+
+#: app/templates/activity.html:766
+msgid "Last seen"
+msgstr "最后出现"
+
+#: app/templates/activity.html:778 app/templates/activity.html:1072
+#: app/templates/activity.html:1155
+msgid "User-Agent"
+msgstr "User-Agent"
+
+#: app/templates/activity.html:781 app/templates/activity.html:1075
+msgid "Client details"
+msgstr "客户端详情"
+
+#: app/templates/activity.html:816
+msgid "Searchable and sortable recent transfer/shop activity"
+msgstr "可搜索、可排序的近期传输/商店活动"
+
+#: app/templates/activity.html:826
+msgid "Access history"
+msgstr "访问历史"
+
+#: app/templates/activity.html:836
+msgid "Recent transfers and shop activity"
+msgstr "近期传输与商店活动"
+
+#: app/templates/activity.html:846 app/templates/activity.html:1020
+msgid "Clear log"
+msgstr "清空日志"
+
+#: app/templates/activity.html:854 app/templates/activity.html:1028
+msgid "Export CSV"
+msgstr "导出 CSV"
+
+#: app/templates/activity.html:860
+msgid "Search by user, title, file, IP, kind"
+msgstr "按用户、游戏、文件、IP、类型搜索"
+
+#: app/templates/activity.html:866 app/templates/activity.html:1033
+#: app/templates/users.html:254
+msgid "Rows"
+msgstr "条数"
+
+#: app/templates/activity.html:903 app/templates/activity.html:1065
+#: app/templates/activity.html:1148 app/templates/users.html:267
+msgid "When"
+msgstr "时间"
+
+#: app/templates/activity.html:910
+msgid "Kind"
+msgstr "类型"
+
+#: app/templates/activity.html:952
+msgid "Bytes"
+msgstr "字节"
+
+#: app/templates/activity.html:959 app/templates/activity.html:1157
+#: app/templates/downloads.html:45 app/templates/index.html:628
+#: app/templates/index.html:1172 app/templates/index.html:2280
+#: app/templates/index.html:2303 app/templates/index.html:2379
+#: app/templates/requests.html:63 app/templates/users.html:271
+msgid "Status"
+msgstr "状态"
+
+#: app/templates/activity.html:990
+msgid "Persisted log of connected clients and metadata"
+msgstr "已连接客户端及元数据的持久日志"
+
+#: app/templates/activity.html:1000
+msgid "Client history"
+msgstr "客户端历史"
+
+#: app/templates/activity.html:1010
+msgid "Persisted log of connected clients"
+msgstr "已连接客户端的持久日志"
+
+#: app/templates/activity.html:1107
+msgid "Requests blocked by IP blacklist and country rules"
+msgstr "被 IP 黑名单和国家/地区规则拦截的请求"
+
+#: app/templates/activity.html:1117
+msgid "Blocked requests"
+msgstr "被拦截请求"
+
+#: app/templates/activity.html:1127
+msgid "404 responses returned for denied IP or country rules"
+msgstr "因 IP 或国家/地区规则被拒而返回的 404 响应"
+
+#: app/templates/activity.html:1135
+msgid "Search by IP, path, UA"
+msgstr "按 IP、路径、UA 搜索"
+
+#: app/templates/activity.html:1153 app/templates/settings.html:349
+#: app/templates/settings.html:371
+msgid "Path"
+msgstr "路径"
+
+#: app/templates/activity.html:1185
+msgid "Login Lockouts"
+msgstr "登录锁定"
+
+#: app/templates/activity.html:1187
+msgid "Current temporary IP lockouts from failed authentication attempts"
+msgstr "当前因认证失败而临时锁定的 IP"
+
+#: app/templates/activity.html:1197
+msgid "Temporary lockouts"
+msgstr "临时锁定"
+
+#: app/templates/activity.html:1207
+msgid "Unlock individual IPs or clear all temporary lockouts"
+msgstr "解锁单个 IP 或清除所有临时锁定"
+
+#: app/templates/activity.html:1219 app/templates/downloads.html:33
+#: app/templates/manage.html:149 app/templates/requests.html:22
+#: app/templates/saves.html:24 app/templates/users.html:38
+msgid "Refresh"
+msgstr "刷新"
+
+#: app/templates/activity.html:1227
+msgid "Unlock all"
+msgstr "全部解锁"
+
+#: app/templates/activity.html:1240 app/templates/users.html:270
+#: app/templates/users.html:667
+msgid "IP"
+msgstr "IP"
+
+#: app/templates/activity.html:1242
+msgid "Remaining"
+msgstr "剩余时间"
+
+#: app/templates/activity.html:1245
+msgid "Last failed"
+msgstr "最后失败"
+
+#: app/templates/activity.html:1248
+msgid "Attempts"
+msgstr "尝试次数"
+
+#: app/templates/activity.html:1250 app/templates/index.html:371
+#: app/templates/requests.html:109
+msgid "Action"
+msgstr "操作"
+
+#: app/templates/activity.html:1337
+#, python-brace-format
+msgid "Last update: {time}"
+msgstr "最后更新：{time}"
+
+#: app/templates/activity.html:1354 app/templates/activity.html:2085
+#: app/templates/activity.html:2105
+msgid "Failed to load activity."
+msgstr "加载活动记录失败。"
+
+#: app/templates/activity.html:1359
+msgid "Theme"
+msgstr "主题"
+
+#: app/templates/activity.html:1361 app/templates/index.html:627
+#: app/templates/index.html:1171 app/templates/index.html:2279
+#: app/templates/index.html:2378
+msgid "Version"
+msgstr "版本"
+
+#: app/templates/activity.html:1362
+msgid "Revision"
+msgstr "修订号"
+
+#: app/templates/activity.html:1363 app/templates/nav.html:108
+msgid "Language"
+msgstr "语言"
+
+#: app/templates/activity.html:1438
+msgid "No active transfers."
+msgstr "暂无进行中的传输。"
+
+#: app/templates/activity.html:1640
+msgid "No recent clients."
+msgstr "暂无最近的客户端。"
+
+#: app/templates/activity.html:1707
+msgid "No history rows match your search."
+msgstr "没有符合搜索条件的历史记录。"
+
+#: app/templates/activity.html:1708
+msgid "No history yet."
+msgstr "暂无历史记录。"
+
+#: app/templates/activity.html:1734
+msgid "OK"
+msgstr "成功"
+
+#: app/templates/activity.html:1734
+msgid "Fail"
+msgstr "失败"
+
+#: app/templates/activity.html:1772
+msgid "No client history yet."
+msgstr "暂无客户端历史。"
+
+#: app/templates/activity.html:1805
+msgid "Block"
+msgstr "拦截"
+
+#: app/templates/activity.html:1818
+msgid "No blocked requests match your search."
+msgstr "没有符合搜索条件的被拦截请求。"
+
+#: app/templates/activity.html:1819
+msgid "No blocked requests yet."
+msgstr "暂无被拦截请求。"
+
+#: app/templates/activity.html:1855
+msgid "Blocked"
+msgstr "已拦截"
+
+#: app/templates/activity.html:1937
+msgid "No temporary lockouts."
+msgstr "暂无临时锁定。"
+
+#: app/templates/activity.html:1952
+msgid "Unlock"
+msgstr "解锁"
+
+#: app/templates/activity.html:1970 app/templates/activity.html:1977
+msgid "Failed to load lockouts."
+msgstr "加载锁定列表失败。"
+
+#: app/templates/activity.html:2001 app/templates/activity.html:2010
+msgid "Failed to add IP to blacklist."
+msgstr "将 IP 加入黑名单失败。"
+
+#: app/templates/activity.html:2005
+#, python-brace-format
+msgid "Blacklisted {ip}"
+msgstr "已将 {ip} 加入黑名单"
+
+#: app/templates/activity.html:2032
+msgid "Unlock all temporarily locked IPs?"
+msgstr "解锁所有被临时锁定的 IP？"
+
+#: app/templates/activity.html:2090
+#, python-brace-format
+msgid "Access history unavailable: {error}"
+msgstr "访问历史不可用：{error}"
+
+#: app/templates/activity.html:2143
+#, python-brace-format
+msgid "Add {ip} to the permanent blacklist?"
+msgstr "将 {ip} 加入永久黑名单？"
+
+#: app/templates/activity.html:2205
+msgid "Clear the persisted client history log?"
+msgstr "清空持久保存的客户端历史日志？"
+
+#: app/templates/activity.html:2239
+msgid "Clear the persisted access history log?"
+msgstr "清空持久保存的访问历史日志？"
+
+#: app/templates/base.html:53
+#, python-brace-format
+msgid "Conversion: {done}/{total}"
+msgstr "转换：{done}/{total}"
+
+#: app/templates/base.html:55
+msgid "Conversion running"
+msgstr "转换进行中"
+
+#: app/templates/base.html:158
+msgid "Library: Updating TitleDB"
+msgstr "游戏库：正在更新 TitleDB"
+
+#: app/templates/base.html:161
+msgid "Library: Scanning"
+msgstr "游戏库：正在扫描"
+
+#: app/templates/base.html:164
+msgid "Library: Rebuilding"
+msgstr "游戏库：正在重建"
+
+#: app/templates/base.html:167 app/templates/nav.html:103
+msgid "Library: Ready"
+msgstr "游戏库：就绪"
+
+#: app/templates/downloads.html:17 app/templates/nav.html:58
+#: app/templates/settings.html:298 app/templates/settings.html:836
+msgid "Downloads"
+msgstr "下载"
+
+#: app/templates/downloads.html:18
+msgid "Live torrent and usenet status plus the pending AeroFoil download queue."
+msgstr "实时的 torrent 和 usenet 状态，以及待处理的 AeroFoil 下载队列。"
+
+#: app/templates/downloads.html:30
+msgid "Current Downloads"
+msgstr "当前下载"
+
+#: app/templates/downloads.html:31
+msgid "Active AeroFoil-managed downloads from your configured torrent and usenet clients."
+msgstr "由 AeroFoil 管理、来自已配置 torrent 和 usenet 客户端的进行中下载。"
+
+#: app/templates/downloads.html:35
+#, python-format
+msgid "Current download speed: %(speed)s"
+msgstr "当前下载速度：%(speed)s"
+
+#: app/templates/downloads.html:40
+msgid "Name"
+msgstr "名称"
+
+#: app/templates/downloads.html:42 app/templates/downloads.html:81
+#: app/templates/index.html:361 app/templates/requests.html:99
+msgid "Protocol"
+msgstr "协议"
+
+#: app/templates/downloads.html:44 app/templates/downloads.html:82
+#: app/templates/settings.html:950 app/templates/settings.html:990
+#: app/templates/users.html:105
+msgid "Client"
+msgstr "客户端"
+
+#: app/templates/downloads.html:46
+msgid "Progress"
+msgstr "进度"
+
+#: app/templates/downloads.html:48
+msgid "Down"
+msgstr "下载"
+
+#: app/templates/downloads.html:49
+msgid "Up"
+msgstr "上传"
+
+#: app/templates/downloads.html:50
+msgid "Peers"
+msgstr "节点"
+
+#: app/templates/downloads.html:51 app/templates/index.html:368
+#: app/templates/requests.html:106
+msgid "Seeders"
+msgstr "做种"
+
+#: app/templates/downloads.html:52 app/templates/index.html:369
+#: app/templates/requests.html:107
+msgid "Leechers"
+msgstr "下载者"
+
+#: app/templates/downloads.html:54
+msgid "ETA"
+msgstr "剩余时间"
+
+#: app/templates/downloads.html:55 app/templates/index.html:366
+#: app/templates/index.html:2281 app/templates/index.html:2380
+#: app/templates/requests.html:104 app/templates/saves.html:41
+msgid "Size"
+msgstr "大小"
+
+#: app/templates/downloads.html:56
+msgid "Done"
+msgstr "完成"
+
+#: app/templates/downloads.html:72 app/templates/index.html:1875
+#: app/templates/requests.html:194
+msgid "Queue"
+msgstr "队列"
+
+#: app/templates/downloads.html:73
+msgid "Check completed"
+msgstr "检查已完成下载"
+
+#: app/templates/downloads.html:83
+msgid "State"
+msgstr "状态"
+
+#: app/templates/downloads.html:84 app/templates/index.html:629
+#: app/templates/index.html:1173 app/templates/index.html:2283
+#: app/templates/index.html:2306 app/templates/requests.html:64
+#: app/templates/saves.html:42 app/templates/settings.html:350
+#: app/templates/settings.html:357 app/templates/users.html:106
+msgid "Actions"
+msgstr "操作"
+
+#: app/templates/downloads.html:149
+#, python-brace-format
+msgid "stuck: {reason}"
+msgstr "卡住：{reason}"
+
+#: app/templates/downloads.html:159 app/templates/downloads.html:160
+msgid "Failed to load queue state."
+msgstr "加载队列状态失败。"
+
+#: app/templates/downloads.html:165
+msgid "running"
+msgstr "运行中"
+
+#: app/templates/downloads.html:165
+msgid "idle"
+msgstr "空闲"
+
+#: app/templates/downloads.html:166
+msgid "never"
+msgstr "从未"
+
+#: app/templates/downloads.html:167
+#, python-brace-format
+msgid "Status: {status}. Last check: {last_run}. Pending: {count}."
+msgstr "状态：{status}。上次检查：{last_run}。待处理：{count}。"
+
+#: app/templates/downloads.html:170
+msgid "No pending downloads."
+msgstr "没有待处理的下载。"
+
+#: app/templates/downloads.html:175
+msgid "Manual download"
+msgstr "手动下载"
+
+#: app/templates/downloads.html:180 app/templates/index.html:272
+#: app/templates/saves.html:324 app/templates/saves.html:367
+#: app/templates/settings.html:610 app/templates/users.html:129
+msgid "Delete"
+msgstr "删除"
+
+#: app/templates/downloads.html:195
+msgid "Missing queue key."
+msgstr "缺少队列键。"
+
+#: app/templates/downloads.html:198
+msgid "Delete this queued download and remove downloader files if possible?"
+msgstr "删除此排队下载并尽可能移除下载器文件？"
+
+#: app/templates/downloads.html:209
+msgid "Removed queued download."
+msgstr "已移除排队的下载。"
+
+#: app/templates/downloads.html:211 app/templates/downloads.html:217
+msgid "Failed to remove queued download."
+msgstr "移除排队的下载失败。"
+
+#: app/templates/downloads.html:229 app/templates/downloads.html:237
+#: app/templates/downloads.html:242
+#, python-brace-format
+msgid "Current download speed: {speed}"
+msgstr "当前下载速度：{speed}"
+
+#: app/templates/downloads.html:233
+msgid "Failed to load active downloads."
+msgstr "加载进行中的下载失败。"
+
+#: app/templates/downloads.html:244
+msgid "No active downloads."
+msgstr "没有进行中的下载。"
+
+#: app/templates/downloads.html:280
+msgid "Checked completed downloads."
+msgstr "已检查完成的下载。"
+
+#: app/templates/downloads.html:282
+msgid "Check failed."
+msgstr "检查失败。"
+
+#: app/templates/frozen.html:6
+msgid "Server Notice"
+msgstr "服务器通知"
+
+#: app/templates/frozen.html:9
+msgid "Account status"
+msgstr "账户状态"
+
+#: app/templates/frozen.html:10 app/templates/users.html:642
+msgid "Frozen"
+msgstr "已冻结"
+
+#: app/templates/frozen.html:11
+msgid "Notice"
+msgstr "通知"
+
+#: app/templates/index.html:12
+msgid "Newly added"
+msgstr "最新添加"
+
+#: app/templates/index.html:13
+msgid "Latest titles found in your library."
+msgstr "游戏库中最新发现的游戏。"
+
+#: app/templates/index.html:16 app/templates/index.html:38
+msgid "Scroll left"
+msgstr "向左滚动"
+
+#: app/templates/index.html:22 app/templates/index.html:44
+msgid "Scroll right"
+msgstr "向右滚动"
+
+#: app/templates/index.html:34
+msgid "Recommended"
+msgstr "推荐"
+
+#: app/templates/index.html:35
+msgid "A rotating selection from your library."
+msgstr "从你的游戏库中轮换精选。"
+
+#: app/templates/index.html:60 app/templates/index.html:62
+#: app/templates/index.html:1584 app/templates/index.html:1585
+msgid "Filters"
+msgstr "筛选"
+
+#: app/templates/index.html:66 app/templates/index.html:407
+#: app/templates/index.html:626 app/templates/index.html:1170
+msgid "Type"
+msgstr "类型"
+
+#: app/templates/index.html:70 app/templates/index.html:86
+#: app/templates/index.html:102 app/templates/index.html:118
+#: app/templates/index.html:134
+msgid "All"
+msgstr "全部"
+
+#: app/templates/index.html:74 app/templates/index.html:409
+msgid "Base Games"
+msgstr "游戏本体"
+
+#: app/templates/index.html:78 app/templates/index.html:410
+#: app/templates/index.html:2199 app/templates/index.html:2254
+#: app/templates/index.html:2302 app/templates/index.html:2336
+#: app/templates/index.html:2442 app/templates/index.html:2719
+msgid "DLC"
+msgstr "DLC"
+
+#: app/templates/index.html:82 app/templates/index.html:420
+msgid "Ownership"
+msgstr "拥有状态"
+
+#: app/templates/index.html:90 app/templates/index.html:422
+#: app/templates/index.html:816 app/templates/index.html:859
+msgid "In Library"
+msgstr "已入库"
+
+#: app/templates/index.html:94 app/templates/index.html:423
+#: app/templates/index.html:816 app/templates/index.html:859
+#: app/templates/index.html:2156 app/templates/index.html:2241
+msgid "Missing"
+msgstr "缺失"
+
+#: app/templates/index.html:98 app/templates/index.html:433
+#: app/templates/index.html:2329
+msgid "Updates"
+msgstr "更新"
+
+#: app/templates/index.html:106 app/templates/index.html:435
+#: app/templates/index.html:830
+msgid "Up to Date"
+msgstr "已是最新"
+
+#: app/templates/index.html:110 app/templates/index.html:436
+#: app/templates/index.html:830
+msgid "Update Available"
+msgstr "有可用更新"
+
+#: app/templates/index.html:114 app/templates/index.html:446
+msgid "DLC Coverage"
+msgstr "DLC 收集情况"
+
+#: app/templates/index.html:122 app/templates/index.html:448
+msgid "Complete"
+msgstr "齐全"
+
+#: app/templates/index.html:126 app/templates/index.html:449
+#: app/templates/index.html:837
+msgid "DLC Missing"
+msgstr "DLC 缺失"
+
+#: app/templates/index.html:130 app/templates/index.html:458
+msgid "Recognition"
+msgstr "识别状态"
+
+#: app/templates/index.html:138 app/templates/index.html:460
+#: app/templates/requests.html:242 app/templates/requests.html:269
+#: app/templates/requests.html:319
+msgid "Unrecognized"
+msgstr "未识别"
+
+#: app/templates/index.html:147
+msgid "Search titles..."
+msgstr "搜索游戏..."
+
+#: app/templates/index.html:152
+msgid "Search downloads..."
+msgstr "搜索下载..."
+
+#: app/templates/index.html:153
+msgid "Search"
+msgstr "搜索"
+
+#: app/templates/index.html:171
+msgid "Sort"
+msgstr "排序"
+
+#: app/templates/index.html:174
+msgid "Title (A-Z)"
+msgstr "名称 (A-Z)"
+
+#: app/templates/index.html:175
+msgid "Title (Z-A)"
+msgstr "名称 (Z-A)"
+
+#: app/templates/index.html:176
+msgid "Newest added"
+msgstr "最新添加"
+
+#: app/templates/index.html:185 app/templates/index.html:1603
+msgid "Genre"
+msgstr "类型"
+
+#: app/templates/index.html:188 app/templates/index.html:1670
+msgid "All genres"
+msgstr "全部类型"
+
+#: app/templates/index.html:196
+msgid "Items per page"
+msgstr "每页数量"
+
+#: app/templates/index.html:205
+msgid "Custom"
+msgstr "自定义"
+
+#: app/templates/index.html:206
+msgid "Apply"
+msgstr "应用"
+
+#: app/templates/index.html:215
+msgid "Smaller tiles"
+msgstr "缩小图块"
+
+#: app/templates/index.html:219
+msgid "Larger tiles"
+msgstr "放大图块"
+
+#: app/templates/index.html:236
+msgid "Page navigation"
+msgstr "页面导航"
+
+#: app/templates/index.html:246
+msgid "Content details"
+msgstr "内容详情"
+
+#: app/templates/index.html:247 app/templates/index.html:267
+#: app/templates/index.html:284 app/templates/index.html:323
+#: app/templates/index.html:335 app/templates/index.html:350
+#: app/templates/requests.html:88 app/templates/settings.html:603
+#: app/templates/settings.html:623 app/templates/settings.html:628
+msgid "Close"
+msgstr "关闭"
+
+#: app/templates/index.html:266
+msgid "Confirm delete"
+msgstr "确认删除"
+
+#: app/templates/index.html:271 app/templates/manage.html:237
+#: app/templates/manage.html:289 app/templates/settings.html:609
+#: app/templates/users.html:128 app/templates/users.html:168
+#: app/templates/users.html:205 app/templates/users.html:233
+msgid "Cancel"
+msgstr "取消"
+
+#: app/templates/index.html:283 app/templates/index.html:1071
+#: app/templates/index.html:1125 app/templates/index.html:1211
+#: app/templates/index.html:2467
+msgid "Game info"
+msgstr "游戏信息"
+
+#: app/templates/index.html:295
+msgid "Manual metadata override"
+msgstr "手动覆盖元数据"
+
+#: app/templates/index.html:296
+msgid "Use this when TitleDB does not identify the title correctly."
+msgstr "当 TitleDB 无法正确识别该游戏时使用。"
+
+#: app/templates/index.html:299
+msgid "Title name"
+msgstr "游戏名称"
+
+#: app/templates/index.html:303
+msgid "Icon URL"
+msgstr "图标 URL"
+
+#: app/templates/index.html:307
+msgid "Banner URL"
+msgstr "横幅 URL"
+
+#: app/templates/index.html:311
+msgid "Description"
+msgstr "描述"
+
+#: app/templates/index.html:316
+msgid "Save metadata"
+msgstr "保存元数据"
+
+#: app/templates/index.html:334
+msgid "Screenshot"
+msgstr "截图"
+
+#: app/templates/index.html:349 app/templates/requests.html:87
+msgid "Download search results"
+msgstr "下载搜索结果"
+
+#: app/templates/index.html:359 app/templates/requests.html:97
+msgid "Indexer"
+msgstr "索引器"
+
+#: app/templates/index.html:364 app/templates/requests.html:102
+msgid "Age"
+msgstr "时间"
+
+#: app/templates/index.html:625 app/templates/index.html:1169
+msgid "Genres"
+msgstr "类型"
+
+#: app/templates/index.html:823
+msgid "Base Present"
+msgstr "本体已有"
+
+#: app/templates/index.html:823
+msgid "Base Missing"
+msgstr "本体缺失"
+
+#: app/templates/index.html:837
+msgid "DLC Complete"
+msgstr "DLC 齐全"
+
+#: app/templates/index.html:856
+#, python-brace-format
+msgid "{name} [{title_id}] Updates"
+msgstr "{name} [{title_id}] 更新"
+
+#: app/templates/index.html:872
+msgid "Version v0"
+msgstr "版本 v0"
+
+#: app/templates/index.html:876
+#, python-brace-format
+msgid "Version {version}"
+msgstr "版本 {version}"
+
+#: app/templates/index.html:1063 app/templates/index.html:1204
+msgid "Details"
+msgstr "详情"
+
+#: app/templates/index.html:1150
+#, python-brace-format
+msgid "Library size: {size}"
+msgstr "游戏库大小：{size}"
+
+#: app/templates/index.html:1152
+msgid "Library size: 0 B"
+msgstr "游戏库大小：0 B"
+
+#: app/templates/index.html:1256 app/templates/requests.html:147
+msgid "Torrent"
+msgstr "种子"
+
+#: app/templates/index.html:1269 app/templates/requests.html:160
+#, python-brace-format
+msgid "Published {date}"
+msgstr "发布于 {date}"
+
+#: app/templates/index.html:1313 app/templates/index.html:1337
+#: app/templates/index.html:1859 app/templates/requests.html:364
+msgid "Searching Prowlarr..."
+msgstr "正在搜索 Prowlarr..."
+
+#: app/templates/index.html:1321 app/templates/index.html:1346
+#: app/templates/index.html:1865 app/templates/requests.html:371
+msgid "Search failed."
+msgstr "搜索失败。"
+
+#: app/templates/index.html:1326 app/templates/index.html:1870
+#: app/templates/requests.html:376
+msgid "No results found."
+msgstr "未找到结果。"
+
+#: app/templates/index.html:1329 app/templates/index.html:1873
+#: app/templates/requests.html:379
+#, python-brace-format
+msgid "Found {count} results."
+msgstr "找到 {count} 条结果。"
+
+#: app/templates/index.html:1426
+msgid "Previous"
+msgstr "上一页"
+
+#: app/templates/index.html:1481 app/templates/users.html:525
+msgid "Next"
+msgstr "下一页"
+
+#: app/templates/index.html:1585
+#, python-brace-format
+msgid "Filters ({count} active)"
+msgstr "筛选（{count} 项生效）"
+
+#: app/templates/index.html:1603 app/templates/index.html:1618
+#, python-brace-format
+msgid "Genre: {genre}"
+msgstr "类型：{genre}"
+
+#: app/templates/index.html:1615
+#, python-brace-format
+msgid "Search: \"{text}\""
+msgstr "搜索：\"{text}\""
+
+#: app/templates/index.html:1641 app/templates/manage.html:236
+#: app/templates/users.html:27
+msgid "Clear"
+msgstr "清除"
+
+#: app/templates/index.html:1893
+msgid "Queuing download..."
+msgstr "正在加入下载队列..."
+
+#: app/templates/index.html:1908
+msgid "Queued download."
+msgstr "已加入下载队列。"
+
+#: app/templates/index.html:1908 app/templates/requests.html:435
+msgid "Queue failed."
+msgstr "加入队列失败。"
+
+#: app/templates/index.html:2039
+msgid "Deleting..."
+msgstr "正在删除..."
+
+#: app/templates/index.html:2058
+#, python-brace-format
+msgid "{message} Some files failed: {warnings}"
+msgstr "{message} 部分文件失败：{warnings}"
+
+#: app/templates/index.html:2077
+msgid "Content not found"
+msgstr "未找到内容"
+
+#: app/templates/index.html:2090
+#, python-brace-format
+msgid "{app_type} | App ID {app_id} | Title ID {title_id}"
+msgstr "{app_type} | App ID {app_id} | Title ID {title_id}"
+
+#: app/templates/index.html:2100
+#, python-brace-format
+msgid "Genres: {genres}"
+msgstr "类型：{genres}"
+
+#: app/templates/index.html:2103
+#, python-brace-format
+msgid "Size: {size}"
+msgstr "大小：{size}"
+
+#: app/templates/index.html:2156 app/templates/index.html:2241
+#: app/templates/index.html:2304
+msgid "Owned"
+msgstr "已拥有"
+
+#: app/templates/index.html:2158
+msgid "Unknown"
+msgstr "未知"
+
+#: app/templates/index.html:2172
+msgid "Search updates"
+msgstr "搜索更新"
+
+#: app/templates/index.html:2180
+msgid "Search base game"
+msgstr "搜索游戏本体"
+
+#: app/templates/index.html:2188 app/templates/index.html:2418
+#: app/templates/saves.html:206
+msgid "this title"
+msgstr "此游戏"
+
+#: app/templates/index.html:2189 app/templates/index.html:2423
+msgid "Delete game, updates, and DLC"
+msgstr "删除游戏、更新和 DLC"
+
+#: app/templates/index.html:2200
+msgid "Search DLC"
+msgstr "搜索 DLC"
+
+#: app/templates/index.html:2207
+msgid "Custom search terms"
+msgstr "自定义搜索词"
+
+#: app/templates/index.html:2210
+msgid "Search files"
+msgstr "搜索文件"
+
+#: app/templates/index.html:2282 app/templates/index.html:2381
+msgid "Release date"
+msgstr "发行日期"
+
+#: app/templates/index.html:2293
+msgid "No update version data available."
+msgstr "没有可用的更新版本数据。"
+
+#: app/templates/index.html:2305
+msgid "Latest"
+msgstr "最新"
+
+#: app/templates/index.html:2316
+msgid "No DLC entries available."
+msgstr "没有可用的 DLC 条目。"
+
+#: app/templates/index.html:2389
+msgid "Loading content details..."
+msgstr "正在加载内容详情..."
+
+#: app/templates/index.html:2424
+#, python-brace-format
+msgid "Delete the base game and all owned updates and DLC for {name}?"
+msgstr "删除 {name} 的游戏本体及所有已拥有的更新和 DLC？"
+
+#: app/templates/index.html:2428
+msgid "Deleted base game content."
+msgstr "已删除游戏本体内容。"
+
+#: app/templates/index.html:2438
+msgid "this entry"
+msgstr "此条目"
+
+#: app/templates/index.html:2442
+msgid "update"
+msgstr "更新"
+
+#: app/templates/index.html:2444
+#, python-brace-format
+msgid "Delete {label}"
+msgstr "删除 {label}"
+
+#: app/templates/index.html:2445
+#, python-brace-format
+msgid "Delete {label} v{version} for {name}?"
+msgstr "删除 {name} 的 {label} v{version}？"
+
+#: app/templates/index.html:2449
+#, python-brace-format
+msgid "Deleted {label} v{version}."
+msgstr "已删除 {label} v{version}。"
+
+#: app/templates/index.html:2468
+#, python-brace-format
+msgid "Title ID {title_id}"
+msgstr "Title ID {title_id}"
+
+#: app/templates/index.html:2478 app/templates/index.html:2502
+#: app/templates/index.html:2515 app/templates/index.html:2530
+msgid "No description available in TitleDB for this title."
+msgstr "TitleDB 中没有该游戏的描述。"
+
+#: app/templates/index.html:2496
+msgid "Loading TitleDB info..."
+msgstr "正在加载 TitleDB 信息..."
+
+#: app/templates/index.html:2557
+msgid "This item has no Title ID."
+msgstr "此条目没有 Title ID。"
+
+#: app/templates/index.html:2573
+msgid "Saving..."
+msgstr "正在保存..."
+
+#: app/templates/index.html:2591 app/templates/index.html:2615
+msgid "Failed to save metadata."
+msgstr "保存元数据失败。"
+
+#: app/templates/index.html:2605
+msgid "Saved."
+msgstr "已保存。"
+
+#: app/templates/index.html:2611
+msgid "Saved, but refresh failed."
+msgstr "已保存，但刷新失败。"
+
+#: app/templates/index.html:2655 app/templates/index.html:2704
+msgid "Queue update"
+msgstr "下载更新"
+
+#: app/templates/index.html:2678
+msgid "Queue download"
+msgstr "加入下载队列"
+
+#: app/templates/index.html:2725
+#, python-brace-format
+msgid "Searching Prowlarr for {label}..."
+msgstr "正在通过 Prowlarr 搜索 {label}..."
+
+#: app/templates/index.html:2729
+msgid "Queue DLC"
+msgstr "下载 DLC"
+
+#: app/templates/login.html:33
+msgid "AeroFoil banner"
+msgstr "AeroFoil 横幅"
+
+#: app/templates/login.html:41 app/templates/login.html:59
+#: app/templates/nav.html:126 app/templates/users.html:666
+msgid "Login"
+msgstr "登录"
+
+#: app/templates/login.html:46 app/templates/settings.html:964
+#: app/templates/users.html:57 app/templates/users.html:58
+#: app/templates/users.html:145
+msgid "Username"
+msgstr "用户名"
+
+#: app/templates/login.html:51 app/templates/settings.html:968
+#: app/templates/users.html:62 app/templates/users.html:63
+msgid "Password"
+msgstr "密码"
+
+#: app/templates/login.html:56
+msgid "Remember me"
+msgstr "记住我"
+
+#: app/templates/manage.html:36 app/templates/nav.html:60
+msgid "Manage"
+msgstr "管理"
+
+#: app/templates/manage.html:37
+msgid "Library maintenance actions and converter jobs."
+msgstr "游戏库维护操作与转换任务。"
+
+#: app/templates/manage.html:40
+msgid "Checking converter..."
+msgstr "正在检查转换器..."
+
+#: app/templates/manage.html:52 app/templates/settings.html:388
+msgid "Maintenance"
+msgstr "维护"
+
+#: app/templates/manage.html:53
+msgid "Organize and clean up your libraries."
+msgstr "整理并清理你的游戏库。"
+
+#: app/templates/manage.html:58
+msgid "Library organization"
+msgstr "游戏库整理"
+
+#: app/templates/manage.html:59
+msgid "Rename and organize identified content into structured folders."
+msgstr "将已识别的内容重命名并整理到结构化文件夹中。"
+
+#: app/templates/manage.html:63 app/templates/manage.html:87
+#: app/templates/manage.html:103 app/templates/manage.html:119
+#: app/templates/manage.html:168 app/templates/manage.html:211
+msgid "Dry run"
+msgstr "试运行"
+
+#: app/templates/manage.html:67 app/templates/manage.html:91
+#: app/templates/manage.html:107 app/templates/manage.html:123
+#: app/templates/manage.html:172 app/templates/manage.html:215
+msgid "Verbose"
+msgstr "详细输出"
+
+#: app/templates/manage.html:70
+msgid "Organize library"
+msgstr "整理游戏库"
+
+#: app/templates/manage.html:74
+msgid "Library scan"
+msgstr "游戏库扫描"
+
+#: app/templates/manage.html:75
+msgid "Scan configured libraries for new files."
+msgstr "扫描已配置的游戏库以发现新文件。"
+
+#: app/templates/manage.html:78 app/templates/settings.html:363
+msgid "Scan library"
+msgstr "扫描游戏库"
+
+#: app/templates/manage.html:82 app/templates/manage.html:94
+#: app/templates/manage.html:348
+msgid "Delete older updates"
+msgstr "删除旧版更新"
+
+#: app/templates/manage.html:83
+msgid "Keep the latest owned update per title and remove older update files."
+msgstr "保留每个游戏最新拥有的更新，并删除旧的更新文件。"
+
+#: app/templates/manage.html:98 app/templates/manage.html:110
+#: app/templates/manage.html:478
+msgid "Delete orphaned updates and DLC"
+msgstr "删除孤立的更新和 DLC"
+
+#: app/templates/manage.html:99
+msgid "Remove owned updates and DLC files whose parent title has no owned base game."
+msgstr "删除所属游戏没有已拥有本体的更新和 DLC 文件。"
+
+#: app/templates/manage.html:114 app/templates/manage.html:126
+#: app/templates/manage.html:361 app/templates/manage.html:365
+msgid "Delete duplicates"
+msgstr "删除重复文件"
+
+#: app/templates/manage.html:115
+msgid "Keep one owned file per app ID/version and remove duplicate file entries, even across different extensions."
+msgstr "每个 App ID/版本仅保留一个文件，并删除重复的文件条目，即使扩展名不同。"
+
+#: app/templates/manage.html:137
+msgid "Conversion"
+msgstr "转换"
+
+#: app/templates/manage.html:138
+msgid "Convert NSP/XCI to NSZ using your configured tool."
+msgstr "使用已配置的工具将 NSP/XCI 转换为 NSZ。"
+
+#: app/templates/manage.html:143
+msgid "Manual single-file conversion"
+msgstr "手动单文件转换"
+
+#: app/templates/manage.html:146 app/templates/manage.html:546
+msgid "Loading files..."
+msgstr "正在加载文件..."
+
+#: app/templates/manage.html:151
+msgid "Convert selected"
+msgstr "转换所选"
+
+#: app/templates/manage.html:155 app/templates/manage.html:198
+msgid "Threads"
+msgstr "线程数"
+
+#: app/templates/manage.html:156 app/templates/manage.html:199
+msgid "Auto"
+msgstr "自动"
+
+#: app/templates/manage.html:159 app/templates/manage.html:202
+msgid "Timeout"
+msgstr "超时"
+
+#: app/templates/manage.html:160 app/templates/manage.html:203
+msgid "sec"
+msgstr "秒"
+
+#: app/templates/manage.html:164 app/templates/manage.html:207
+msgid "Delete original"
+msgstr "删除原文件"
+
+#: app/templates/manage.html:176 app/templates/manage.html:219
+msgid "Verify output"
+msgstr "校验输出"
+
+#: app/templates/manage.html:179
+msgid "Only NSP/XCI files are listed."
+msgstr "仅列出 NSP/XCI 文件。"
+
+#: app/templates/manage.html:183
+msgid "Batch conversion settings"
+msgstr "批量转换设置"
+
+#: app/templates/manage.html:188 app/templates/manage.html:1146
+#: app/templates/settings.html:799 app/templates/settings.html:2693
+msgid "Show"
+msgstr "显示"
+
+#: app/templates/manage.html:194 app/templates/nav.html:40
+#: app/templates/settings.html:279 app/templates/settings.html:332
+#: app/templates/upload.html:14
+msgid "Library"
+msgstr "游戏库"
+
+#: app/templates/manage.html:222
+msgid "Start Library Conversion"
+msgstr "开始游戏库转换"
+
+#: app/templates/manage.html:234
+msgid "Task output"
+msgstr "任务输出"
+
+#: app/templates/manage.html:254
+msgid "Recent jobs"
+msgstr "最近任务"
+
+#: app/templates/manage.html:255 app/templates/manage.html:823
+msgid "No jobs yet."
+msgstr "暂无任务。"
+
+#: app/templates/manage.html:261
+msgid "Diagnostics"
+msgstr "诊断"
+
+#: app/templates/manage.html:262
+msgid "Live memory and scan diagnostics."
+msgstr "实时内存与扫描诊断。"
+
+#: app/templates/manage.html:264 app/templates/manage.html:991
+msgid "Expand"
+msgstr "展开"
+
+#: app/templates/manage.html:265 app/templates/settings.html:806
+#: app/templates/users.html:198
+msgid "Copy"
+msgstr "复制"
+
+#: app/templates/manage.html:268
+msgid "Loading diagnostics..."
+msgstr "正在加载诊断信息..."
+
+#: app/templates/manage.html:284 app/templates/manage.html:314
+msgid "Confirm action"
+msgstr "确认操作"
+
+#: app/templates/manage.html:290 app/templates/manage.html:317
+#: app/templates/manage.html:328
+msgid "Confirm"
+msgstr "确认"
+
+#: app/templates/manage.html:348
+msgid "Preview older update cleanup"
+msgstr "预览旧版更新清理"
+
+#: app/templates/manage.html:350
+msgid "Run a dry run for older update cleanup? No files will be deleted."
+msgstr "对旧版更新清理执行试运行？不会删除任何文件。"
+
+#: app/templates/manage.html:351
+msgid "Delete older update files and keep only the latest owned update per title?"
+msgstr "删除旧的更新文件，仅保留每个游戏最新拥有的更新？"
+
+#: app/templates/manage.html:352 app/templates/manage.html:365
+#: app/templates/manage.html:482
+msgid "Run dry run"
+msgstr "执行试运行"
+
+#: app/templates/manage.html:352
+msgid "Delete updates"
+msgstr "删除更新"
+
+#: app/templates/manage.html:361
+msgid "Preview duplicate cleanup"
+msgstr "预览重复文件清理"
+
+#: app/templates/manage.html:363
+msgid "Run a dry run for duplicate cleanup? No files will be deleted."
+msgstr "对重复文件清理执行模拟运行？不会删除任何文件。"
+
+#: app/templates/manage.html:364
+msgid "Delete duplicate owned files and keep one file per app ID and version?"
+msgstr "删除已拥有的重复文件，每个应用 ID 和版本仅保留一个文件？"
+
+#: app/templates/manage.html:386
+#, python-brace-format
+msgid "({failed} failed)"
+msgstr "（{failed} 个失败）"
+
+#: app/templates/manage.html:388
+#, python-brace-format
+msgid "Deleted {deleted} empty folders{failed_note}."
+msgstr "已删除 {deleted} 个空文件夹{failed_note}。"
+
+#: app/templates/manage.html:390
+#, python-brace-format
+msgid "Organize complete. Moved {moved} items. Skipped {skipped}.{folder_note}"
+msgstr "整理完成。已移动 {moved} 项，跳过 {skipped} 项。{folder_note}"
+
+#: app/templates/manage.html:393
+#, python-brace-format
+msgid "Organize failed: {errors}"
+msgstr "整理失败：{errors}"
+
+#: app/templates/manage.html:412
+msgid "Library scan started."
+msgstr "游戏库扫描已开始。"
+
+#: app/templates/manage.html:414
+msgid "Library scan failed."
+msgstr "游戏库扫描失败。"
+
+#: app/templates/manage.html:436
+#, python-brace-format
+msgid "Delete updates complete. Deleted {deleted} files."
+msgstr "删除更新完成。已删除 {deleted} 个文件。"
+
+#: app/templates/manage.html:439
+#, python-brace-format
+msgid "Delete updates failed: {errors}"
+msgstr "删除更新失败：{errors}"
+
+#: app/templates/manage.html:462
+#, python-brace-format
+msgid "Delete duplicates complete. Deleted {deleted} files."
+msgstr "删除重复文件完成。已删除 {deleted} 个文件。"
+
+#: app/templates/manage.html:465
+#, python-brace-format
+msgid "Delete duplicates failed: {errors}"
+msgstr "删除重复文件失败：{errors}"
+
+#: app/templates/manage.html:478
+msgid "Preview orphaned add-on cleanup"
+msgstr "预览孤立附加内容清理"
+
+#: app/templates/manage.html:480
+msgid "Run a dry run for orphaned updates and DLC? No files will be deleted."
+msgstr "对孤立的更新和 DLC 执行模拟运行？不会删除任何文件。"
+
+#: app/templates/manage.html:481
+msgid "Delete all owned updates and DLC entries whose parent title has no owned base game?"
+msgstr "删除所有未拥有对应本体的已拥有更新和 DLC 条目？"
+
+#: app/templates/manage.html:482
+msgid "Delete orphaned add-ons"
+msgstr "删除孤立附加内容"
+
+#: app/templates/manage.html:501
+#, python-brace-format
+msgid "Delete orphaned add-ons complete. Deleted {deleted} files."
+msgstr "删除孤立附加内容完成。已删除 {deleted} 个文件。"
+
+#: app/templates/manage.html:504
+#, python-brace-format
+msgid "Delete orphaned add-ons failed: {errors}"
+msgstr "删除孤立附加内容失败：{errors}"
+
+#: app/templates/manage.html:533
+msgid "Bulk conversion started..."
+msgstr "批量转换已开始..."
+
+#: app/templates/manage.html:535 app/templates/manage.html:751
+#, python-brace-format
+msgid "Conversion failed: {errors}"
+msgstr "转换失败：{errors}"
+
+#: app/templates/manage.html:551
+msgid "Failed to load files"
+msgstr "加载文件失败"
+
+#: app/templates/manage.html:556
+msgid "No NSP/XCI files found"
+msgstr "未找到 NSP/XCI 文件"
+
+#: app/templates/manage.html:559
+msgid "Select a file"
+msgstr "选择文件"
+
+#: app/templates/manage.html:573
+msgid "Select a file to convert."
+msgstr "请选择要转换的文件。"
+
+#: app/templates/manage.html:595
+#, python-brace-format
+msgid "Single conversion started for {name}"
+msgstr "已开始单个转换：{name}"
+
+#: app/templates/manage.html:597
+#, python-brace-format
+msgid "Single conversion failed: {errors}"
+msgstr "单个转换失败：{errors}"
+
+#: app/templates/manage.html:720
+msgid "Failed to fetch job status."
+msgstr "获取任务状态失败。"
+
+#: app/templates/manage.html:749
+msgid "Conversion complete."
+msgstr "转换完成。"
+
+#: app/templates/manage.html:762
+#, python-brace-format
+msgid "Progress: {done}/{total} ({percent})"
+msgstr "进度：{done}/{total}（{percent}）"
+
+#: app/templates/manage.html:764
+#, python-brace-format
+msgid "File: {file}"
+msgstr "文件：{file}"
+
+#: app/templates/manage.html:770
+msgid "Converter progress: Complete"
+msgstr "转换进度：已完成"
+
+#: app/templates/manage.html:772
+msgid "Converter progress: Cancelled"
+msgstr "转换进度：已取消"
+
+#: app/templates/manage.html:774
+msgid "Converter progress: Failed"
+msgstr "转换进度：失败"
+
+#: app/templates/manage.html:777
+#, python-brace-format
+msgid "Converter progress: {percent}"
+msgstr "转换进度：{percent}"
+
+#: app/templates/manage.html:791
+msgid "Cancel conversion job"
+msgstr "取消转换任务"
+
+#: app/templates/manage.html:792
+msgid "Cancel the active conversion job? Any in-progress work may stop before the current file completes."
+msgstr "取消当前的转换任务？进行中的工作可能会在当前文件完成前停止。"
+
+#: app/templates/manage.html:793
+msgid "Cancel job"
+msgstr "取消任务"
+
+#: app/templates/manage.html:808
+msgid "Job cancelled."
+msgstr "任务已取消。"
+
+#: app/templates/manage.html:831
+#, python-brace-format
+msgid "{date} - {status} (converted {converted}, skipped {skipped})"
+msgstr "{date} - {status}（已转换 {converted}，跳过 {skipped}）"
+
+#: app/templates/manage.html:860
+msgid "Converter ready"
+msgstr "转换器就绪"
+
+#: app/templates/manage.html:863
+msgid "Converter needs attention"
+msgstr "转换器需要注意"
+
+#: app/templates/manage.html:876
+msgid "All libraries"
+msgstr "所有游戏库"
+
+#: app/templates/manage.html:948
+msgid "No diagnostics text to copy yet."
+msgstr "暂无可复制的诊断文本。"
+
+#: app/templates/manage.html:954 app/templates/settings.html:2355
+msgid "Copied"
+msgstr "已复制"
+
+#: app/templates/manage.html:963
+msgid "Clipboard write failed."
+msgstr "写入剪贴板失败。"
+
+#: app/templates/manage.html:981
+msgid "Clipboard not available in this browser."
+msgstr "此浏览器不支持剪贴板。"
+
+#: app/templates/manage.html:996
+msgid "Collapse"
+msgstr "折叠"
+
+#: app/templates/manage.html:1021
+msgid "Failed to load diagnostics."
+msgstr "加载诊断信息失败。"
+
+#: app/templates/manage.html:1058
+msgid "Diagnostics parse error."
+msgstr "诊断信息解析错误。"
+
+#: app/templates/manage.html:1068
+msgid "Diagnostics request timed out."
+msgstr "诊断请求超时。"
+
+#: app/templates/manage.html:1071
+msgid "Diagnostics endpoint unavailable."
+msgstr "诊断接口不可用。"
+
+#: app/templates/manage.html:1143 app/templates/settings.html:2689
+msgid "Hide"
+msgstr "隐藏"
+
+#: app/templates/nav.html:31
+msgid "Toggle navigation"
+msgstr "切换导航"
+
+#: app/templates/nav.html:46 app/templates/requests.html:13
+msgid "Requests"
+msgstr "求档"
+
+#: app/templates/nav.html:48
+msgid "Request"
+msgstr "请求"
+
+#: app/templates/nav.html:56
+msgid "Content"
+msgstr "内容"
+
+#: app/templates/nav.html:59 app/templates/upload.html:9
+#: app/templates/upload.html:39
+msgid "Upload"
+msgstr "上传"
+
+#: app/templates/nav.html:67
+msgid "Backups"
+msgstr "备份"
+
+#: app/templates/nav.html:69 app/templates/saves.html:11
+msgid "Save Data Backups"
+msgstr "存档备份"
+
+#: app/templates/nav.html:76 app/templates/users.html:79
+#: app/templates/users.html:162 app/templates/users.html:645
+msgid "Admin"
+msgstr "管理员"
+
+#: app/templates/nav.html:78 app/templates/users.html:10
+msgid "Users"
+msgstr "用户"
+
+#: app/templates/nav.html:85 app/templates/settings.html:264
+#: app/templates/settings.html:311
+msgid "Settings"
+msgstr "设置"
+
+#: app/templates/nav.html:90
+msgid "Library size: ..."
+msgstr "游戏库大小：..."
+
+#: app/templates/nav.html:94
+msgid "Keys are not loaded. AeroFoil is using filename-based identification until a valid keys.txt is uploaded."
+msgstr "密钥未加载。在上传有效的 keys.txt 之前，AeroFoil 将使用基于文件名的识别方式。"
+
+#: app/templates/nav.html:120
+msgid "Logout"
+msgstr "退出登录"
+
+#: app/templates/profile.html:5
+msgid "Welcome, Anthony!"
+msgstr "欢迎，Anthony！"
+
+#: app/templates/requests.html:14
+msgid "User title requests and download search."
+msgstr "用户求档与下载搜索。"
+
+#: app/templates/requests.html:16
+msgid "Request A Title"
+msgstr "请求游戏"
+
+#: app/templates/requests.html:17
+msgid "Search TitleDB and request content not yet in your library."
+msgstr "搜索 TitleDB 并请求游戏库中尚未收录的内容。"
+
+#: app/templates/requests.html:32
+msgid "Search by name or title id (e.g. Mario, 0100...)"
+msgstr "按名称或游戏 ID 搜索（例如 Mario、0100...）"
+
+#: app/templates/requests.html:34
+msgid "Submit request"
+msgstr "提交请求"
+
+#: app/templates/requests.html:41
+msgid "Selected"
+msgstr "已选择"
+
+#: app/templates/requests.html:42 app/templates/requests.html:293
+#: app/templates/requests.html:294 app/templates/users.html:654
+msgid "None"
+msgstr "无"
+
+#: app/templates/requests.html:43
+msgid "Choose a search result, then submit the request below."
+msgstr "选择一个搜索结果，然后在下方提交请求。"
+
+#: app/templates/requests.html:53
+msgid "Filter by title id, name, user..."
+msgstr "按游戏 ID、名称、用户筛选..."
+
+#: app/templates/requests.html:60
+msgid "Requested"
+msgstr "已请求"
+
+#: app/templates/requests.html:245
+msgid "In library"
+msgstr "已在库中"
+
+#: app/templates/requests.html:283
+msgid "Submitting..."
+msgstr "提交中..."
+
+#: app/templates/requests.html:289
+msgid "Request created."
+msgstr "请求已创建。"
+
+#: app/templates/requests.html:296
+msgid "Request failed."
+msgstr "请求失败。"
+
+#: app/templates/requests.html:327
+msgid "Search downloads"
+msgstr "搜索下载"
+
+#: app/templates/requests.html:329
+msgid "Delete request"
+msgstr "删除请求"
+
+#: app/templates/requests.html:344
+msgid "Failed to load."
+msgstr "加载失败。"
+
+#: app/templates/requests.html:349
+#, python-brace-format
+msgid "Showing {count} request(s)."
+msgstr "共显示 {count} 条请求。"
+
+#: app/templates/requests.html:402
+msgid "Delete this request?"
+msgstr "删除此请求？"
+
+#: app/templates/requests.html:435
+msgid "Queued."
+msgstr "已加入队列。"
+
+#: app/templates/saves.html:12
+msgid "Saved archives available for your account."
+msgstr "你的账户可用的存档备份。"
+
+#: app/templates/saves.html:15
+msgid "Saves view mode"
+msgstr "存档视图模式"
+
+#: app/templates/saves.html:17
+msgid "List"
+msgstr "列表"
+
+#: app/templates/saves.html:20
+msgid "Icons"
+msgstr "图标"
+
+#: app/templates/saves.html:39
+msgid "Saved"
+msgstr "保存时间"
+
+#: app/templates/saves.html:40
+msgid "Note"
+msgstr "备注"
+
+#: app/templates/saves.html:132 app/templates/users.html:565
+msgid "Unknown title"
+msgstr "未知游戏"
+
+#: app/templates/saves.html:203
+msgid "Delete URL is missing for this backup."
+msgstr "此备份缺少删除 URL。"
+
+#: app/templates/saves.html:209
+#, python-brace-format
+msgid "Delete this save backup for {title}?"
+msgstr "删除 {title} 的此存档备份？"
+
+#: app/templates/saves.html:211
+#, python-brace-format
+msgid "Saved: {date}"
+msgstr "保存时间：{date}"
+
+#: app/templates/saves.html:214
+#, python-brace-format
+msgid "Note: {note}"
+msgstr "备注：{note}"
+
+#: app/templates/saves.html:216
+msgid "This cannot be undone."
+msgstr "此操作无法撤销。"
+
+#: app/templates/saves.html:231 app/templates/saves.html:238
+msgid "Failed to delete save backup."
+msgstr "删除存档备份失败。"
+
+#: app/templates/saves.html:235
+msgid "Save backup deleted."
+msgstr "存档备份已删除。"
+
+#: app/templates/saves.html:257
+#, python-brace-format
+msgid "{title} icon"
+msgstr "{title} 图标"
+
+#: app/templates/saves.html:292 app/templates/saves.html:338
+msgid "No save archives found for this account."
+msgstr "此账户未找到存档备份。"
+
+#: app/templates/saves.html:323 app/templates/saves.html:366
+msgid "Download"
+msgstr "下载"
+
+#: app/templates/saves.html:380
+#, python-brace-format
+msgid "{count} save version"
+msgstr "{count} 个存档版本"
+
+#: app/templates/saves.html:380
+#, python-brace-format
+msgid "{count} save versions"
+msgstr "{count} 个存档版本"
+
+#: app/templates/saves.html:384 app/templates/saves.html:397
+#: app/templates/saves.html:399 app/templates/saves.html:407
+#: app/templates/saves.html:416
+msgid "Failed to load saves."
+msgstr "加载存档失败。"
+
+#: app/templates/saves.html:404
+msgid "Saves list loaded."
+msgstr "存档列表已加载。"
+
+#: app/templates/settings.html:265
+msgid "System configuration"
+msgstr "系统配置"
+
+#: app/templates/settings.html:267 app/templates/settings.html:315
+msgid "Toggle sidebar"
+msgstr "切换侧边栏"
+
+#: app/templates/settings.html:280
+msgid "Paths, naming, maintenance, metadata"
+msgstr "路径、命名、维护、元数据"
+
+#: app/templates/settings.html:288 app/templates/settings.html:642
+#: app/templates/users.html:71 app/templates/users.html:154
+#: app/templates/users.html:648
+msgid "Shop"
+msgstr "商店"
+
+#: app/templates/settings.html:289
+msgid "Access, security, branding, client delivery"
+msgstr "访问、安全、品牌、客户端分发"
+
+#: app/templates/settings.html:299
+msgid "Automation, providers, torrent and usenet clients"
+msgstr "自动化、提供源、torrent 和 usenet 客户端"
+
+#: app/templates/settings.html:312
+msgid "Configure AeroFoil library behavior, shop access, and download automation from a single workspace."
+msgstr "在同一工作区中配置 AeroFoil 的游戏库行为、商店访问和下载自动化。"
+
+#: app/templates/settings.html:321
+#, python-format
+msgid "Version %(version)s"
+msgstr "版本 %(version)s"
+
+#: app/templates/settings.html:333
+msgid "Paths, naming, maintenance schedules, and title identification preferences."
+msgstr "路径、命名、维护计划及游戏识别偏好设置。"
+
+#: app/templates/settings.html:340
+msgid "Library Paths"
+msgstr "游戏库路径"
+
+#: app/templates/settings.html:341
+msgid "Choose the directories AeroFoil scans and manages."
+msgstr "选择 AeroFoil 扫描和管理的目录。"
+
+#: app/templates/settings.html:344
+msgid "Configured paths"
+msgstr "已配置的路径"
+
+#: app/templates/settings.html:345
+msgid "Path of directory containing your games."
+msgstr "存放游戏的目录路径。"
+
+#: app/templates/settings.html:361
+msgid "Add library path"
+msgstr "添加游戏库路径"
+
+#: app/templates/settings.html:368
+msgid "Add a new directory"
+msgstr "添加新目录"
+
+#: app/templates/settings.html:375
+msgid "Submit"
+msgstr "提交"
+
+#: app/templates/settings.html:389
+msgid "Control automatic organization, cleanup, and conversion staging."
+msgstr "控制自动整理、清理和转换暂存。"
+
+#: app/templates/settings.html:393
+msgid "Auto-maintain library"
+msgstr "自动维护游戏库"
+
+#: app/templates/settings.html:398
+msgid "Runs library organization and removes empty folders on a schedule."
+msgstr "按计划运行游戏库整理并删除空文件夹。"
+
+#: app/templates/settings.html:403
+msgid "Schedule"
+msgstr "计划"
+
+#: app/templates/settings.html:406
+msgid "Maintenance interval (minutes)"
+msgstr "维护间隔（分钟）"
+
+#: app/templates/settings.html:408
+msgid "Minimum 30 minutes. Values below 30 are clamped."
+msgstr "最少 30 分钟。低于 30 的值将被强制设为 30。"
+
+#: app/templates/settings.html:411
+msgid "Last maintenance run"
+msgstr "上次维护运行"
+
+#: app/templates/settings.html:412 app/templates/settings.html:2765
+msgid "Never"
+msgstr "从未"
+
+#: app/templates/settings.html:419
+msgid "Cleanup"
+msgstr "清理"
+
+#: app/templates/settings.html:422
+msgid "Delete older updates during maintenance"
+msgstr "维护时删除旧版更新"
+
+#: app/templates/settings.html:424
+msgid "Keeps the latest owned update per title when maintenance runs."
+msgstr "维护运行时，每个游戏仅保留已拥有的最新更新。"
+
+#: app/templates/settings.html:431
+msgid "Conversion staging"
+msgstr "转换暂存"
+
+#: app/templates/settings.html:432 app/templates/settings.html:2490
+msgid "Disabled"
+msgstr "已禁用"
+
+#: app/templates/settings.html:434 app/templates/settings.html:2491
+msgid "Not enabled"
+msgstr "未启用"
+
+#: app/templates/settings.html:435
+msgid "Set <code>AEROFOIL_CONVERSION_STAGING_ENABLED=true</code> to enable."
+msgstr "设置 <code>AEROFOIL_CONVERSION_STAGING_ENABLED=true</code> 以启用。"
+
+#: app/templates/settings.html:443
+msgid "Organization Naming"
+msgstr "整理命名"
+
+#: app/templates/settings.html:444
+msgid "Choose how identified content is organized into folders and filenames."
+msgstr "选择已识别内容整理到文件夹和文件名的方式。"
+
+#: app/templates/settings.html:448
+msgid "Template selection"
+msgstr "模板选择"
+
+#: app/templates/settings.html:451
+msgid "Organization naming template"
+msgstr "整理命名模板"
+
+#: app/templates/settings.html:455
+msgid "Add template"
+msgstr "添加模板"
+
+#: app/templates/settings.html:458
+msgid "Delete template"
+msgstr "删除模板"
+
+#: app/templates/settings.html:464
+msgid "Presets and tokens"
+msgstr "预设与占位符"
+
+#: app/templates/settings.html:466
+#, python-brace-format
+msgid "Tokens: <code>{title}</code>, <code>{title_id}</code>, <code>{app_id}</code>, <code>{version}</code>, <code>{version_txt}</code>, <code>{dlc_name}</code>, <code>{ext}</code> (<code>{version_txt}</code> applies to filename templates only)"
+msgstr "占位符：<code>{title}</code>、<code>{title_id}</code>、<code>{app_id}</code>、<code>{version}</code>、<code>{version_txt}</code>、<code>{dlc_name}</code>、<code>{ext}</code>（<code>{version_txt}</code> 仅适用于文件名模板）"
+
+#: app/templates/settings.html:469
+msgid "Use Default Preset"
+msgstr "使用默认预设"
+
+#: app/templates/settings.html:470
+msgid "Use Flat Preset"
+msgstr "使用扁平预设"
+
+#: app/templates/settings.html:471
+msgid "Use Scene Preset"
+msgstr "使用 Scene 预设"
+
+#: app/templates/settings.html:477
+msgid "Template fields"
+msgstr "模板字段"
+
+#: app/templates/settings.html:485
+msgid "Show template fields"
+msgstr "显示模板字段"
+
+#: app/templates/settings.html:492
+msgid "Base folder template"
+msgstr "本体文件夹模板"
+
+#: app/templates/settings.html:496
+msgid "Base filename template"
+msgstr "本体文件名模板"
+
+#: app/templates/settings.html:500
+msgid "Update folder template"
+msgstr "更新文件夹模板"
+
+#: app/templates/settings.html:504
+msgid "Update filename template"
+msgstr "更新文件名模板"
+
+#: app/templates/settings.html:508
+msgid "DLC folder template"
+msgstr "DLC 文件夹模板"
+
+#: app/templates/settings.html:512
+msgid "DLC filename template"
+msgstr "DLC 文件名模板"
+
+#: app/templates/settings.html:516
+msgid "Other folder template"
+msgstr "其他文件夹模板"
+
+#: app/templates/settings.html:520
+msgid "Other filename template"
+msgstr "其他文件名模板"
+
+#: app/templates/settings.html:532
+msgid "Title Identification"
+msgstr "游戏识别"
+
+#: app/templates/settings.html:533
+msgid "Metadata language, title resolution, and media cache controls."
+msgstr "元数据语言、游戏解析和媒体缓存控制。"
+
+#: app/templates/settings.html:537
+msgid "Metadata locale"
+msgstr "元数据区域设置"
+
+#: app/templates/settings.html:540
+msgid "Library Region:"
+msgstr "游戏库区域："
+
+#: app/templates/settings.html:541
+msgid "Select library region"
+msgstr "选择游戏库区域"
+
+#: app/templates/settings.html:545
+msgid "Library Language:"
+msgstr "游戏库语言："
+
+#: app/templates/settings.html:546
+msgid "Select library language"
+msgstr "选择游戏库语言"
+
+#: app/templates/settings.html:549
+msgid "Region and Language used to get games informations."
+msgstr "用于获取游戏信息的区域和语言。"
+
+#: app/templates/settings.html:554
+msgid "Identification tools"
+msgstr "识别工具"
+
+#: app/templates/settings.html:556
+msgid "Console keys:"
+msgstr "主机密钥："
+
+#: app/templates/settings.html:563
+msgid "Upload / Replace keys"
+msgstr "上传 / 替换密钥"
+
+#: app/templates/settings.html:566
+msgid "Delete keys"
+msgstr "删除密钥"
+
+#: app/templates/settings.html:570
+msgid "Console keys are required to decrypt any console content, including backups. AeroFoil uses this to identify files, regardless of the filename."
+msgstr "解密任何主机内容（包括备份）都需要主机密钥。AeroFoil 使用密钥识别文件，与文件名无关。"
+
+#: app/templates/settings.html:576
+msgid "Media cache"
+msgstr "媒体缓存"
+
+#: app/templates/settings.html:579
+msgid "Refresh icons and banners"
+msgstr "刷新图标和横幅"
+
+#: app/templates/settings.html:581
+msgid "Prefetch all icons"
+msgstr "预取所有图标"
+
+#: app/templates/settings.html:583
+msgid "Prefetch all banners"
+msgstr "预取所有横幅"
+
+#: app/templates/settings.html:589
+msgid "Save title settings"
+msgstr "保存游戏设置"
+
+#: app/templates/settings.html:601
+msgid "Delete library path"
+msgstr "删除游戏库路径"
+
+#: app/templates/settings.html:621
+msgid "Settings notice"
+msgstr "设置提示"
+
+#: app/templates/settings.html:627
+msgid "Do not show again"
+msgstr "不再显示"
+
+#: app/templates/settings.html:643
+msgid "Connectivity, access rules, security controls, and client-facing branding."
+msgstr "连接、访问规则、安全控制及面向客户端的品牌设置。"
+
+#: app/templates/settings.html:650
+msgid "Connectivity"
+msgstr "连接"
+
+#: app/templates/settings.html:651
+msgid "Core values used for shop routing and Tinfoil host verification."
+msgstr "用于商店路由和 Tinfoil 主机验证的核心配置。"
+
+#: app/templates/settings.html:656
+msgid "Shop URL:"
+msgstr "商店 URL："
+
+#: app/templates/settings.html:659
+msgid "Configure your shop URL to enable host verification."
+msgstr "配置商店 URL 以启用主机验证。"
+
+#: app/templates/settings.html:660
+msgid "Host verification from Tinfoil requests will be enforced if the shop is accessed securely (with <code>https</code>), make sure your reverse proxy <strong>does NOT</strong> allow insecure connections (or upgrades them to use SSL) and correctly sets the <code>X-Forwarded-Proto</code> header."
+msgstr "如果商店通过安全方式（<code>https</code>）访问，将强制对 Tinfoil 请求进行主机验证。请确保你的反向代理<strong>不</strong>允许不安全连接（或将其升级为 SSL），并正确设置 <code>X-Forwarded-Proto</code> 请求头。"
+
+#: app/templates/settings.html:664
+msgid "Shop Hauth:"
+msgstr "商店 Hauth："
+
+#: app/templates/settings.html:666
+msgid "Hauth value"
+msgstr "Hauth 值"
+
+#: app/templates/settings.html:667
+msgid "Override the host signature (Hauth) used for Tinfoil verification."
+msgstr "覆盖用于 Tinfoil 验证的主机签名（Hauth）。"
+
+#: app/templates/settings.html:676
+msgid "Access And Delivery"
+msgstr "访问与分发"
+
+#: app/templates/settings.html:677
+msgid "How clients reach the shop and how the content is served."
+msgstr "客户端访问商店的方式及内容的提供方式。"
+
+#: app/templates/settings.html:684
+msgid "Public shop"
+msgstr "公开商店"
+
+#: app/templates/settings.html:685
+msgid "If enabled, Shop access from Tinfoil does not require authentication."
+msgstr "启用后，Tinfoil 访问商店无需身份验证。"
+
+#: app/templates/settings.html:691
+msgid "External access: Tinfoil/CyberFoil only"
+msgstr "外部访问：仅限 Tinfoil/CyberFoil"
+
+#: app/templates/settings.html:692
+msgid "If enabled, requests from external/public IP addresses are allowed only for Tinfoil/CyberFoil shop clients (detected by the Tinfoil header set and/or matching <code>User-Agent</code>). Private/local network access is unchanged."
+msgstr "启用后，来自外部/公网 IP 地址的请求仅允许 Tinfoil/CyberFoil 商店客户端（通过 Tinfoil 请求头集合和/或匹配的 <code>User-Agent</code> 检测）。私有/本地网络访问不受影响。"
+
+#: app/templates/settings.html:697
+msgid "Encrypt shop"
+msgstr "加密商店"
+
+#: app/templates/settings.html:698
+msgid "Serve encrypted and compressed shop, so that only Tinfoil clients can access the content. <strong>Strongly suggested to enable it for security</strong>."
+msgstr "提供加密并压缩的商店，仅 Tinfoil 客户端可访问内容。<strong>出于安全考虑，强烈建议启用</strong>。"
+
+#: app/templates/settings.html:703
+msgid "Tinfoil Only mode"
+msgstr "仅限 Tinfoil 模式"
+
+#: app/templates/settings.html:704
+msgid "Only serve the Tinfoil shop payload from the shop root instead of the web library view. This automatically enables shop encryption."
+msgstr "商店根路径仅提供 Tinfoil 商店数据，而不显示网页版游戏库视图。此选项会自动启用商店加密。"
+
+#: app/templates/settings.html:709
+msgid "Fast transfer mode"
+msgstr "快速传输模式"
+
+#: app/templates/settings.html:711
+msgid "Prioritize throughput by skipping per-chunk transfer tracking. Activity live byte counters and exact transfer byte accounting may be less precise."
+msgstr "跳过逐块传输统计以优先保证吞吐量。活动记录中的实时字节计数和精确传输字节统计可能不够准确。"
+
+#: app/templates/settings.html:721
+msgid "Login Protection"
+msgstr "登录保护"
+
+#: app/templates/settings.html:722
+msgid "Authentication controls for the web UI and remote shop access."
+msgstr "网页界面和远程商店访问的身份验证控制。"
+
+#: app/templates/settings.html:726
+msgid "Enable failed-login IP lockout"
+msgstr "启用登录失败 IP 锁定"
+
+#: app/templates/settings.html:730
+msgid "Failed attempts"
+msgstr "失败次数"
+
+#: app/templates/settings.html:734
+msgid "Window (seconds)"
+msgstr "时间窗口（秒）"
+
+#: app/templates/settings.html:738
+msgid "Lockout (seconds)"
+msgstr "锁定时长（秒）"
+
+#: app/templates/settings.html:743
+msgid "Permanent IP blacklist"
+msgstr "永久 IP 黑名单"
+
+#: app/templates/settings.html:747 app/templates/settings.html:764
+#: app/templates/settings.html:775
+msgid "Add"
+msgstr "添加"
+
+#: app/templates/settings.html:748
+msgid "Clear all"
+msgstr "全部清除"
+
+#: app/templates/settings.html:754
+msgid "Add all from text"
+msgstr "从文本批量添加"
+
+#: app/templates/settings.html:757
+msgid "One IP or CIDR per line. Blacklisted clients cannot authenticate."
+msgstr "每行一个 IP 或 CIDR。黑名单中的客户端无法进行身份验证。"
+
+#: app/templates/settings.html:760
+msgid "Blocked countries"
+msgstr "屏蔽的国家/地区"
+
+#: app/templates/settings.html:771
+msgid "Allowed countries (whitelist)"
+msgstr "允许的国家/地区（白名单）"
+
+#: app/templates/settings.html:787
+msgid "Keys And Branding"
+msgstr "密钥与展示信息"
+
+#: app/templates/settings.html:788
+msgid "Encryption material and the message shown to clients after loading the shop."
+msgstr "加密材料以及客户端加载商店后显示的消息。"
+
+#: app/templates/settings.html:793
+msgid "Public Key:"
+msgstr "公钥："
+
+#: app/templates/settings.html:814
+msgid "Public key used to encrypt the shop payload for Tinfoil clients. Changing this will break encrypted shop access unless clients have the matching private key."
+msgstr "用于为 Tinfoil 客户端加密商店数据的公钥。修改此项后，除非客户端拥有匹配的私钥，否则将无法访问加密商店。"
+
+#: app/templates/settings.html:818
+msgid "Message of the day:"
+msgstr "每日公告："
+
+#: app/templates/settings.html:820
+msgid "Message presented when opening Tinfoil after successfully loading your shop."
+msgstr "成功加载商店后，打开 Tinfoil 时显示的消息。"
+
+#: app/templates/settings.html:825
+msgid "Save shop settings"
+msgstr "保存商店设置"
+
+#: app/templates/settings.html:837
+msgid "Automation cadence, search tuning, and torrent or usenet client integration."
+msgstr "自动化频率、搜索调优以及种子或 Usenet 客户端集成。"
+
+#: app/templates/settings.html:841
+msgid "Enable automatic downloads"
+msgstr "启用自动下载"
+
+#: app/templates/settings.html:851
+msgid "General"
+msgstr "常规"
+
+#: app/templates/settings.html:857
+msgid "Torrent Client"
+msgstr "种子客户端"
+
+#: app/templates/settings.html:860
+msgid "Usenet Client"
+msgstr "Usenet 客户端"
+
+#: app/templates/settings.html:870
+msgid "Search interval (minutes)"
+msgstr "搜索间隔（分钟）"
+
+#: app/templates/settings.html:874
+msgid "Category/tag"
+msgstr "分类/标签"
+
+#: app/templates/settings.html:876
+msgid "Used for torrent categories/tags and the SABnzbd category."
+msgstr "用于种子分类/标签以及 SABnzbd 分类。"
+
+#: app/templates/settings.html:881
+msgid "Required terms (comma separated)"
+msgstr "必需关键词（逗号分隔）"
+
+#: app/templates/settings.html:885
+msgid "Blacklist terms (comma separated)"
+msgstr "黑名单关键词（逗号分隔）"
+
+#: app/templates/settings.html:891
+msgid "Search prefix"
+msgstr "搜索前缀"
+
+#: app/templates/settings.html:895
+msgid "Search suffix"
+msgstr "搜索后缀"
+
+#: app/templates/settings.html:901
+msgid "Search character replacements"
+msgstr "搜索字符替换"
+
+#: app/templates/settings.html:903
+msgid "One rule per line in the form <code>from=&gt;to</code>. Leave <code>to</code> empty to remove the character."
+msgstr "每行一条规则，格式为 <code>from=&gt;to</code>。将 <code>to</code> 留空即可删除该字符。"
+
+#: app/templates/settings.html:912
+msgid "Prowlarr URL"
+msgstr "Prowlarr URL"
+
+#: app/templates/settings.html:916 app/templates/settings.html:1002
+msgid "API Key"
+msgstr "API 密钥"
+
+#: app/templates/settings.html:921
+msgid "Prowlarr timeout (seconds)"
+msgstr "Prowlarr 超时（秒）"
+
+#: app/templates/settings.html:923
+msgid "Increase this if searches sometimes time out. Range: 5-180 seconds."
+msgstr "如果搜索偶尔超时，请调大此值。范围：5-180 秒。"
+
+#: app/templates/settings.html:926
+msgid "Search limit"
+msgstr "搜索结果上限"
+
+#: app/templates/settings.html:928
+msgid "Maximum number of results AeroFoil requests from Prowlarr. Range: 1-500."
+msgstr "AeroFoil 向 Prowlarr 请求的最大结果数。范围：1-500。"
+
+#: app/templates/settings.html:931
+msgid "Indexer IDs (comma separated)"
+msgstr "索引器 ID（逗号分隔）"
+
+#: app/templates/settings.html:935
+msgid "Categories (comma separated)"
+msgstr "分类（逗号分隔）"
+
+#: app/templates/settings.html:937
+msgid "Use numeric category IDs from Prowlarr."
+msgstr "请使用 Prowlarr 中的数字分类 ID。"
+
+#: app/templates/settings.html:941
+msgid "Test Prowlarr"
+msgstr "测试 Prowlarr"
+
+#: app/templates/settings.html:958 app/templates/settings.html:996
+msgid "Client URL"
+msgstr "客户端 URL"
+
+#: app/templates/settings.html:973
+msgid "Download path (optional)"
+msgstr "下载路径（可选）"
+
+#: app/templates/settings.html:977
+msgid "Minimum seeders"
+msgstr "最少做种数"
+
+#: app/templates/settings.html:982
+msgid "Test torrent client"
+msgstr "测试种子客户端"
+
+#: app/templates/settings.html:1006
+msgid "Minimum age (minutes)"
+msgstr "最短发布时长（分钟）"
+
+#: app/templates/settings.html:1012
+msgid "Test usenet client"
+msgstr "测试 Usenet 客户端"
+
+#: app/templates/settings.html:1021
+msgid "Save Settings"
+msgstr "保存设置"
+
+#: app/templates/settings.html:1132
+msgid "Missing admin account"
+msgstr "缺少管理员账户"
+
+#: app/templates/settings.html:1135
+msgid "AeroFoil requires an admin account to enable authentication."
+msgstr "AeroFoil 需要一个管理员账户才能启用身份验证。"
+
+#: app/templates/settings.html:1136
+msgid "Until an account with admin rights is created, authentication is disabled and anyone can access and change your shop configuration."
+msgstr "在创建拥有管理员权限的账户之前，身份验证处于禁用状态，任何人都可以访问并修改您的商店配置。"
+
+#: app/templates/settings.html:1137
+msgid "Add an admin account from the Users page."
+msgstr "请在用户页面添加一个管理员账户。"
+
+#: app/templates/settings.html:1141
+msgid "Missing console keys"
+msgstr "缺少主机密钥"
+
+#: app/templates/settings.html:1144
+msgid "Console keys are required to decrypt console content, including backups. AeroFoil uses them to identify files regardless of filename."
+msgstr "解密主机内容（包括备份）需要主机密钥。AeroFoil 使用密钥识别文件，与文件名无关。"
+
+#: app/templates/settings.html:1145
+msgid "Titles will be missed or misidentified if you do not load your keys."
+msgstr "如果不加载密钥，游戏可能会被遗漏或识别错误。"
+
+#: app/templates/settings.html:1146
+msgid "See <a target=\"_blank\" rel=\"noopener noreferrer\" href=\"https://gitlab.com/easyhacking/switch/-/wikis/home/getting-started/dump-keys\">this guide</a> to extract keys from your console, then upload them in Settings -> Library -> Title Identification."
+msgstr "请参阅<a target=\"_blank\" rel=\"noopener noreferrer\" href=\"https://gitlab.com/easyhacking/switch/-/wikis/home/getting-started/dump-keys\">此指南</a>从您的主机提取密钥，然后在 设置 -> 游戏库 -> 游戏识别 中上传。"
+
+#: app/templates/settings.html:1147
+msgid "If keys are missing, files must follow the format <code>Title Name [TITLEID][vVERSION]</code> or they will not be recognized."
+msgstr "如果缺少密钥，文件必须遵循 <code>Title Name [TITLEID][vVERSION]</code> 格式，否则将无法识别。"
+
+#: app/templates/settings.html:1151
+msgid "Missing shop Host"
+msgstr "缺少商店 Host"
+
+#: app/templates/settings.html:1154
+msgid "Host verification from outside the local network is disabled while the shop <code>Host</code> value is empty."
+msgstr "商店的 <code>Host</code> 值为空时，来自本地网络之外的 Host 验证处于禁用状态。"
+
+#: app/templates/settings.html:1155
+msgid "Set it in Settings -> Shop -> Connectivity to prevent someone else stealing from your shop."
+msgstr "请在 设置 -> 商店 -> 连接 中设置该值，以防他人盗用您的商店。"
+
+#: app/templates/settings.html:1159
+msgid "Missing shop Hauth"
+msgstr "缺少商店 Hauth"
+
+#: app/templates/settings.html:1163
+msgid "<a target=\"_blank\" rel=\"noopener noreferrer\" href=\"https://blawar.github.io/tinfoil/network/#host-signature\">Host signature</a> verification from outside the local network is disabled while the shop <code>Hauth</code> value is missing."
+msgstr "商店的 <code>Hauth</code> 值缺失时，来自本地网络之外的<a target=\"_blank\" rel=\"noopener noreferrer\" href=\"https://blawar.github.io/tinfoil/network/#host-signature\">主机签名</a>验证处于禁用状态。"
+
+#: app/templates/settings.html:1164
+msgid "Connect to the shop from Tinfoil with an admin account to set it."
+msgstr "请使用管理员账户从 Tinfoil 连接商店以完成设置。"
+
+#: app/templates/settings.html:1416
+msgid "New template name:"
+msgstr "新模板名称："
+
+#: app/templates/settings.html:1421
+msgid "Template already exists."
+msgstr "模板已存在。"
+
+#: app/templates/settings.html:1435
+msgid "At least one naming template is required."
+msgstr "至少需要一个命名模板。"
+
+#: app/templates/settings.html:1542
+#, python-brace-format
+msgid "Delete path {path} ?"
+msgstr "删除路径 {path}？"
+
+#: app/templates/settings.html:1628
+msgid "Keys loaded"
+msgstr "密钥已加载"
+
+#: app/templates/settings.html:1632
+msgid "No keys loaded"
+msgstr "未加载密钥"
+
+#: app/templates/settings.html:1640
+msgid "Select a keys file first."
+msgstr "请先选择密钥文件。"
+
+#: app/templates/settings.html:1644
+msgid "Uploading keys..."
+msgstr "正在上传密钥..."
+
+#: app/templates/settings.html:1659
+msgid "Keys uploaded successfully."
+msgstr "密钥上传成功。"
+
+#: app/templates/settings.html:1663
+#, python-brace-format
+msgid "Keys upload failed: {errors}"
+msgstr "密钥上传失败：{errors}"
+
+#: app/templates/settings.html:1667
+msgid "Keys upload failed."
+msgstr "密钥上传失败。"
+
+#: app/templates/settings.html:1678
+msgid "Delete current keys.txt?"
+msgstr "删除当前的 keys.txt？"
+
+#: app/templates/settings.html:1681
+msgid "Deleting keys..."
+msgstr "正在删除密钥..."
+
+#: app/templates/settings.html:1691 app/templates/settings.html:1695
+msgid "Failed to delete keys."
+msgstr "删除密钥失败。"
+
+#: app/templates/settings.html:1706
+msgid "Refreshing cache..."
+msgstr "正在刷新缓存..."
+
+#: app/templates/settings.html:1719
+#, python-brace-format
+msgid "Cleared {icons} icons and {banners} banners."
+msgstr "已清除 {icons} 个图标和 {banners} 个横幅。"
+
+#: app/templates/settings.html:1721 app/templates/settings.html:1725
+msgid "Refresh failed."
+msgstr "刷新失败。"
+
+#: app/templates/settings.html:1737
+msgid "Prefetching icons..."
+msgstr "正在预取图标..."
+
+#: app/templates/settings.html:1752
+#, python-brace-format
+msgid "Prefetched {fetched} icons. Skipped {skipped}, missing {missing}, failed {failed}."
+msgstr "已预取 {fetched} 个图标。跳过 {skipped} 个，缺失 {missing} 个，失败 {failed} 个。"
+
+#: app/templates/settings.html:1755 app/templates/settings.html:1792
+msgid "See console for sample errors."
+msgstr "请查看控制台了解错误示例。"
+
+#: app/templates/settings.html:1758 app/templates/settings.html:1762
+#: app/templates/settings.html:1795 app/templates/settings.html:1799
+msgid "Prefetch failed."
+msgstr "预取失败。"
+
+#: app/templates/settings.html:1774
+msgid "Prefetching banners..."
+msgstr "正在预取横幅..."
+
+#: app/templates/settings.html:1789
+#, python-brace-format
+msgid "Prefetched {fetched} banners. Skipped {skipped}, missing {missing}, failed {failed}."
+msgstr "已预取 {fetched} 个横幅。跳过 {skipped} 个，缺失 {missing} 个，失败 {failed} 个。"
+
+#: app/templates/settings.html:1945
+msgid "Enter an IP or CIDR value."
+msgstr "请输入 IP 或 CIDR 值。"
+
+#: app/templates/settings.html:1954
+#, python-brace-format
+msgid "Invalid CIDR prefix in \"{raw}\"."
+msgstr "\"{raw}\" 中的 CIDR 前缀无效。"
+
+#: app/templates/settings.html:1961
+#, python-brace-format
+msgid "Invalid IP format: \"{raw}\"."
+msgstr "IP 格式无效：\"{raw}\"。"
+
+#: app/templates/settings.html:1966
+#, python-brace-format
+msgid "Invalid CIDR range in \"{raw}\"."
+msgstr "\"{raw}\" 中的 CIDR 范围无效。"
+
+#: app/templates/settings.html:1987
+msgid "No permanent IP blocks configured."
+msgstr "未配置永久 IP 屏蔽。"
+
+#: app/templates/settings.html:1995 app/templates/settings.html:2161
+#: app/templates/settings.html:2216
+#, python-brace-format
+msgid "Remove {value}"
+msgstr "移除 {value}"
+
+#: app/templates/settings.html:2035
+msgid "Entry already exists."
+msgstr "条目已存在。"
+
+#: app/templates/settings.html:2134
+msgid "Blocked list is disabled while whitelist has entries."
+msgstr "白名单存在条目时，屏蔽列表将被禁用。"
+
+#: app/templates/settings.html:2142
+msgid "Whitelist is disabled while blocked list has entries."
+msgstr "屏蔽列表存在条目时，白名单将被禁用。"
+
+#: app/templates/settings.html:2150
+msgid "No blocked countries configured."
+msgstr "未配置屏蔽的国家/地区。"
+
+#: app/templates/settings.html:2205
+msgid "No whitelist countries configured."
+msgstr "未配置白名单国家/地区。"
+
+#: app/templates/settings.html:2337
+msgid "Not required for Deluge"
+msgstr "Deluge 无需此项"
+
+#: app/templates/settings.html:2348
+msgid "No public key to copy."
+msgstr "没有可复制的公钥。"
+
+#: app/templates/settings.html:2365
+msgid "Failed to copy to clipboard."
+msgstr "复制到剪贴板失败。"
+
+#: app/templates/settings.html:2385
+#, python-brace-format
+msgid "Prowlarr categories must be numeric IDs only. Invalid values: {values}"
+msgstr "Prowlarr 分类必须为数字 ID。无效值：{values}"
+
+#: app/templates/settings.html:2483
+msgid "Enabled"
+msgstr "已启用"
+
+#: app/templates/settings.html:2485
+msgid "Temporary conversion output is staged here before files are finalized into library paths."
+msgstr "转换的临时输出会先暂存在此处，然后再最终写入游戏库路径。"
+
+#: app/templates/settings.html:2492
+msgid "Set <code>AEROFOIL_CONVERSION_STAGING_ENABLED=true</code> and keep a mount for <code>/app/conversion-tmp</code> to enable SSD-backed staging."
+msgstr "设置 <code>AEROFOIL_CONVERSION_STAGING_ENABLED=true</code> 并保留 <code>/app/conversion-tmp</code> 挂载，即可启用基于 SSD 的暂存。"
+
+#: app/templates/settings.html:2497 app/templates/settings.html:2542
+#: app/templates/settings.html:2575
+msgid "Testing..."
+msgstr "正在测试..."
+
+#: app/templates/settings.html:2525
+msgid "Prowlarr OK"
+msgstr "Prowlarr 正常"
+
+#: app/templates/settings.html:2525
+msgid "Prowlarr test failed"
+msgstr "Prowlarr 测试失败"
+
+#: app/templates/settings.html:2558
+msgid "Torrent client OK"
+msgstr "种子客户端正常"
+
+#: app/templates/settings.html:2558
+msgid "Torrent client test failed"
+msgstr "种子客户端测试失败"
+
+#: app/templates/settings.html:2589
+msgid "Usenet client OK"
+msgstr "Usenet 客户端正常"
+
+#: app/templates/settings.html:2589
+msgid "Usenet client test failed"
+msgstr "Usenet 客户端测试失败"
+
+#: app/templates/setup_required.html:9
+msgid "Setup required"
+msgstr "需要初始设置"
+
+#: app/templates/setup_required.html:11
+msgid "AeroFoil is not configured yet. For security, creating the first admin account is restricted to private networks."
+msgstr "AeroFoil 尚未配置。出于安全考虑，创建首个管理员账户仅限私有网络。"
+
+#: app/templates/setup_required.html:18
+msgid "How to continue"
+msgstr "如何继续"
+
+#: app/templates/setup_required.html:20
+msgid "Open this page from the same LAN as the server (private IP range)."
+msgstr "请从与服务器相同的局域网（私有 IP 段）打开此页面。"
+
+#: app/templates/setup_required.html:21
+msgid "If you are using Nginx Proxy Manager / a reverse proxy, configure trusted proxies in <code>app/config/settings.yaml</code>:"
+msgstr "如果您使用 Nginx Proxy Manager / 反向代理，请在 <code>app/config/settings.yaml</code> 中配置受信任代理："
+
+#: app/templates/upload.html:10
+msgid "Upload NSP/NSZ/XCI/XCZ files directly into the library."
+msgstr "将 NSP/NSZ/XCI/XCZ 文件直接上传到游戏库。"
+
+#: app/templates/upload.html:16
+msgid "Choose where to place your uploaded files."
+msgstr "选择上传文件的存放位置。"
+
+#: app/templates/upload.html:20
+msgid "Files"
+msgstr "文件"
+
+#: app/templates/upload.html:24
+msgid "Drag & drop files here"
+msgstr "将文件拖放到此处"
+
+#: app/templates/upload.html:25
+msgid "or click to browse"
+msgstr "或点击浏览"
+
+#: app/templates/upload.html:30
+msgid "Allowed: NSP, NSZ, XCI, XCZ. Large uploads may take a while."
+msgstr "允许的格式：NSP、NSZ、XCI、XCZ。大文件上传可能需要较长时间。"
+
+#: app/templates/upload.html:33
+msgid "Clear list"
+msgstr "清空列表"
+
+#: app/templates/upload.html:40 app/templates/users.html:206
+msgid "Reset"
+msgstr "重置"
+
+#: app/templates/upload.html:44
+msgid "Upload progress"
+msgstr "上传进度"
+
+#: app/templates/upload.html:60 app/templates/upload.html:65
+msgid "No libraries found"
+msgstr "未找到游戏库"
+
+#: app/templates/upload.html:92
+#, python-brace-format
+msgid "{count} file • {size}"
+msgstr "{count} 个文件 • {size}"
+
+#: app/templates/upload.html:92
+#, python-brace-format
+msgid "{count} files • {size}"
+msgstr "{count} 个文件 • {size}"
+
+#: app/templates/upload.html:145
+msgid "Select at least one file."
+msgstr "请至少选择一个文件。"
+
+#: app/templates/upload.html:156 app/templates/upload.html:172
+#, python-brace-format
+msgid "Uploading... {percent}"
+msgstr "正在上传... {percent}"
+
+#: app/templates/upload.html:182
+#, python-brace-format
+msgid "Uploaded {uploaded} files. Skipped {skipped}."
+msgstr "已上传 {uploaded} 个文件。跳过 {skipped} 个。"
+
+#: app/templates/upload.html:198
+#, python-brace-format
+msgid "Upload failed (HTTP {status})."
+msgstr "上传失败（HTTP {status}）。"
+
+#: app/templates/upload.html:198
+msgid "unknown"
+msgstr "未知"
+
+#: app/templates/users.html:11
+msgid "Create accounts and manage permissions."
+msgstr "创建账户并管理权限。"
+
+#: app/templates/users.html:15
+msgid "Create an admin account"
+msgstr "创建管理员账户"
+
+#: app/templates/users.html:16
+msgid "Authentication is currently disabled until an admin account exists. Create the first admin user below."
+msgstr "在管理员账户创建之前，身份验证处于禁用状态。请在下方创建首个管理员用户。"
+
+#: app/templates/users.html:26
+msgid "Search username"
+msgstr "搜索用户名"
+
+#: app/templates/users.html:32
+msgid "10 / page"
+msgstr "每页 10 条"
+
+#: app/templates/users.html:33
+msgid "25 / page"
+msgstr "每页 25 条"
+
+#: app/templates/users.html:34
+msgid "50 / page"
+msgstr "每页 50 条"
+
+#: app/templates/users.html:35
+msgid "100 / page"
+msgstr "每页 100 条"
+
+#: app/templates/users.html:42
+msgid "Add user"
+msgstr "添加用户"
+
+#: app/templates/users.html:47 app/templates/users.html:97
+#: app/templates/users.html:702 app/templates/users.html:703
+msgid "Loading users..."
+msgstr "正在加载用户..."
+
+#: app/templates/users.html:54
+msgid "Add a new user:"
+msgstr "添加新用户："
+
+#: app/templates/users.html:67 app/templates/users.html:104
+#: app/templates/users.html:150
+msgid "Permissions"
+msgstr "权限"
+
+#: app/templates/users.html:75 app/templates/users.html:158
+#: app/templates/users.html:651
+msgid "Backup"
+msgstr "备份"
+
+#: app/templates/users.html:84
+msgid "Create user"
+msgstr "创建用户"
+
+#: app/templates/users.html:94
+msgid "Accounts"
+msgstr "账户"
+
+#: app/templates/users.html:95
+msgid "Usernames, permissions, last-seen client details, and account actions."
+msgstr "用户名、权限、最近连接的客户端详情以及账户操作。"
+
+#: app/templates/users.html:114
+msgid "Users pagination"
+msgstr "用户分页"
+
+#: app/templates/users.html:123 app/templates/users.html:691
+msgid "Delete user"
+msgstr "删除用户"
+
+#: app/templates/users.html:140 app/templates/users.html:679
+#: app/templates/users.html:908
+msgid "Modify user"
+msgstr "修改用户"
+
+#: app/templates/users.html:169 app/templates/users.html:234
+#: app/templates/users.html:724 app/templates/users.html:909
+msgid "Save"
+msgstr "保存"
+
+#: app/templates/users.html:180 app/templates/users.html:689
+msgid "Reset password"
+msgstr "重置密码"
+
+#: app/templates/users.html:185
+msgid "New password"
+msgstr "新密码"
+
+#: app/templates/users.html:190
+msgid "Confirm password"
+msgstr "确认密码"
+
+#: app/templates/users.html:192 app/templates/users.html:1064
+msgid "Passwords must match."
+msgstr "两次输入的密码必须一致。"
+
+#: app/templates/users.html:195
+msgid "Generated password"
+msgstr "生成的密码"
+
+#: app/templates/users.html:199
+msgid "Generate"
+msgstr "生成"
+
+#: app/templates/users.html:201
+msgid "Generate a strong password and copy it."
+msgstr "生成强密码并复制。"
+
+#: app/templates/users.html:217 app/templates/users.html:686
+msgid "Freeze account"
+msgstr "冻结账户"
+
+#: app/templates/users.html:221
+msgid "Frozen accounts remain visible, but cannot access the library. When they connect, they only receive the MOTD message below."
+msgstr "被冻结的账户仍然可见，但无法访问游戏库。这些账户连接时只会收到下方的 MOTD 消息。"
+
+#: app/templates/users.html:223
+msgid "MOTD message"
+msgstr "MOTD 消息"
+
+#: app/templates/users.html:224
+msgid "Your account is frozen. Contact the admin."
+msgstr "您的账户已被冻结。请联系管理员。"
+
+#: app/templates/users.html:225
+msgid "Shown to this user when they try to access the shop."
+msgstr "该用户尝试访问商店时向其显示。"
+
+#: app/templates/users.html:229
+msgid "Freeze this account"
+msgstr "冻结此账户"
+
+#: app/templates/users.html:245
+msgid "User history"
+msgstr "用户历史"
+
+#: app/templates/users.html:246 app/templates/users.html:276
+#: app/templates/users.html:603 app/templates/users.html:757
+#: app/templates/users.html:758
+msgid "Loading history..."
+msgstr "正在加载历史..."
+
+#: app/templates/users.html:252
+msgid "Recent completed transfer events for this account."
+msgstr "此账户最近完成的传输记录。"
+
+#: app/templates/users.html:498
+msgid "Prev"
+msgstr "上一页"
+
+#: app/templates/users.html:561
+msgid "No download history for this user yet."
+msgstr "该用户暂无下载历史。"
+
+#: app/templates/users.html:593
+#, python-brace-format
+msgid "{downloads} downloads, {titles} titles, {ips} IPs, {bytes} sent"
+msgstr "{downloads} 次下载，{titles} 个游戏，{ips} 个 IP，已发送 {bytes}"
+
+#: app/templates/users.html:602
+#, python-brace-format
+msgid "Loading history for {name}..."
+msgstr "正在加载 {name} 的历史..."
+
+#: app/templates/users.html:606 app/templates/users.html:607
+#: app/templates/users.html:612 app/templates/users.html:613
+msgid "Failed to load history."
+msgstr "加载历史失败。"
+
+#: app/templates/users.html:623
+msgid "1 user"
+msgstr "1 个用户"
+
+#: app/templates/users.html:623
+#, python-brace-format
+msgid "{count} users"
+msgstr "{count} 个用户"
+
+#: app/templates/users.html:624
+msgid "1 account"
+msgstr "1 个账户"
+
+#: app/templates/users.html:624
+#, python-brace-format
+msgid "{count} accounts"
+msgstr "{count} 个账户"
+
+#: app/templates/users.html:631
+msgid "No users found."
+msgstr "未找到用户。"
+
+#: app/templates/users.html:665
+msgid "UID"
+msgstr "UID"
+
+#: app/templates/users.html:668
+msgid "Loc"
+msgstr "位置"
+
+#: app/templates/users.html:672
+#, python-brace-format
+msgid "ID {id}"
+msgstr "ID {id}"
+
+#: app/templates/users.html:683
+msgid "View history"
+msgstr "查看历史"
+
+#: app/templates/users.html:724
+msgid "Freeze"
+msgstr "冻结"
+
+#: app/templates/users.html:727
+msgid "Unfreeze"
+msgstr "解冻"
+
+#: app/templates/users.html:739
+#, python-brace-format
+msgid "Edit freeze for {name}"
+msgstr "编辑 {name} 的冻结设置"
+
+#: app/templates/users.html:739
+#, python-brace-format
+msgid "Freeze {name}"
+msgstr "冻结 {name}"
+
+#: app/templates/users.html:751
+#, python-brace-format
+msgid "History for {name}"
+msgstr "{name} 的历史"
+
+#: app/templates/users.html:996
+#, python-brace-format
+msgid "Reset password for {name}"
+msgstr "重置 {name} 的密码"
+
+#: app/templates/users.html:1111
+#, python-brace-format
+msgid "Delete user {name} ?"
+msgstr "删除用户 {name}？"
+

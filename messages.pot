@@ -1,0 +1,3504 @@
+# Translations template for AeroFoil.
+# Copyright (C) 2026 ORGANIZATION
+# This file is distributed under the same license as the AeroFoil project.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2026.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: AeroFoil VERSION\n"
+"Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
+"POT-Creation-Date: 2026-08-17 14:21+0000\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.18.0\n"
+
+#: app/app.py:1362
+msgid "Title ID is required"
+msgstr ""
+
+#: app/app.py:1365
+#, python-format
+msgid "Title ID must be %(length)s characters"
+msgstr ""
+
+#: app/app.py:1367
+msgid "Title ID must contain only hexadecimal characters"
+msgstr ""
+
+#: app/app.py:1373 app/app.py:1381
+msgid "File size is unknown"
+msgstr ""
+
+#: app/app.py:1375
+#, python-format
+msgid "File size exceeds maximum limit of %(size)sMB"
+msgstr ""
+
+#: app/app.py:1383
+#, python-format
+msgid "File size exceeds maximum limit of %(size)sGB"
+msgstr ""
+
+#: app/app.py:1411
+msgid "Save sync requires username/password authentication."
+msgstr ""
+
+#: app/app.py:1415
+msgid "Invalid save sync credentials."
+msgstr ""
+
+#: app/app.py:1418 app/app.py:2026 app/app.py:3143
+msgid "Account is frozen."
+msgstr ""
+
+#: app/app.py:1423
+#, python-format
+msgid "User \"%(username)s\" does not have access to the shop."
+msgstr ""
+
+#: app/app.py:1426
+msgid "Backup access is required for save sync."
+msgstr ""
+
+#: app/app.py:1728 app/app.py:4962 app/app.py:5046 app/app.py:5134
+#: app/app.py:5173
+msgid "Save sync authorization failed."
+msgstr ""
+
+#: app/app.py:1907
+#, python-format
+msgid "Upload too large. Maximum allowed is %(size)sGB per file."
+msgstr ""
+
+#: app/app.py:3101 app/app.py:3259 app/auth.py:581 app/auth.py:587
+#: app/auth.py:605 app/auth.py:620 app/auth.py:622
+msgid "Forbidden"
+msgstr ""
+
+#: app/app.py:3340
+msgid "An error occurred processing the request"
+msgstr ""
+
+#: app/app.py:3356
+msgid "Invalid request_ids."
+msgstr ""
+
+#: app/app.py:3360
+msgid "Nothing to mark."
+msgstr ""
+
+#: app/app.py:3427
+msgid "Marked seen."
+msgstr ""
+
+#: app/app.py:3440
+msgid "Invalid request_id."
+msgstr ""
+
+#: app/app.py:3445
+msgid "Request not found."
+msgstr ""
+
+#: app/app.py:3539
+msgid "Missing title_id or title_name."
+msgstr ""
+
+#: app/app.py:3545 app/app.py:4257
+msgid "Prowlarr is not configured."
+msgstr ""
+
+#: app/app.py:3779
+msgid "Failed to clear client history."
+msgstr ""
+
+#: app/app.py:3797
+msgid "Failed to clear access history."
+msgstr ""
+
+#: app/app.py:3809
+msgid "Missing IP."
+msgstr ""
+
+#: app/app.py:3864
+msgid ""
+"TitleDB has not been initialized yet. Please wait for the initial update "
+"to complete or trigger it manually."
+msgstr ""
+
+#: app/app.py:3874
+#, python-format
+msgid "The region/language pair %(region)s/%(language)s is not available."
+msgstr ""
+
+#: app/app.py:4183
+#, python-format
+msgid "Missing indexer IDs: %(ids)s"
+msgstr ""
+
+#: app/app.py:4186
+#, python-format
+msgid "Prowlarr OK (%(version)s)"
+msgstr ""
+
+#: app/app.py:4207
+#, python-format
+msgid "Download path not found: %(path)s"
+msgstr ""
+
+#: app/app.py:4209
+#, python-format
+msgid "Download path not writable: %(path)s"
+msgstr ""
+
+#: app/app.py:4219 app/app.py:4233
+msgid "Missing title ID or version."
+msgstr ""
+
+#: app/app.py:4252
+msgid "Missing query."
+msgstr ""
+
+#: app/app.py:4302
+msgid "Missing download URL."
+msgstr ""
+
+#: app/app.py:4476 app/app.py:4559
+msgid "Missing file id."
+msgstr ""
+
+#: app/app.py:4609 app/app.py:4618
+msgid "Job not found."
+msgstr ""
+
+#: app/app.py:4789
+msgid "No file provided"
+msgstr ""
+
+#: app/app.py:4860
+#, python-format
+msgid "Unable to parse upload request: %(error)s"
+msgstr ""
+
+#: app/app.py:4867
+msgid "No files uploaded."
+msgstr ""
+
+#: app/app.py:4878
+msgid "No library path configured."
+msgstr ""
+
+#: app/app.py:4886
+#, python-format
+msgid "Cannot access library path: %(path)s"
+msgstr ""
+
+#: app/app.py:4901
+msgid "A file has an invalid or empty filename."
+msgstr ""
+
+#: app/app.py:4917
+#, python-format
+msgid "%(filename)s: unsupported extension '%(ext)s'."
+msgstr ""
+
+#: app/app.py:4937
+#, python-format
+msgid "Uploaded %(count)s file(s)."
+msgstr ""
+
+#: app/app.py:4939
+#, python-format
+msgid "Skipped %(count)s."
+msgstr ""
+
+#: app/app.py:4944
+msgid "All selected files were skipped."
+msgstr ""
+
+#: app/app.py:4946 app/templates/upload.html:187
+msgid "Upload failed."
+msgstr ""
+
+#: app/app.py:5031
+msgid "Failed to list saves."
+msgstr ""
+
+#: app/app.py:5050
+msgid "Invalid title_id for save upload."
+msgstr ""
+
+#: app/app.py:5053 app/app.py:5057
+msgid "No save archive provided."
+msgstr ""
+
+#: app/app.py:5064
+msgid "Save archive is empty."
+msgstr ""
+
+#: app/app.py:5067
+#, python-format
+msgid "Save archive exceeds maximum limit of %(size)sGB."
+msgstr ""
+
+#: app/app.py:5080
+msgid "Uploaded file is not a valid zip archive."
+msgstr ""
+
+#: app/app.py:5090
+msgid "Failed to store save archive."
+msgstr ""
+
+#: app/app.py:5123
+msgid "Save uploaded successfully."
+msgstr ""
+
+#: app/app.py:5138
+msgid "Invalid title_id for save download."
+msgstr ""
+
+#: app/app.py:5144 app/app.py:5148 app/app.py:5193
+msgid "Save archive not found."
+msgstr ""
+
+#: app/app.py:5177
+msgid "Invalid title_id for save delete."
+msgstr ""
+
+#: app/app.py:5183
+msgid "Invalid save_id for save delete."
+msgstr ""
+
+#: app/app.py:5204
+msgid "Save backup deleted successfully."
+msgstr ""
+
+#: app/app.py:6603
+msgid "Conversion in progress. Try again after conversion finishes."
+msgstr ""
+
+#: app/auth.py:588 app/auth.py:772
+msgid "Access denied from this network during initial setup."
+msgstr ""
+
+#: app/auth.py:590
+msgid ""
+"Reverse proxy detected; configure security.trusted_proxies and enable "
+"security.trust_proxy_headers."
+msgstr ""
+
+#: app/auth.py:597
+msgid "Setup required: create the first admin user at /users."
+msgstr ""
+
+#: app/auth.py:879 app/auth.py:999 app/auth.py:1022 app/auth.py:1064
+#: app/auth.py:1118
+msgid "User not found."
+msgstr ""
+
+#: app/auth.py:892
+msgid "Failed to load user history."
+msgstr ""
+
+#: app/auth.py:958
+msgid "Failed to list auth lockouts."
+msgstr ""
+
+#: app/auth.py:967
+msgid "Missing ip."
+msgstr ""
+
+#: app/auth.py:993 app/auth.py:1056 app/auth.py:1112
+msgid "Missing user id."
+msgstr ""
+
+#: app/auth.py:995
+msgid "Missing frozen state."
+msgstr ""
+
+#: app/auth.py:1018
+msgid "Missing user_id."
+msgstr ""
+
+#: app/auth.py:1028
+msgid "Cannot delete the last admin account."
+msgstr ""
+
+#: app/auth.py:1039 app/templates/index.html:2050 app/templates/index.html:2063
+#: app/templates/requests.html:408
+msgid "Delete failed."
+msgstr ""
+
+#: app/auth.py:1058 app/templates/users.html:59 app/templates/users.html:147
+#: app/templates/users.html:846 app/templates/users.html:928
+#: app/templates/users.html:942
+msgid "Username is required."
+msgstr ""
+
+#: app/auth.py:1060
+msgid "Missing access configuration."
+msgstr ""
+
+#: app/auth.py:1069 app/templates/users.html:850 app/templates/users.html:946
+msgid "Username already exists."
+msgstr ""
+
+#: app/auth.py:1074
+msgid "Cannot remove the last admin account."
+msgstr ""
+
+#: app/auth.py:1114 app/templates/users.html:64 app/templates/users.html:187
+#: app/templates/users.html:858 app/templates/users.html:1056
+msgid "Password is required."
+msgstr ""
+
+#: app/templates/activity.html:454 app/templates/activity.html:531
+#: app/templates/nav.html:79
+msgid "Activity"
+msgstr ""
+
+#: app/templates/activity.html:455
+msgid "Audit and monitoring"
+msgstr ""
+
+#: app/templates/activity.html:461 app/templates/activity.html:541
+msgid "Toggle activity sidebar"
+msgstr ""
+
+#: app/templates/activity.html:470 app/templates/activity.html:649
+msgid "Overview"
+msgstr ""
+
+#: app/templates/activity.html:472
+msgid "KPIs and section shortcuts"
+msgstr ""
+
+#: app/templates/activity.html:479
+msgid "Realtime"
+msgstr ""
+
+#: app/templates/activity.html:481
+msgid "Live sessions and connected clients"
+msgstr ""
+
+#: app/templates/activity.html:488 app/templates/activity.html:814
+msgid "Access History"
+msgstr ""
+
+#: app/templates/activity.html:490
+msgid "Transfer and shop audit trail"
+msgstr ""
+
+#: app/templates/activity.html:497 app/templates/activity.html:1105
+msgid "Blocked IPs"
+msgstr ""
+
+#: app/templates/activity.html:499
+msgid "Permanent blacklist hits"
+msgstr ""
+
+#: app/templates/activity.html:506 app/templates/activity.html:988
+msgid "Client History"
+msgstr ""
+
+#: app/templates/activity.html:508
+msgid "Devices, user-agents, and metadata"
+msgstr ""
+
+#: app/templates/activity.html:515
+msgid "Lockouts"
+msgstr ""
+
+#: app/templates/activity.html:517
+msgid "Failed-login IP lockouts"
+msgstr ""
+
+#: app/templates/activity.html:533
+msgid ""
+"Realtime monitoring, persistent audit logs, and access control telemetry "
+"in one workspace"
+msgstr ""
+
+#: app/templates/activity.html:543 app/templates/settings.html:319
+msgid "Sections"
+msgstr ""
+
+#: app/templates/activity.html:548 app/templates/activity.html:1333
+msgid "Last update: -"
+msgstr ""
+
+#: app/templates/activity.html:551
+msgid "Live: 2.5s"
+msgstr ""
+
+#: app/templates/activity.html:554
+msgid "History: 15s"
+msgstr ""
+
+#: app/templates/activity.html:561
+msgid "Refresh now"
+msgstr ""
+
+#: app/templates/activity.html:583
+msgid "Live Transfers"
+msgstr ""
+
+#: app/templates/activity.html:596
+msgid "Connected Clients"
+msgstr ""
+
+#: app/templates/activity.html:609
+msgid "Access Rows"
+msgstr ""
+
+#: app/templates/activity.html:622
+msgid "Client History Rows"
+msgstr ""
+
+#: app/templates/activity.html:635
+msgid "Locked IPs"
+msgstr ""
+
+#: app/templates/activity.html:653
+msgid "Use the left sidebar to focus on one data set at a time"
+msgstr ""
+
+#: app/templates/activity.html:670
+msgid "Realtime Monitor"
+msgstr ""
+
+#: app/templates/activity.html:672
+msgid "Current transfer sessions and recently seen clients"
+msgstr ""
+
+#: app/templates/activity.html:685
+msgid "Live transfers"
+msgstr ""
+
+#: app/templates/activity.html:702
+msgid "Started"
+msgstr ""
+
+#: app/templates/activity.html:705 app/templates/activity.html:769
+#: app/templates/activity.html:917 app/templates/activity.html:1066
+#: app/templates/login.html:47 app/templates/requests.html:62
+#: app/templates/users.html:103 app/templates/users.html:750
+msgid "User"
+msgstr ""
+
+#: app/templates/activity.html:708 app/templates/activity.html:772
+#: app/templates/activity.html:924 app/templates/activity.html:1067
+#: app/templates/activity.html:1149
+msgid "Remote"
+msgstr ""
+
+#: app/templates/activity.html:711 app/templates/activity.html:775
+#: app/templates/activity.html:931 app/templates/activity.html:1069
+#: app/templates/activity.html:1151
+msgid "Location"
+msgstr ""
+
+#: app/templates/activity.html:714 app/templates/activity.html:938
+#: app/templates/downloads.html:80 app/templates/index.html:358
+#: app/templates/index.html:624 app/templates/index.html:1168
+#: app/templates/requests.html:61 app/templates/requests.html:96
+#: app/templates/saves.html:38 app/templates/saves.html:257
+#: app/templates/users.html:268
+msgid "Title"
+msgstr ""
+
+#: app/templates/activity.html:717 app/templates/activity.html:945
+#: app/templates/users.html:269
+msgid "File"
+msgstr ""
+
+#: app/templates/activity.html:720 app/templates/users.html:272
+msgid "Sent"
+msgstr ""
+
+#: app/templates/activity.html:732 app/templates/activity.html:793
+#: app/templates/activity.html:969 app/templates/activity.html:1086
+#: app/templates/activity.html:1166 app/templates/activity.html:1261
+#: app/templates/downloads.html:60 app/templates/downloads.html:75
+#: app/templates/downloads.html:88 app/templates/downloads.html:156
+#: app/templates/downloads.html:230 app/templates/requests.html:341
+#: app/templates/saves.html:46 app/templates/saves.html:53
+#: app/templates/saves.html:392 app/templates/saves.html:393
+msgid "Loading..."
+msgstr ""
+
+#: app/templates/activity.html:749
+msgid "Connected clients"
+msgstr ""
+
+#: app/templates/activity.html:766
+msgid "Last seen"
+msgstr ""
+
+#: app/templates/activity.html:778 app/templates/activity.html:1072
+#: app/templates/activity.html:1155
+msgid "User-Agent"
+msgstr ""
+
+#: app/templates/activity.html:781 app/templates/activity.html:1075
+msgid "Client details"
+msgstr ""
+
+#: app/templates/activity.html:816
+msgid "Searchable and sortable recent transfer/shop activity"
+msgstr ""
+
+#: app/templates/activity.html:826
+msgid "Access history"
+msgstr ""
+
+#: app/templates/activity.html:836
+msgid "Recent transfers and shop activity"
+msgstr ""
+
+#: app/templates/activity.html:846 app/templates/activity.html:1020
+msgid "Clear log"
+msgstr ""
+
+#: app/templates/activity.html:854 app/templates/activity.html:1028
+msgid "Export CSV"
+msgstr ""
+
+#: app/templates/activity.html:860
+msgid "Search by user, title, file, IP, kind"
+msgstr ""
+
+#: app/templates/activity.html:866 app/templates/activity.html:1033
+#: app/templates/users.html:254
+msgid "Rows"
+msgstr ""
+
+#: app/templates/activity.html:903 app/templates/activity.html:1065
+#: app/templates/activity.html:1148 app/templates/users.html:267
+msgid "When"
+msgstr ""
+
+#: app/templates/activity.html:910
+msgid "Kind"
+msgstr ""
+
+#: app/templates/activity.html:952
+msgid "Bytes"
+msgstr ""
+
+#: app/templates/activity.html:959 app/templates/activity.html:1157
+#: app/templates/downloads.html:45 app/templates/index.html:628
+#: app/templates/index.html:1172 app/templates/index.html:2280
+#: app/templates/index.html:2303 app/templates/index.html:2379
+#: app/templates/requests.html:63 app/templates/users.html:271
+msgid "Status"
+msgstr ""
+
+#: app/templates/activity.html:990
+msgid "Persisted log of connected clients and metadata"
+msgstr ""
+
+#: app/templates/activity.html:1000
+msgid "Client history"
+msgstr ""
+
+#: app/templates/activity.html:1010
+msgid "Persisted log of connected clients"
+msgstr ""
+
+#: app/templates/activity.html:1107
+msgid "Requests blocked by IP blacklist and country rules"
+msgstr ""
+
+#: app/templates/activity.html:1117
+msgid "Blocked requests"
+msgstr ""
+
+#: app/templates/activity.html:1127
+msgid "404 responses returned for denied IP or country rules"
+msgstr ""
+
+#: app/templates/activity.html:1135
+msgid "Search by IP, path, UA"
+msgstr ""
+
+#: app/templates/activity.html:1153 app/templates/settings.html:349
+#: app/templates/settings.html:371
+msgid "Path"
+msgstr ""
+
+#: app/templates/activity.html:1185
+msgid "Login Lockouts"
+msgstr ""
+
+#: app/templates/activity.html:1187
+msgid "Current temporary IP lockouts from failed authentication attempts"
+msgstr ""
+
+#: app/templates/activity.html:1197
+msgid "Temporary lockouts"
+msgstr ""
+
+#: app/templates/activity.html:1207
+msgid "Unlock individual IPs or clear all temporary lockouts"
+msgstr ""
+
+#: app/templates/activity.html:1219 app/templates/downloads.html:33
+#: app/templates/manage.html:149 app/templates/requests.html:22
+#: app/templates/saves.html:24 app/templates/users.html:38
+msgid "Refresh"
+msgstr ""
+
+#: app/templates/activity.html:1227
+msgid "Unlock all"
+msgstr ""
+
+#: app/templates/activity.html:1240 app/templates/users.html:270
+#: app/templates/users.html:667
+msgid "IP"
+msgstr ""
+
+#: app/templates/activity.html:1242
+msgid "Remaining"
+msgstr ""
+
+#: app/templates/activity.html:1245
+msgid "Last failed"
+msgstr ""
+
+#: app/templates/activity.html:1248
+msgid "Attempts"
+msgstr ""
+
+#: app/templates/activity.html:1250 app/templates/index.html:371
+#: app/templates/requests.html:109
+msgid "Action"
+msgstr ""
+
+#: app/templates/activity.html:1337
+#, python-brace-format
+msgid "Last update: {time}"
+msgstr ""
+
+#: app/templates/activity.html:1354 app/templates/activity.html:2085
+#: app/templates/activity.html:2105
+msgid "Failed to load activity."
+msgstr ""
+
+#: app/templates/activity.html:1359
+msgid "Theme"
+msgstr ""
+
+#: app/templates/activity.html:1361 app/templates/index.html:627
+#: app/templates/index.html:1171 app/templates/index.html:2279
+#: app/templates/index.html:2378
+msgid "Version"
+msgstr ""
+
+#: app/templates/activity.html:1362
+msgid "Revision"
+msgstr ""
+
+#: app/templates/activity.html:1363 app/templates/nav.html:108
+msgid "Language"
+msgstr ""
+
+#: app/templates/activity.html:1438
+msgid "No active transfers."
+msgstr ""
+
+#: app/templates/activity.html:1640
+msgid "No recent clients."
+msgstr ""
+
+#: app/templates/activity.html:1707
+msgid "No history rows match your search."
+msgstr ""
+
+#: app/templates/activity.html:1708
+msgid "No history yet."
+msgstr ""
+
+#: app/templates/activity.html:1734
+msgid "OK"
+msgstr ""
+
+#: app/templates/activity.html:1734
+msgid "Fail"
+msgstr ""
+
+#: app/templates/activity.html:1772
+msgid "No client history yet."
+msgstr ""
+
+#: app/templates/activity.html:1805
+msgid "Block"
+msgstr ""
+
+#: app/templates/activity.html:1818
+msgid "No blocked requests match your search."
+msgstr ""
+
+#: app/templates/activity.html:1819
+msgid "No blocked requests yet."
+msgstr ""
+
+#: app/templates/activity.html:1855
+msgid "Blocked"
+msgstr ""
+
+#: app/templates/activity.html:1937
+msgid "No temporary lockouts."
+msgstr ""
+
+#: app/templates/activity.html:1952
+msgid "Unlock"
+msgstr ""
+
+#: app/templates/activity.html:1970 app/templates/activity.html:1977
+msgid "Failed to load lockouts."
+msgstr ""
+
+#: app/templates/activity.html:2001 app/templates/activity.html:2010
+msgid "Failed to add IP to blacklist."
+msgstr ""
+
+#: app/templates/activity.html:2005
+#, python-brace-format
+msgid "Blacklisted {ip}"
+msgstr ""
+
+#: app/templates/activity.html:2032
+msgid "Unlock all temporarily locked IPs?"
+msgstr ""
+
+#: app/templates/activity.html:2090
+#, python-brace-format
+msgid "Access history unavailable: {error}"
+msgstr ""
+
+#: app/templates/activity.html:2143
+#, python-brace-format
+msgid "Add {ip} to the permanent blacklist?"
+msgstr ""
+
+#: app/templates/activity.html:2205
+msgid "Clear the persisted client history log?"
+msgstr ""
+
+#: app/templates/activity.html:2239
+msgid "Clear the persisted access history log?"
+msgstr ""
+
+#: app/templates/base.html:53
+#, python-brace-format
+msgid "Conversion: {done}/{total}"
+msgstr ""
+
+#: app/templates/base.html:55
+msgid "Conversion running"
+msgstr ""
+
+#: app/templates/base.html:158
+msgid "Library: Updating TitleDB"
+msgstr ""
+
+#: app/templates/base.html:161
+msgid "Library: Scanning"
+msgstr ""
+
+#: app/templates/base.html:164
+msgid "Library: Rebuilding"
+msgstr ""
+
+#: app/templates/base.html:167 app/templates/nav.html:103
+msgid "Library: Ready"
+msgstr ""
+
+#: app/templates/downloads.html:17 app/templates/nav.html:58
+#: app/templates/settings.html:298 app/templates/settings.html:836
+msgid "Downloads"
+msgstr ""
+
+#: app/templates/downloads.html:18
+msgid "Live torrent and usenet status plus the pending AeroFoil download queue."
+msgstr ""
+
+#: app/templates/downloads.html:30
+msgid "Current Downloads"
+msgstr ""
+
+#: app/templates/downloads.html:31
+msgid ""
+"Active AeroFoil-managed downloads from your configured torrent and usenet"
+" clients."
+msgstr ""
+
+#: app/templates/downloads.html:35
+#, python-format
+msgid "Current download speed: %(speed)s"
+msgstr ""
+
+#: app/templates/downloads.html:40
+msgid "Name"
+msgstr ""
+
+#: app/templates/downloads.html:42 app/templates/downloads.html:81
+#: app/templates/index.html:361 app/templates/requests.html:99
+msgid "Protocol"
+msgstr ""
+
+#: app/templates/downloads.html:44 app/templates/downloads.html:82
+#: app/templates/settings.html:950 app/templates/settings.html:990
+#: app/templates/users.html:105
+msgid "Client"
+msgstr ""
+
+#: app/templates/downloads.html:46
+msgid "Progress"
+msgstr ""
+
+#: app/templates/downloads.html:48
+msgid "Down"
+msgstr ""
+
+#: app/templates/downloads.html:49
+msgid "Up"
+msgstr ""
+
+#: app/templates/downloads.html:50
+msgid "Peers"
+msgstr ""
+
+#: app/templates/downloads.html:51 app/templates/index.html:368
+#: app/templates/requests.html:106
+msgid "Seeders"
+msgstr ""
+
+#: app/templates/downloads.html:52 app/templates/index.html:369
+#: app/templates/requests.html:107
+msgid "Leechers"
+msgstr ""
+
+#: app/templates/downloads.html:54
+msgid "ETA"
+msgstr ""
+
+#: app/templates/downloads.html:55 app/templates/index.html:366
+#: app/templates/index.html:2281 app/templates/index.html:2380
+#: app/templates/requests.html:104 app/templates/saves.html:41
+msgid "Size"
+msgstr ""
+
+#: app/templates/downloads.html:56
+msgid "Done"
+msgstr ""
+
+#: app/templates/downloads.html:72 app/templates/index.html:1875
+#: app/templates/requests.html:194
+msgid "Queue"
+msgstr ""
+
+#: app/templates/downloads.html:73
+msgid "Check completed"
+msgstr ""
+
+#: app/templates/downloads.html:83
+msgid "State"
+msgstr ""
+
+#: app/templates/downloads.html:84 app/templates/index.html:629
+#: app/templates/index.html:1173 app/templates/index.html:2283
+#: app/templates/index.html:2306 app/templates/requests.html:64
+#: app/templates/saves.html:42 app/templates/settings.html:350
+#: app/templates/settings.html:357 app/templates/users.html:106
+msgid "Actions"
+msgstr ""
+
+#: app/templates/downloads.html:149
+#, python-brace-format
+msgid "stuck: {reason}"
+msgstr ""
+
+#: app/templates/downloads.html:159 app/templates/downloads.html:160
+msgid "Failed to load queue state."
+msgstr ""
+
+#: app/templates/downloads.html:165
+msgid "running"
+msgstr ""
+
+#: app/templates/downloads.html:165
+msgid "idle"
+msgstr ""
+
+#: app/templates/downloads.html:166
+msgid "never"
+msgstr ""
+
+#: app/templates/downloads.html:167
+#, python-brace-format
+msgid "Status: {status}. Last check: {last_run}. Pending: {count}."
+msgstr ""
+
+#: app/templates/downloads.html:170
+msgid "No pending downloads."
+msgstr ""
+
+#: app/templates/downloads.html:175
+msgid "Manual download"
+msgstr ""
+
+#: app/templates/downloads.html:180 app/templates/index.html:272
+#: app/templates/saves.html:324 app/templates/saves.html:367
+#: app/templates/settings.html:610 app/templates/users.html:129
+msgid "Delete"
+msgstr ""
+
+#: app/templates/downloads.html:195
+msgid "Missing queue key."
+msgstr ""
+
+#: app/templates/downloads.html:198
+msgid "Delete this queued download and remove downloader files if possible?"
+msgstr ""
+
+#: app/templates/downloads.html:209
+msgid "Removed queued download."
+msgstr ""
+
+#: app/templates/downloads.html:211 app/templates/downloads.html:217
+msgid "Failed to remove queued download."
+msgstr ""
+
+#: app/templates/downloads.html:229 app/templates/downloads.html:237
+#: app/templates/downloads.html:242
+#, python-brace-format
+msgid "Current download speed: {speed}"
+msgstr ""
+
+#: app/templates/downloads.html:233
+msgid "Failed to load active downloads."
+msgstr ""
+
+#: app/templates/downloads.html:244
+msgid "No active downloads."
+msgstr ""
+
+#: app/templates/downloads.html:280
+msgid "Checked completed downloads."
+msgstr ""
+
+#: app/templates/downloads.html:282
+msgid "Check failed."
+msgstr ""
+
+#: app/templates/frozen.html:6
+msgid "Server Notice"
+msgstr ""
+
+#: app/templates/frozen.html:9
+msgid "Account status"
+msgstr ""
+
+#: app/templates/frozen.html:10 app/templates/users.html:642
+msgid "Frozen"
+msgstr ""
+
+#: app/templates/frozen.html:11
+msgid "Notice"
+msgstr ""
+
+#: app/templates/index.html:12
+msgid "Newly added"
+msgstr ""
+
+#: app/templates/index.html:13
+msgid "Latest titles found in your library."
+msgstr ""
+
+#: app/templates/index.html:16 app/templates/index.html:38
+msgid "Scroll left"
+msgstr ""
+
+#: app/templates/index.html:22 app/templates/index.html:44
+msgid "Scroll right"
+msgstr ""
+
+#: app/templates/index.html:34
+msgid "Recommended"
+msgstr ""
+
+#: app/templates/index.html:35
+msgid "A rotating selection from your library."
+msgstr ""
+
+#: app/templates/index.html:60 app/templates/index.html:62
+#: app/templates/index.html:1584 app/templates/index.html:1585
+msgid "Filters"
+msgstr ""
+
+#: app/templates/index.html:66 app/templates/index.html:407
+#: app/templates/index.html:626 app/templates/index.html:1170
+msgid "Type"
+msgstr ""
+
+#: app/templates/index.html:70 app/templates/index.html:86
+#: app/templates/index.html:102 app/templates/index.html:118
+#: app/templates/index.html:134
+msgid "All"
+msgstr ""
+
+#: app/templates/index.html:74 app/templates/index.html:409
+msgid "Base Games"
+msgstr ""
+
+#: app/templates/index.html:78 app/templates/index.html:410
+#: app/templates/index.html:2199 app/templates/index.html:2254
+#: app/templates/index.html:2302 app/templates/index.html:2336
+#: app/templates/index.html:2442 app/templates/index.html:2719
+msgid "DLC"
+msgstr ""
+
+#: app/templates/index.html:82 app/templates/index.html:420
+msgid "Ownership"
+msgstr ""
+
+#: app/templates/index.html:90 app/templates/index.html:422
+#: app/templates/index.html:816 app/templates/index.html:859
+msgid "In Library"
+msgstr ""
+
+#: app/templates/index.html:94 app/templates/index.html:423
+#: app/templates/index.html:816 app/templates/index.html:859
+#: app/templates/index.html:2156 app/templates/index.html:2241
+msgid "Missing"
+msgstr ""
+
+#: app/templates/index.html:98 app/templates/index.html:433
+#: app/templates/index.html:2329
+msgid "Updates"
+msgstr ""
+
+#: app/templates/index.html:106 app/templates/index.html:435
+#: app/templates/index.html:830
+msgid "Up to Date"
+msgstr ""
+
+#: app/templates/index.html:110 app/templates/index.html:436
+#: app/templates/index.html:830
+msgid "Update Available"
+msgstr ""
+
+#: app/templates/index.html:114 app/templates/index.html:446
+msgid "DLC Coverage"
+msgstr ""
+
+#: app/templates/index.html:122 app/templates/index.html:448
+msgid "Complete"
+msgstr ""
+
+#: app/templates/index.html:126 app/templates/index.html:449
+#: app/templates/index.html:837
+msgid "DLC Missing"
+msgstr ""
+
+#: app/templates/index.html:130 app/templates/index.html:458
+msgid "Recognition"
+msgstr ""
+
+#: app/templates/index.html:138 app/templates/index.html:460
+#: app/templates/requests.html:242 app/templates/requests.html:269
+#: app/templates/requests.html:319
+msgid "Unrecognized"
+msgstr ""
+
+#: app/templates/index.html:147
+msgid "Search titles..."
+msgstr ""
+
+#: app/templates/index.html:152
+msgid "Search downloads..."
+msgstr ""
+
+#: app/templates/index.html:153
+msgid "Search"
+msgstr ""
+
+#: app/templates/index.html:171
+msgid "Sort"
+msgstr ""
+
+#: app/templates/index.html:174
+msgid "Title (A-Z)"
+msgstr ""
+
+#: app/templates/index.html:175
+msgid "Title (Z-A)"
+msgstr ""
+
+#: app/templates/index.html:176
+msgid "Newest added"
+msgstr ""
+
+#: app/templates/index.html:185 app/templates/index.html:1603
+msgid "Genre"
+msgstr ""
+
+#: app/templates/index.html:188 app/templates/index.html:1670
+msgid "All genres"
+msgstr ""
+
+#: app/templates/index.html:196
+msgid "Items per page"
+msgstr ""
+
+#: app/templates/index.html:205
+msgid "Custom"
+msgstr ""
+
+#: app/templates/index.html:206
+msgid "Apply"
+msgstr ""
+
+#: app/templates/index.html:215
+msgid "Smaller tiles"
+msgstr ""
+
+#: app/templates/index.html:219
+msgid "Larger tiles"
+msgstr ""
+
+#: app/templates/index.html:236
+msgid "Page navigation"
+msgstr ""
+
+#: app/templates/index.html:246
+msgid "Content details"
+msgstr ""
+
+#: app/templates/index.html:247 app/templates/index.html:267
+#: app/templates/index.html:284 app/templates/index.html:323
+#: app/templates/index.html:335 app/templates/index.html:350
+#: app/templates/requests.html:88 app/templates/settings.html:603
+#: app/templates/settings.html:623 app/templates/settings.html:628
+msgid "Close"
+msgstr ""
+
+#: app/templates/index.html:266
+msgid "Confirm delete"
+msgstr ""
+
+#: app/templates/index.html:271 app/templates/manage.html:237
+#: app/templates/manage.html:289 app/templates/settings.html:609
+#: app/templates/users.html:128 app/templates/users.html:168
+#: app/templates/users.html:205 app/templates/users.html:233
+msgid "Cancel"
+msgstr ""
+
+#: app/templates/index.html:283 app/templates/index.html:1071
+#: app/templates/index.html:1125 app/templates/index.html:1211
+#: app/templates/index.html:2467
+msgid "Game info"
+msgstr ""
+
+#: app/templates/index.html:295
+msgid "Manual metadata override"
+msgstr ""
+
+#: app/templates/index.html:296
+msgid "Use this when TitleDB does not identify the title correctly."
+msgstr ""
+
+#: app/templates/index.html:299
+msgid "Title name"
+msgstr ""
+
+#: app/templates/index.html:303
+msgid "Icon URL"
+msgstr ""
+
+#: app/templates/index.html:307
+msgid "Banner URL"
+msgstr ""
+
+#: app/templates/index.html:311
+msgid "Description"
+msgstr ""
+
+#: app/templates/index.html:316
+msgid "Save metadata"
+msgstr ""
+
+#: app/templates/index.html:334
+msgid "Screenshot"
+msgstr ""
+
+#: app/templates/index.html:349 app/templates/requests.html:87
+msgid "Download search results"
+msgstr ""
+
+#: app/templates/index.html:359 app/templates/requests.html:97
+msgid "Indexer"
+msgstr ""
+
+#: app/templates/index.html:364 app/templates/requests.html:102
+msgid "Age"
+msgstr ""
+
+#: app/templates/index.html:625 app/templates/index.html:1169
+msgid "Genres"
+msgstr ""
+
+#: app/templates/index.html:823
+msgid "Base Present"
+msgstr ""
+
+#: app/templates/index.html:823
+msgid "Base Missing"
+msgstr ""
+
+#: app/templates/index.html:837
+msgid "DLC Complete"
+msgstr ""
+
+#: app/templates/index.html:856
+#, python-brace-format
+msgid "{name} [{title_id}] Updates"
+msgstr ""
+
+#: app/templates/index.html:872
+msgid "Version v0"
+msgstr ""
+
+#: app/templates/index.html:876
+#, python-brace-format
+msgid "Version {version}"
+msgstr ""
+
+#: app/templates/index.html:1063 app/templates/index.html:1204
+msgid "Details"
+msgstr ""
+
+#: app/templates/index.html:1150
+#, python-brace-format
+msgid "Library size: {size}"
+msgstr ""
+
+#: app/templates/index.html:1152
+msgid "Library size: 0 B"
+msgstr ""
+
+#: app/templates/index.html:1256 app/templates/requests.html:147
+msgid "Torrent"
+msgstr ""
+
+#: app/templates/index.html:1269 app/templates/requests.html:160
+#, python-brace-format
+msgid "Published {date}"
+msgstr ""
+
+#: app/templates/index.html:1313 app/templates/index.html:1337
+#: app/templates/index.html:1859 app/templates/requests.html:364
+msgid "Searching Prowlarr..."
+msgstr ""
+
+#: app/templates/index.html:1321 app/templates/index.html:1346
+#: app/templates/index.html:1865 app/templates/requests.html:371
+msgid "Search failed."
+msgstr ""
+
+#: app/templates/index.html:1326 app/templates/index.html:1870
+#: app/templates/requests.html:376
+msgid "No results found."
+msgstr ""
+
+#: app/templates/index.html:1329 app/templates/index.html:1873
+#: app/templates/requests.html:379
+#, python-brace-format
+msgid "Found {count} results."
+msgstr ""
+
+#: app/templates/index.html:1426
+msgid "Previous"
+msgstr ""
+
+#: app/templates/index.html:1481 app/templates/users.html:525
+msgid "Next"
+msgstr ""
+
+#: app/templates/index.html:1585
+#, python-brace-format
+msgid "Filters ({count} active)"
+msgstr ""
+
+#: app/templates/index.html:1603 app/templates/index.html:1618
+#, python-brace-format
+msgid "Genre: {genre}"
+msgstr ""
+
+#: app/templates/index.html:1615
+#, python-brace-format
+msgid "Search: \"{text}\""
+msgstr ""
+
+#: app/templates/index.html:1641 app/templates/manage.html:236
+#: app/templates/users.html:27
+msgid "Clear"
+msgstr ""
+
+#: app/templates/index.html:1893
+msgid "Queuing download..."
+msgstr ""
+
+#: app/templates/index.html:1908
+msgid "Queued download."
+msgstr ""
+
+#: app/templates/index.html:1908 app/templates/requests.html:435
+msgid "Queue failed."
+msgstr ""
+
+#: app/templates/index.html:2039
+msgid "Deleting..."
+msgstr ""
+
+#: app/templates/index.html:2058
+#, python-brace-format
+msgid "{message} Some files failed: {warnings}"
+msgstr ""
+
+#: app/templates/index.html:2077
+msgid "Content not found"
+msgstr ""
+
+#: app/templates/index.html:2090
+#, python-brace-format
+msgid "{app_type} | App ID {app_id} | Title ID {title_id}"
+msgstr ""
+
+#: app/templates/index.html:2100
+#, python-brace-format
+msgid "Genres: {genres}"
+msgstr ""
+
+#: app/templates/index.html:2103
+#, python-brace-format
+msgid "Size: {size}"
+msgstr ""
+
+#: app/templates/index.html:2156 app/templates/index.html:2241
+#: app/templates/index.html:2304
+msgid "Owned"
+msgstr ""
+
+#: app/templates/index.html:2158
+msgid "Unknown"
+msgstr ""
+
+#: app/templates/index.html:2172
+msgid "Search updates"
+msgstr ""
+
+#: app/templates/index.html:2180
+msgid "Search base game"
+msgstr ""
+
+#: app/templates/index.html:2188 app/templates/index.html:2418
+#: app/templates/saves.html:206
+msgid "this title"
+msgstr ""
+
+#: app/templates/index.html:2189 app/templates/index.html:2423
+msgid "Delete game, updates, and DLC"
+msgstr ""
+
+#: app/templates/index.html:2200
+msgid "Search DLC"
+msgstr ""
+
+#: app/templates/index.html:2207
+msgid "Custom search terms"
+msgstr ""
+
+#: app/templates/index.html:2210
+msgid "Search files"
+msgstr ""
+
+#: app/templates/index.html:2282 app/templates/index.html:2381
+msgid "Release date"
+msgstr ""
+
+#: app/templates/index.html:2293
+msgid "No update version data available."
+msgstr ""
+
+#: app/templates/index.html:2305
+msgid "Latest"
+msgstr ""
+
+#: app/templates/index.html:2316
+msgid "No DLC entries available."
+msgstr ""
+
+#: app/templates/index.html:2389
+msgid "Loading content details..."
+msgstr ""
+
+#: app/templates/index.html:2424
+#, python-brace-format
+msgid "Delete the base game and all owned updates and DLC for {name}?"
+msgstr ""
+
+#: app/templates/index.html:2428
+msgid "Deleted base game content."
+msgstr ""
+
+#: app/templates/index.html:2438
+msgid "this entry"
+msgstr ""
+
+#: app/templates/index.html:2442
+msgid "update"
+msgstr ""
+
+#: app/templates/index.html:2444
+#, python-brace-format
+msgid "Delete {label}"
+msgstr ""
+
+#: app/templates/index.html:2445
+#, python-brace-format
+msgid "Delete {label} v{version} for {name}?"
+msgstr ""
+
+#: app/templates/index.html:2449
+#, python-brace-format
+msgid "Deleted {label} v{version}."
+msgstr ""
+
+#: app/templates/index.html:2468
+#, python-brace-format
+msgid "Title ID {title_id}"
+msgstr ""
+
+#: app/templates/index.html:2478 app/templates/index.html:2502
+#: app/templates/index.html:2515 app/templates/index.html:2530
+msgid "No description available in TitleDB for this title."
+msgstr ""
+
+#: app/templates/index.html:2496
+msgid "Loading TitleDB info..."
+msgstr ""
+
+#: app/templates/index.html:2557
+msgid "This item has no Title ID."
+msgstr ""
+
+#: app/templates/index.html:2573
+msgid "Saving..."
+msgstr ""
+
+#: app/templates/index.html:2591 app/templates/index.html:2615
+msgid "Failed to save metadata."
+msgstr ""
+
+#: app/templates/index.html:2605
+msgid "Saved."
+msgstr ""
+
+#: app/templates/index.html:2611
+msgid "Saved, but refresh failed."
+msgstr ""
+
+#: app/templates/index.html:2655 app/templates/index.html:2704
+msgid "Queue update"
+msgstr ""
+
+#: app/templates/index.html:2678
+msgid "Queue download"
+msgstr ""
+
+#: app/templates/index.html:2725
+#, python-brace-format
+msgid "Searching Prowlarr for {label}..."
+msgstr ""
+
+#: app/templates/index.html:2729
+msgid "Queue DLC"
+msgstr ""
+
+#: app/templates/login.html:33
+msgid "AeroFoil banner"
+msgstr ""
+
+#: app/templates/login.html:41 app/templates/login.html:59
+#: app/templates/nav.html:126 app/templates/users.html:666
+msgid "Login"
+msgstr ""
+
+#: app/templates/login.html:46 app/templates/settings.html:964
+#: app/templates/users.html:57 app/templates/users.html:58
+#: app/templates/users.html:145
+msgid "Username"
+msgstr ""
+
+#: app/templates/login.html:51 app/templates/settings.html:968
+#: app/templates/users.html:62 app/templates/users.html:63
+msgid "Password"
+msgstr ""
+
+#: app/templates/login.html:56
+msgid "Remember me"
+msgstr ""
+
+#: app/templates/manage.html:36 app/templates/nav.html:60
+msgid "Manage"
+msgstr ""
+
+#: app/templates/manage.html:37
+msgid "Library maintenance actions and converter jobs."
+msgstr ""
+
+#: app/templates/manage.html:40
+msgid "Checking converter..."
+msgstr ""
+
+#: app/templates/manage.html:52 app/templates/settings.html:388
+msgid "Maintenance"
+msgstr ""
+
+#: app/templates/manage.html:53
+msgid "Organize and clean up your libraries."
+msgstr ""
+
+#: app/templates/manage.html:58
+msgid "Library organization"
+msgstr ""
+
+#: app/templates/manage.html:59
+msgid "Rename and organize identified content into structured folders."
+msgstr ""
+
+#: app/templates/manage.html:63 app/templates/manage.html:87
+#: app/templates/manage.html:103 app/templates/manage.html:119
+#: app/templates/manage.html:168 app/templates/manage.html:211
+msgid "Dry run"
+msgstr ""
+
+#: app/templates/manage.html:67 app/templates/manage.html:91
+#: app/templates/manage.html:107 app/templates/manage.html:123
+#: app/templates/manage.html:172 app/templates/manage.html:215
+msgid "Verbose"
+msgstr ""
+
+#: app/templates/manage.html:70
+msgid "Organize library"
+msgstr ""
+
+#: app/templates/manage.html:74
+msgid "Library scan"
+msgstr ""
+
+#: app/templates/manage.html:75
+msgid "Scan configured libraries for new files."
+msgstr ""
+
+#: app/templates/manage.html:78 app/templates/settings.html:363
+msgid "Scan library"
+msgstr ""
+
+#: app/templates/manage.html:82 app/templates/manage.html:94
+#: app/templates/manage.html:348
+msgid "Delete older updates"
+msgstr ""
+
+#: app/templates/manage.html:83
+msgid "Keep the latest owned update per title and remove older update files."
+msgstr ""
+
+#: app/templates/manage.html:98 app/templates/manage.html:110
+#: app/templates/manage.html:478
+msgid "Delete orphaned updates and DLC"
+msgstr ""
+
+#: app/templates/manage.html:99
+msgid ""
+"Remove owned updates and DLC files whose parent title has no owned base "
+"game."
+msgstr ""
+
+#: app/templates/manage.html:114 app/templates/manage.html:126
+#: app/templates/manage.html:361 app/templates/manage.html:365
+msgid "Delete duplicates"
+msgstr ""
+
+#: app/templates/manage.html:115
+msgid ""
+"Keep one owned file per app ID/version and remove duplicate file entries,"
+" even across different extensions."
+msgstr ""
+
+#: app/templates/manage.html:137
+msgid "Conversion"
+msgstr ""
+
+#: app/templates/manage.html:138
+msgid "Convert NSP/XCI to NSZ using your configured tool."
+msgstr ""
+
+#: app/templates/manage.html:143
+msgid "Manual single-file conversion"
+msgstr ""
+
+#: app/templates/manage.html:146 app/templates/manage.html:546
+msgid "Loading files..."
+msgstr ""
+
+#: app/templates/manage.html:151
+msgid "Convert selected"
+msgstr ""
+
+#: app/templates/manage.html:155 app/templates/manage.html:198
+msgid "Threads"
+msgstr ""
+
+#: app/templates/manage.html:156 app/templates/manage.html:199
+msgid "Auto"
+msgstr ""
+
+#: app/templates/manage.html:159 app/templates/manage.html:202
+msgid "Timeout"
+msgstr ""
+
+#: app/templates/manage.html:160 app/templates/manage.html:203
+msgid "sec"
+msgstr ""
+
+#: app/templates/manage.html:164 app/templates/manage.html:207
+msgid "Delete original"
+msgstr ""
+
+#: app/templates/manage.html:176 app/templates/manage.html:219
+msgid "Verify output"
+msgstr ""
+
+#: app/templates/manage.html:179
+msgid "Only NSP/XCI files are listed."
+msgstr ""
+
+#: app/templates/manage.html:183
+msgid "Batch conversion settings"
+msgstr ""
+
+#: app/templates/manage.html:188 app/templates/manage.html:1146
+#: app/templates/settings.html:799 app/templates/settings.html:2693
+msgid "Show"
+msgstr ""
+
+#: app/templates/manage.html:194 app/templates/nav.html:40
+#: app/templates/settings.html:279 app/templates/settings.html:332
+#: app/templates/upload.html:14
+msgid "Library"
+msgstr ""
+
+#: app/templates/manage.html:222
+msgid "Start Library Conversion"
+msgstr ""
+
+#: app/templates/manage.html:234
+msgid "Task output"
+msgstr ""
+
+#: app/templates/manage.html:254
+msgid "Recent jobs"
+msgstr ""
+
+#: app/templates/manage.html:255 app/templates/manage.html:823
+msgid "No jobs yet."
+msgstr ""
+
+#: app/templates/manage.html:261
+msgid "Diagnostics"
+msgstr ""
+
+#: app/templates/manage.html:262
+msgid "Live memory and scan diagnostics."
+msgstr ""
+
+#: app/templates/manage.html:264 app/templates/manage.html:991
+msgid "Expand"
+msgstr ""
+
+#: app/templates/manage.html:265 app/templates/settings.html:806
+#: app/templates/users.html:198
+msgid "Copy"
+msgstr ""
+
+#: app/templates/manage.html:268
+msgid "Loading diagnostics..."
+msgstr ""
+
+#: app/templates/manage.html:284 app/templates/manage.html:314
+msgid "Confirm action"
+msgstr ""
+
+#: app/templates/manage.html:290 app/templates/manage.html:317
+#: app/templates/manage.html:328
+msgid "Confirm"
+msgstr ""
+
+#: app/templates/manage.html:348
+msgid "Preview older update cleanup"
+msgstr ""
+
+#: app/templates/manage.html:350
+msgid "Run a dry run for older update cleanup? No files will be deleted."
+msgstr ""
+
+#: app/templates/manage.html:351
+msgid "Delete older update files and keep only the latest owned update per title?"
+msgstr ""
+
+#: app/templates/manage.html:352 app/templates/manage.html:365
+#: app/templates/manage.html:482
+msgid "Run dry run"
+msgstr ""
+
+#: app/templates/manage.html:352
+msgid "Delete updates"
+msgstr ""
+
+#: app/templates/manage.html:361
+msgid "Preview duplicate cleanup"
+msgstr ""
+
+#: app/templates/manage.html:363
+msgid "Run a dry run for duplicate cleanup? No files will be deleted."
+msgstr ""
+
+#: app/templates/manage.html:364
+msgid "Delete duplicate owned files and keep one file per app ID and version?"
+msgstr ""
+
+#: app/templates/manage.html:386
+#, python-brace-format
+msgid "({failed} failed)"
+msgstr ""
+
+#: app/templates/manage.html:388
+#, python-brace-format
+msgid "Deleted {deleted} empty folders{failed_note}."
+msgstr ""
+
+#: app/templates/manage.html:390
+#, python-brace-format
+msgid "Organize complete. Moved {moved} items. Skipped {skipped}.{folder_note}"
+msgstr ""
+
+#: app/templates/manage.html:393
+#, python-brace-format
+msgid "Organize failed: {errors}"
+msgstr ""
+
+#: app/templates/manage.html:412
+msgid "Library scan started."
+msgstr ""
+
+#: app/templates/manage.html:414
+msgid "Library scan failed."
+msgstr ""
+
+#: app/templates/manage.html:436
+#, python-brace-format
+msgid "Delete updates complete. Deleted {deleted} files."
+msgstr ""
+
+#: app/templates/manage.html:439
+#, python-brace-format
+msgid "Delete updates failed: {errors}"
+msgstr ""
+
+#: app/templates/manage.html:462
+#, python-brace-format
+msgid "Delete duplicates complete. Deleted {deleted} files."
+msgstr ""
+
+#: app/templates/manage.html:465
+#, python-brace-format
+msgid "Delete duplicates failed: {errors}"
+msgstr ""
+
+#: app/templates/manage.html:478
+msgid "Preview orphaned add-on cleanup"
+msgstr ""
+
+#: app/templates/manage.html:480
+msgid "Run a dry run for orphaned updates and DLC? No files will be deleted."
+msgstr ""
+
+#: app/templates/manage.html:481
+msgid ""
+"Delete all owned updates and DLC entries whose parent title has no owned "
+"base game?"
+msgstr ""
+
+#: app/templates/manage.html:482
+msgid "Delete orphaned add-ons"
+msgstr ""
+
+#: app/templates/manage.html:501
+#, python-brace-format
+msgid "Delete orphaned add-ons complete. Deleted {deleted} files."
+msgstr ""
+
+#: app/templates/manage.html:504
+#, python-brace-format
+msgid "Delete orphaned add-ons failed: {errors}"
+msgstr ""
+
+#: app/templates/manage.html:533
+msgid "Bulk conversion started..."
+msgstr ""
+
+#: app/templates/manage.html:535 app/templates/manage.html:751
+#, python-brace-format
+msgid "Conversion failed: {errors}"
+msgstr ""
+
+#: app/templates/manage.html:551
+msgid "Failed to load files"
+msgstr ""
+
+#: app/templates/manage.html:556
+msgid "No NSP/XCI files found"
+msgstr ""
+
+#: app/templates/manage.html:559
+msgid "Select a file"
+msgstr ""
+
+#: app/templates/manage.html:573
+msgid "Select a file to convert."
+msgstr ""
+
+#: app/templates/manage.html:595
+#, python-brace-format
+msgid "Single conversion started for {name}"
+msgstr ""
+
+#: app/templates/manage.html:597
+#, python-brace-format
+msgid "Single conversion failed: {errors}"
+msgstr ""
+
+#: app/templates/manage.html:720
+msgid "Failed to fetch job status."
+msgstr ""
+
+#: app/templates/manage.html:749
+msgid "Conversion complete."
+msgstr ""
+
+#: app/templates/manage.html:762
+#, python-brace-format
+msgid "Progress: {done}/{total} ({percent})"
+msgstr ""
+
+#: app/templates/manage.html:764
+#, python-brace-format
+msgid "File: {file}"
+msgstr ""
+
+#: app/templates/manage.html:770
+msgid "Converter progress: Complete"
+msgstr ""
+
+#: app/templates/manage.html:772
+msgid "Converter progress: Cancelled"
+msgstr ""
+
+#: app/templates/manage.html:774
+msgid "Converter progress: Failed"
+msgstr ""
+
+#: app/templates/manage.html:777
+#, python-brace-format
+msgid "Converter progress: {percent}"
+msgstr ""
+
+#: app/templates/manage.html:791
+msgid "Cancel conversion job"
+msgstr ""
+
+#: app/templates/manage.html:792
+msgid ""
+"Cancel the active conversion job? Any in-progress work may stop before "
+"the current file completes."
+msgstr ""
+
+#: app/templates/manage.html:793
+msgid "Cancel job"
+msgstr ""
+
+#: app/templates/manage.html:808
+msgid "Job cancelled."
+msgstr ""
+
+#: app/templates/manage.html:831
+#, python-brace-format
+msgid "{date} - {status} (converted {converted}, skipped {skipped})"
+msgstr ""
+
+#: app/templates/manage.html:860
+msgid "Converter ready"
+msgstr ""
+
+#: app/templates/manage.html:863
+msgid "Converter needs attention"
+msgstr ""
+
+#: app/templates/manage.html:876
+msgid "All libraries"
+msgstr ""
+
+#: app/templates/manage.html:948
+msgid "No diagnostics text to copy yet."
+msgstr ""
+
+#: app/templates/manage.html:954 app/templates/settings.html:2355
+msgid "Copied"
+msgstr ""
+
+#: app/templates/manage.html:963
+msgid "Clipboard write failed."
+msgstr ""
+
+#: app/templates/manage.html:981
+msgid "Clipboard not available in this browser."
+msgstr ""
+
+#: app/templates/manage.html:996
+msgid "Collapse"
+msgstr ""
+
+#: app/templates/manage.html:1021
+msgid "Failed to load diagnostics."
+msgstr ""
+
+#: app/templates/manage.html:1058
+msgid "Diagnostics parse error."
+msgstr ""
+
+#: app/templates/manage.html:1068
+msgid "Diagnostics request timed out."
+msgstr ""
+
+#: app/templates/manage.html:1071
+msgid "Diagnostics endpoint unavailable."
+msgstr ""
+
+#: app/templates/manage.html:1143 app/templates/settings.html:2689
+msgid "Hide"
+msgstr ""
+
+#: app/templates/nav.html:31
+msgid "Toggle navigation"
+msgstr ""
+
+#: app/templates/nav.html:46 app/templates/requests.html:13
+msgid "Requests"
+msgstr ""
+
+#: app/templates/nav.html:48
+msgid "Request"
+msgstr ""
+
+#: app/templates/nav.html:56
+msgid "Content"
+msgstr ""
+
+#: app/templates/nav.html:59 app/templates/upload.html:9
+#: app/templates/upload.html:39
+msgid "Upload"
+msgstr ""
+
+#: app/templates/nav.html:67
+msgid "Backups"
+msgstr ""
+
+#: app/templates/nav.html:69 app/templates/saves.html:11
+msgid "Save Data Backups"
+msgstr ""
+
+#: app/templates/nav.html:76 app/templates/users.html:79
+#: app/templates/users.html:162 app/templates/users.html:645
+msgid "Admin"
+msgstr ""
+
+#: app/templates/nav.html:78 app/templates/users.html:10
+msgid "Users"
+msgstr ""
+
+#: app/templates/nav.html:85 app/templates/settings.html:264
+#: app/templates/settings.html:311
+msgid "Settings"
+msgstr ""
+
+#: app/templates/nav.html:90
+msgid "Library size: ..."
+msgstr ""
+
+#: app/templates/nav.html:94
+msgid ""
+"Keys are not loaded. AeroFoil is using filename-based identification "
+"until a valid keys.txt is uploaded."
+msgstr ""
+
+#: app/templates/nav.html:120
+msgid "Logout"
+msgstr ""
+
+#: app/templates/profile.html:5
+msgid "Welcome, Anthony!"
+msgstr ""
+
+#: app/templates/requests.html:14
+msgid "User title requests and download search."
+msgstr ""
+
+#: app/templates/requests.html:16
+msgid "Request A Title"
+msgstr ""
+
+#: app/templates/requests.html:17
+msgid "Search TitleDB and request content not yet in your library."
+msgstr ""
+
+#: app/templates/requests.html:32
+msgid "Search by name or title id (e.g. Mario, 0100...)"
+msgstr ""
+
+#: app/templates/requests.html:34
+msgid "Submit request"
+msgstr ""
+
+#: app/templates/requests.html:41
+msgid "Selected"
+msgstr ""
+
+#: app/templates/requests.html:42 app/templates/requests.html:293
+#: app/templates/requests.html:294 app/templates/users.html:654
+msgid "None"
+msgstr ""
+
+#: app/templates/requests.html:43
+msgid "Choose a search result, then submit the request below."
+msgstr ""
+
+#: app/templates/requests.html:53
+msgid "Filter by title id, name, user..."
+msgstr ""
+
+#: app/templates/requests.html:60
+msgid "Requested"
+msgstr ""
+
+#: app/templates/requests.html:245
+msgid "In library"
+msgstr ""
+
+#: app/templates/requests.html:283
+msgid "Submitting..."
+msgstr ""
+
+#: app/templates/requests.html:289
+msgid "Request created."
+msgstr ""
+
+#: app/templates/requests.html:296
+msgid "Request failed."
+msgstr ""
+
+#: app/templates/requests.html:327
+msgid "Search downloads"
+msgstr ""
+
+#: app/templates/requests.html:329
+msgid "Delete request"
+msgstr ""
+
+#: app/templates/requests.html:344
+msgid "Failed to load."
+msgstr ""
+
+#: app/templates/requests.html:349
+#, python-brace-format
+msgid "Showing {count} request(s)."
+msgstr ""
+
+#: app/templates/requests.html:402
+msgid "Delete this request?"
+msgstr ""
+
+#: app/templates/requests.html:435
+msgid "Queued."
+msgstr ""
+
+#: app/templates/saves.html:12
+msgid "Saved archives available for your account."
+msgstr ""
+
+#: app/templates/saves.html:15
+msgid "Saves view mode"
+msgstr ""
+
+#: app/templates/saves.html:17
+msgid "List"
+msgstr ""
+
+#: app/templates/saves.html:20
+msgid "Icons"
+msgstr ""
+
+#: app/templates/saves.html:39
+msgid "Saved"
+msgstr ""
+
+#: app/templates/saves.html:40
+msgid "Note"
+msgstr ""
+
+#: app/templates/saves.html:132 app/templates/users.html:565
+msgid "Unknown title"
+msgstr ""
+
+#: app/templates/saves.html:203
+msgid "Delete URL is missing for this backup."
+msgstr ""
+
+#: app/templates/saves.html:209
+#, python-brace-format
+msgid "Delete this save backup for {title}?"
+msgstr ""
+
+#: app/templates/saves.html:211
+#, python-brace-format
+msgid "Saved: {date}"
+msgstr ""
+
+#: app/templates/saves.html:214
+#, python-brace-format
+msgid "Note: {note}"
+msgstr ""
+
+#: app/templates/saves.html:216
+msgid "This cannot be undone."
+msgstr ""
+
+#: app/templates/saves.html:231 app/templates/saves.html:238
+msgid "Failed to delete save backup."
+msgstr ""
+
+#: app/templates/saves.html:235
+msgid "Save backup deleted."
+msgstr ""
+
+#: app/templates/saves.html:257
+#, python-brace-format
+msgid "{title} icon"
+msgstr ""
+
+#: app/templates/saves.html:292 app/templates/saves.html:338
+msgid "No save archives found for this account."
+msgstr ""
+
+#: app/templates/saves.html:323 app/templates/saves.html:366
+msgid "Download"
+msgstr ""
+
+#: app/templates/saves.html:380
+#, python-brace-format
+msgid "{count} save version"
+msgstr ""
+
+#: app/templates/saves.html:380
+#, python-brace-format
+msgid "{count} save versions"
+msgstr ""
+
+#: app/templates/saves.html:384 app/templates/saves.html:397
+#: app/templates/saves.html:399 app/templates/saves.html:407
+#: app/templates/saves.html:416
+msgid "Failed to load saves."
+msgstr ""
+
+#: app/templates/saves.html:404
+msgid "Saves list loaded."
+msgstr ""
+
+#: app/templates/settings.html:265
+msgid "System configuration"
+msgstr ""
+
+#: app/templates/settings.html:267 app/templates/settings.html:315
+msgid "Toggle sidebar"
+msgstr ""
+
+#: app/templates/settings.html:280
+msgid "Paths, naming, maintenance, metadata"
+msgstr ""
+
+#: app/templates/settings.html:288 app/templates/settings.html:642
+#: app/templates/users.html:71 app/templates/users.html:154
+#: app/templates/users.html:648
+msgid "Shop"
+msgstr ""
+
+#: app/templates/settings.html:289
+msgid "Access, security, branding, client delivery"
+msgstr ""
+
+#: app/templates/settings.html:299
+msgid "Automation, providers, torrent and usenet clients"
+msgstr ""
+
+#: app/templates/settings.html:312
+msgid ""
+"Configure AeroFoil library behavior, shop access, and download automation"
+" from a single workspace."
+msgstr ""
+
+#: app/templates/settings.html:321
+#, python-format
+msgid "Version %(version)s"
+msgstr ""
+
+#: app/templates/settings.html:333
+msgid ""
+"Paths, naming, maintenance schedules, and title identification "
+"preferences."
+msgstr ""
+
+#: app/templates/settings.html:340
+msgid "Library Paths"
+msgstr ""
+
+#: app/templates/settings.html:341
+msgid "Choose the directories AeroFoil scans and manages."
+msgstr ""
+
+#: app/templates/settings.html:344
+msgid "Configured paths"
+msgstr ""
+
+#: app/templates/settings.html:345
+msgid "Path of directory containing your games."
+msgstr ""
+
+#: app/templates/settings.html:361
+msgid "Add library path"
+msgstr ""
+
+#: app/templates/settings.html:368
+msgid "Add a new directory"
+msgstr ""
+
+#: app/templates/settings.html:375
+msgid "Submit"
+msgstr ""
+
+#: app/templates/settings.html:389
+msgid "Control automatic organization, cleanup, and conversion staging."
+msgstr ""
+
+#: app/templates/settings.html:393
+msgid "Auto-maintain library"
+msgstr ""
+
+#: app/templates/settings.html:398
+msgid "Runs library organization and removes empty folders on a schedule."
+msgstr ""
+
+#: app/templates/settings.html:403
+msgid "Schedule"
+msgstr ""
+
+#: app/templates/settings.html:406
+msgid "Maintenance interval (minutes)"
+msgstr ""
+
+#: app/templates/settings.html:408
+msgid "Minimum 30 minutes. Values below 30 are clamped."
+msgstr ""
+
+#: app/templates/settings.html:411
+msgid "Last maintenance run"
+msgstr ""
+
+#: app/templates/settings.html:412 app/templates/settings.html:2765
+msgid "Never"
+msgstr ""
+
+#: app/templates/settings.html:419
+msgid "Cleanup"
+msgstr ""
+
+#: app/templates/settings.html:422
+msgid "Delete older updates during maintenance"
+msgstr ""
+
+#: app/templates/settings.html:424
+msgid "Keeps the latest owned update per title when maintenance runs."
+msgstr ""
+
+#: app/templates/settings.html:431
+msgid "Conversion staging"
+msgstr ""
+
+#: app/templates/settings.html:432 app/templates/settings.html:2490
+msgid "Disabled"
+msgstr ""
+
+#: app/templates/settings.html:434 app/templates/settings.html:2491
+msgid "Not enabled"
+msgstr ""
+
+#: app/templates/settings.html:435
+msgid "Set <code>AEROFOIL_CONVERSION_STAGING_ENABLED=true</code> to enable."
+msgstr ""
+
+#: app/templates/settings.html:443
+msgid "Organization Naming"
+msgstr ""
+
+#: app/templates/settings.html:444
+msgid "Choose how identified content is organized into folders and filenames."
+msgstr ""
+
+#: app/templates/settings.html:448
+msgid "Template selection"
+msgstr ""
+
+#: app/templates/settings.html:451
+msgid "Organization naming template"
+msgstr ""
+
+#: app/templates/settings.html:455
+msgid "Add template"
+msgstr ""
+
+#: app/templates/settings.html:458
+msgid "Delete template"
+msgstr ""
+
+#: app/templates/settings.html:464
+msgid "Presets and tokens"
+msgstr ""
+
+#: app/templates/settings.html:466
+#, python-brace-format
+msgid ""
+"Tokens: <code>{title}</code>, <code>{title_id}</code>, "
+"<code>{app_id}</code>, <code>{version}</code>, "
+"<code>{version_txt}</code>, <code>{dlc_name}</code>, <code>{ext}</code> "
+"(<code>{version_txt}</code> applies to filename templates only)"
+msgstr ""
+
+#: app/templates/settings.html:469
+msgid "Use Default Preset"
+msgstr ""
+
+#: app/templates/settings.html:470
+msgid "Use Flat Preset"
+msgstr ""
+
+#: app/templates/settings.html:471
+msgid "Use Scene Preset"
+msgstr ""
+
+#: app/templates/settings.html:477
+msgid "Template fields"
+msgstr ""
+
+#: app/templates/settings.html:485
+msgid "Show template fields"
+msgstr ""
+
+#: app/templates/settings.html:492
+msgid "Base folder template"
+msgstr ""
+
+#: app/templates/settings.html:496
+msgid "Base filename template"
+msgstr ""
+
+#: app/templates/settings.html:500
+msgid "Update folder template"
+msgstr ""
+
+#: app/templates/settings.html:504
+msgid "Update filename template"
+msgstr ""
+
+#: app/templates/settings.html:508
+msgid "DLC folder template"
+msgstr ""
+
+#: app/templates/settings.html:512
+msgid "DLC filename template"
+msgstr ""
+
+#: app/templates/settings.html:516
+msgid "Other folder template"
+msgstr ""
+
+#: app/templates/settings.html:520
+msgid "Other filename template"
+msgstr ""
+
+#: app/templates/settings.html:532
+msgid "Title Identification"
+msgstr ""
+
+#: app/templates/settings.html:533
+msgid "Metadata language, title resolution, and media cache controls."
+msgstr ""
+
+#: app/templates/settings.html:537
+msgid "Metadata locale"
+msgstr ""
+
+#: app/templates/settings.html:540
+msgid "Library Region:"
+msgstr ""
+
+#: app/templates/settings.html:541
+msgid "Select library region"
+msgstr ""
+
+#: app/templates/settings.html:545
+msgid "Library Language:"
+msgstr ""
+
+#: app/templates/settings.html:546
+msgid "Select library language"
+msgstr ""
+
+#: app/templates/settings.html:549
+msgid "Region and Language used to get games informations."
+msgstr ""
+
+#: app/templates/settings.html:554
+msgid "Identification tools"
+msgstr ""
+
+#: app/templates/settings.html:556
+msgid "Console keys:"
+msgstr ""
+
+#: app/templates/settings.html:563
+msgid "Upload / Replace keys"
+msgstr ""
+
+#: app/templates/settings.html:566
+msgid "Delete keys"
+msgstr ""
+
+#: app/templates/settings.html:570
+msgid ""
+"Console keys are required to decrypt any console content, including "
+"backups. AeroFoil uses this to identify files, regardless of the "
+"filename."
+msgstr ""
+
+#: app/templates/settings.html:576
+msgid "Media cache"
+msgstr ""
+
+#: app/templates/settings.html:579
+msgid "Refresh icons and banners"
+msgstr ""
+
+#: app/templates/settings.html:581
+msgid "Prefetch all icons"
+msgstr ""
+
+#: app/templates/settings.html:583
+msgid "Prefetch all banners"
+msgstr ""
+
+#: app/templates/settings.html:589
+msgid "Save title settings"
+msgstr ""
+
+#: app/templates/settings.html:601
+msgid "Delete library path"
+msgstr ""
+
+#: app/templates/settings.html:621
+msgid "Settings notice"
+msgstr ""
+
+#: app/templates/settings.html:627
+msgid "Do not show again"
+msgstr ""
+
+#: app/templates/settings.html:643
+msgid "Connectivity, access rules, security controls, and client-facing branding."
+msgstr ""
+
+#: app/templates/settings.html:650
+msgid "Connectivity"
+msgstr ""
+
+#: app/templates/settings.html:651
+msgid "Core values used for shop routing and Tinfoil host verification."
+msgstr ""
+
+#: app/templates/settings.html:656
+msgid "Shop URL:"
+msgstr ""
+
+#: app/templates/settings.html:659
+msgid "Configure your shop URL to enable host verification."
+msgstr ""
+
+#: app/templates/settings.html:660
+msgid ""
+"Host verification from Tinfoil requests will be enforced if the shop is "
+"accessed securely (with <code>https</code>), make sure your reverse proxy"
+" <strong>does NOT</strong> allow insecure connections (or upgrades them "
+"to use SSL) and correctly sets the <code>X-Forwarded-Proto</code> header."
+msgstr ""
+
+#: app/templates/settings.html:664
+msgid "Shop Hauth:"
+msgstr ""
+
+#: app/templates/settings.html:666
+msgid "Hauth value"
+msgstr ""
+
+#: app/templates/settings.html:667
+msgid "Override the host signature (Hauth) used for Tinfoil verification."
+msgstr ""
+
+#: app/templates/settings.html:676
+msgid "Access And Delivery"
+msgstr ""
+
+#: app/templates/settings.html:677
+msgid "How clients reach the shop and how the content is served."
+msgstr ""
+
+#: app/templates/settings.html:684
+msgid "Public shop"
+msgstr ""
+
+#: app/templates/settings.html:685
+msgid "If enabled, Shop access from Tinfoil does not require authentication."
+msgstr ""
+
+#: app/templates/settings.html:691
+msgid "External access: Tinfoil/CyberFoil only"
+msgstr ""
+
+#: app/templates/settings.html:692
+msgid ""
+"If enabled, requests from external/public IP addresses are allowed only "
+"for Tinfoil/CyberFoil shop clients (detected by the Tinfoil header set "
+"and/or matching <code>User-Agent</code>). Private/local network access is"
+" unchanged."
+msgstr ""
+
+#: app/templates/settings.html:697
+msgid "Encrypt shop"
+msgstr ""
+
+#: app/templates/settings.html:698
+msgid ""
+"Serve encrypted and compressed shop, so that only Tinfoil clients can "
+"access the content. <strong>Strongly suggested to enable it for "
+"security</strong>."
+msgstr ""
+
+#: app/templates/settings.html:703
+msgid "Tinfoil Only mode"
+msgstr ""
+
+#: app/templates/settings.html:704
+msgid ""
+"Only serve the Tinfoil shop payload from the shop root instead of the web"
+" library view. This automatically enables shop encryption."
+msgstr ""
+
+#: app/templates/settings.html:709
+msgid "Fast transfer mode"
+msgstr ""
+
+#: app/templates/settings.html:711
+msgid ""
+"Prioritize throughput by skipping per-chunk transfer tracking. Activity "
+"live byte counters and exact transfer byte accounting may be less "
+"precise."
+msgstr ""
+
+#: app/templates/settings.html:721
+msgid "Login Protection"
+msgstr ""
+
+#: app/templates/settings.html:722
+msgid "Authentication controls for the web UI and remote shop access."
+msgstr ""
+
+#: app/templates/settings.html:726
+msgid "Enable failed-login IP lockout"
+msgstr ""
+
+#: app/templates/settings.html:730
+msgid "Failed attempts"
+msgstr ""
+
+#: app/templates/settings.html:734
+msgid "Window (seconds)"
+msgstr ""
+
+#: app/templates/settings.html:738
+msgid "Lockout (seconds)"
+msgstr ""
+
+#: app/templates/settings.html:743
+msgid "Permanent IP blacklist"
+msgstr ""
+
+#: app/templates/settings.html:747 app/templates/settings.html:764
+#: app/templates/settings.html:775
+msgid "Add"
+msgstr ""
+
+#: app/templates/settings.html:748
+msgid "Clear all"
+msgstr ""
+
+#: app/templates/settings.html:754
+msgid "Add all from text"
+msgstr ""
+
+#: app/templates/settings.html:757
+msgid "One IP or CIDR per line. Blacklisted clients cannot authenticate."
+msgstr ""
+
+#: app/templates/settings.html:760
+msgid "Blocked countries"
+msgstr ""
+
+#: app/templates/settings.html:771
+msgid "Allowed countries (whitelist)"
+msgstr ""
+
+#: app/templates/settings.html:787
+msgid "Keys And Branding"
+msgstr ""
+
+#: app/templates/settings.html:788
+msgid ""
+"Encryption material and the message shown to clients after loading the "
+"shop."
+msgstr ""
+
+#: app/templates/settings.html:793
+msgid "Public Key:"
+msgstr ""
+
+#: app/templates/settings.html:814
+msgid ""
+"Public key used to encrypt the shop payload for Tinfoil clients. Changing"
+" this will break encrypted shop access unless clients have the matching "
+"private key."
+msgstr ""
+
+#: app/templates/settings.html:818
+msgid "Message of the day:"
+msgstr ""
+
+#: app/templates/settings.html:820
+msgid ""
+"Message presented when opening Tinfoil after successfully loading your "
+"shop."
+msgstr ""
+
+#: app/templates/settings.html:825
+msgid "Save shop settings"
+msgstr ""
+
+#: app/templates/settings.html:837
+msgid ""
+"Automation cadence, search tuning, and torrent or usenet client "
+"integration."
+msgstr ""
+
+#: app/templates/settings.html:841
+msgid "Enable automatic downloads"
+msgstr ""
+
+#: app/templates/settings.html:851
+msgid "General"
+msgstr ""
+
+#: app/templates/settings.html:857
+msgid "Torrent Client"
+msgstr ""
+
+#: app/templates/settings.html:860
+msgid "Usenet Client"
+msgstr ""
+
+#: app/templates/settings.html:870
+msgid "Search interval (minutes)"
+msgstr ""
+
+#: app/templates/settings.html:874
+msgid "Category/tag"
+msgstr ""
+
+#: app/templates/settings.html:876
+msgid "Used for torrent categories/tags and the SABnzbd category."
+msgstr ""
+
+#: app/templates/settings.html:881
+msgid "Required terms (comma separated)"
+msgstr ""
+
+#: app/templates/settings.html:885
+msgid "Blacklist terms (comma separated)"
+msgstr ""
+
+#: app/templates/settings.html:891
+msgid "Search prefix"
+msgstr ""
+
+#: app/templates/settings.html:895
+msgid "Search suffix"
+msgstr ""
+
+#: app/templates/settings.html:901
+msgid "Search character replacements"
+msgstr ""
+
+#: app/templates/settings.html:903
+msgid ""
+"One rule per line in the form <code>from=&gt;to</code>. Leave "
+"<code>to</code> empty to remove the character."
+msgstr ""
+
+#: app/templates/settings.html:912
+msgid "Prowlarr URL"
+msgstr ""
+
+#: app/templates/settings.html:916 app/templates/settings.html:1002
+msgid "API Key"
+msgstr ""
+
+#: app/templates/settings.html:921
+msgid "Prowlarr timeout (seconds)"
+msgstr ""
+
+#: app/templates/settings.html:923
+msgid "Increase this if searches sometimes time out. Range: 5-180 seconds."
+msgstr ""
+
+#: app/templates/settings.html:926
+msgid "Search limit"
+msgstr ""
+
+#: app/templates/settings.html:928
+msgid "Maximum number of results AeroFoil requests from Prowlarr. Range: 1-500."
+msgstr ""
+
+#: app/templates/settings.html:931
+msgid "Indexer IDs (comma separated)"
+msgstr ""
+
+#: app/templates/settings.html:935
+msgid "Categories (comma separated)"
+msgstr ""
+
+#: app/templates/settings.html:937
+msgid "Use numeric category IDs from Prowlarr."
+msgstr ""
+
+#: app/templates/settings.html:941
+msgid "Test Prowlarr"
+msgstr ""
+
+#: app/templates/settings.html:958 app/templates/settings.html:996
+msgid "Client URL"
+msgstr ""
+
+#: app/templates/settings.html:973
+msgid "Download path (optional)"
+msgstr ""
+
+#: app/templates/settings.html:977
+msgid "Minimum seeders"
+msgstr ""
+
+#: app/templates/settings.html:982
+msgid "Test torrent client"
+msgstr ""
+
+#: app/templates/settings.html:1006
+msgid "Minimum age (minutes)"
+msgstr ""
+
+#: app/templates/settings.html:1012
+msgid "Test usenet client"
+msgstr ""
+
+#: app/templates/settings.html:1021
+msgid "Save Settings"
+msgstr ""
+
+#: app/templates/settings.html:1132
+msgid "Missing admin account"
+msgstr ""
+
+#: app/templates/settings.html:1135
+msgid "AeroFoil requires an admin account to enable authentication."
+msgstr ""
+
+#: app/templates/settings.html:1136
+msgid ""
+"Until an account with admin rights is created, authentication is disabled"
+" and anyone can access and change your shop configuration."
+msgstr ""
+
+#: app/templates/settings.html:1137
+msgid "Add an admin account from the Users page."
+msgstr ""
+
+#: app/templates/settings.html:1141
+msgid "Missing console keys"
+msgstr ""
+
+#: app/templates/settings.html:1144
+msgid ""
+"Console keys are required to decrypt console content, including backups. "
+"AeroFoil uses them to identify files regardless of filename."
+msgstr ""
+
+#: app/templates/settings.html:1145
+msgid "Titles will be missed or misidentified if you do not load your keys."
+msgstr ""
+
+#: app/templates/settings.html:1146
+msgid ""
+"See <a target=\"_blank\" rel=\"noopener noreferrer\" "
+"href=\"https://gitlab.com/easyhacking/switch/-/wikis/home/getting-started"
+"/dump-keys\">this guide</a> to extract keys from your console, then "
+"upload them in Settings -> Library -> Title Identification."
+msgstr ""
+
+#: app/templates/settings.html:1147
+msgid ""
+"If keys are missing, files must follow the format <code>Title Name "
+"[TITLEID][vVERSION]</code> or they will not be recognized."
+msgstr ""
+
+#: app/templates/settings.html:1151
+msgid "Missing shop Host"
+msgstr ""
+
+#: app/templates/settings.html:1154
+msgid ""
+"Host verification from outside the local network is disabled while the "
+"shop <code>Host</code> value is empty."
+msgstr ""
+
+#: app/templates/settings.html:1155
+msgid ""
+"Set it in Settings -> Shop -> Connectivity to prevent someone else "
+"stealing from your shop."
+msgstr ""
+
+#: app/templates/settings.html:1159
+msgid "Missing shop Hauth"
+msgstr ""
+
+#: app/templates/settings.html:1163
+msgid ""
+"<a target=\"_blank\" rel=\"noopener noreferrer\" "
+"href=\"https://blawar.github.io/tinfoil/network/#host-signature\">Host "
+"signature</a> verification from outside the local network is disabled "
+"while the shop <code>Hauth</code> value is missing."
+msgstr ""
+
+#: app/templates/settings.html:1164
+msgid "Connect to the shop from Tinfoil with an admin account to set it."
+msgstr ""
+
+#: app/templates/settings.html:1416
+msgid "New template name:"
+msgstr ""
+
+#: app/templates/settings.html:1421
+msgid "Template already exists."
+msgstr ""
+
+#: app/templates/settings.html:1435
+msgid "At least one naming template is required."
+msgstr ""
+
+#: app/templates/settings.html:1542
+#, python-brace-format
+msgid "Delete path {path} ?"
+msgstr ""
+
+#: app/templates/settings.html:1628
+msgid "Keys loaded"
+msgstr ""
+
+#: app/templates/settings.html:1632
+msgid "No keys loaded"
+msgstr ""
+
+#: app/templates/settings.html:1640
+msgid "Select a keys file first."
+msgstr ""
+
+#: app/templates/settings.html:1644
+msgid "Uploading keys..."
+msgstr ""
+
+#: app/templates/settings.html:1659
+msgid "Keys uploaded successfully."
+msgstr ""
+
+#: app/templates/settings.html:1663
+#, python-brace-format
+msgid "Keys upload failed: {errors}"
+msgstr ""
+
+#: app/templates/settings.html:1667
+msgid "Keys upload failed."
+msgstr ""
+
+#: app/templates/settings.html:1678
+msgid "Delete current keys.txt?"
+msgstr ""
+
+#: app/templates/settings.html:1681
+msgid "Deleting keys..."
+msgstr ""
+
+#: app/templates/settings.html:1691 app/templates/settings.html:1695
+msgid "Failed to delete keys."
+msgstr ""
+
+#: app/templates/settings.html:1706
+msgid "Refreshing cache..."
+msgstr ""
+
+#: app/templates/settings.html:1719
+#, python-brace-format
+msgid "Cleared {icons} icons and {banners} banners."
+msgstr ""
+
+#: app/templates/settings.html:1721 app/templates/settings.html:1725
+msgid "Refresh failed."
+msgstr ""
+
+#: app/templates/settings.html:1737
+msgid "Prefetching icons..."
+msgstr ""
+
+#: app/templates/settings.html:1752
+#, python-brace-format
+msgid ""
+"Prefetched {fetched} icons. Skipped {skipped}, missing {missing}, failed "
+"{failed}."
+msgstr ""
+
+#: app/templates/settings.html:1755 app/templates/settings.html:1792
+msgid "See console for sample errors."
+msgstr ""
+
+#: app/templates/settings.html:1758 app/templates/settings.html:1762
+#: app/templates/settings.html:1795 app/templates/settings.html:1799
+msgid "Prefetch failed."
+msgstr ""
+
+#: app/templates/settings.html:1774
+msgid "Prefetching banners..."
+msgstr ""
+
+#: app/templates/settings.html:1789
+#, python-brace-format
+msgid ""
+"Prefetched {fetched} banners. Skipped {skipped}, missing {missing}, "
+"failed {failed}."
+msgstr ""
+
+#: app/templates/settings.html:1945
+msgid "Enter an IP or CIDR value."
+msgstr ""
+
+#: app/templates/settings.html:1954
+#, python-brace-format
+msgid "Invalid CIDR prefix in \"{raw}\"."
+msgstr ""
+
+#: app/templates/settings.html:1961
+#, python-brace-format
+msgid "Invalid IP format: \"{raw}\"."
+msgstr ""
+
+#: app/templates/settings.html:1966
+#, python-brace-format
+msgid "Invalid CIDR range in \"{raw}\"."
+msgstr ""
+
+#: app/templates/settings.html:1987
+msgid "No permanent IP blocks configured."
+msgstr ""
+
+#: app/templates/settings.html:1995 app/templates/settings.html:2161
+#: app/templates/settings.html:2216
+#, python-brace-format
+msgid "Remove {value}"
+msgstr ""
+
+#: app/templates/settings.html:2035
+msgid "Entry already exists."
+msgstr ""
+
+#: app/templates/settings.html:2134
+msgid "Blocked list is disabled while whitelist has entries."
+msgstr ""
+
+#: app/templates/settings.html:2142
+msgid "Whitelist is disabled while blocked list has entries."
+msgstr ""
+
+#: app/templates/settings.html:2150
+msgid "No blocked countries configured."
+msgstr ""
+
+#: app/templates/settings.html:2205
+msgid "No whitelist countries configured."
+msgstr ""
+
+#: app/templates/settings.html:2337
+msgid "Not required for Deluge"
+msgstr ""
+
+#: app/templates/settings.html:2348
+msgid "No public key to copy."
+msgstr ""
+
+#: app/templates/settings.html:2365
+msgid "Failed to copy to clipboard."
+msgstr ""
+
+#: app/templates/settings.html:2385
+#, python-brace-format
+msgid "Prowlarr categories must be numeric IDs only. Invalid values: {values}"
+msgstr ""
+
+#: app/templates/settings.html:2483
+msgid "Enabled"
+msgstr ""
+
+#: app/templates/settings.html:2485
+msgid ""
+"Temporary conversion output is staged here before files are finalized "
+"into library paths."
+msgstr ""
+
+#: app/templates/settings.html:2492
+msgid ""
+"Set <code>AEROFOIL_CONVERSION_STAGING_ENABLED=true</code> and keep a "
+"mount for <code>/app/conversion-tmp</code> to enable SSD-backed staging."
+msgstr ""
+
+#: app/templates/settings.html:2497 app/templates/settings.html:2542
+#: app/templates/settings.html:2575
+msgid "Testing..."
+msgstr ""
+
+#: app/templates/settings.html:2525
+msgid "Prowlarr OK"
+msgstr ""
+
+#: app/templates/settings.html:2525
+msgid "Prowlarr test failed"
+msgstr ""
+
+#: app/templates/settings.html:2558
+msgid "Torrent client OK"
+msgstr ""
+
+#: app/templates/settings.html:2558
+msgid "Torrent client test failed"
+msgstr ""
+
+#: app/templates/settings.html:2589
+msgid "Usenet client OK"
+msgstr ""
+
+#: app/templates/settings.html:2589
+msgid "Usenet client test failed"
+msgstr ""
+
+#: app/templates/setup_required.html:9
+msgid "Setup required"
+msgstr ""
+
+#: app/templates/setup_required.html:11
+msgid ""
+"AeroFoil is not configured yet. For security, creating the first admin "
+"account is restricted to private networks."
+msgstr ""
+
+#: app/templates/setup_required.html:18
+msgid "How to continue"
+msgstr ""
+
+#: app/templates/setup_required.html:20
+msgid "Open this page from the same LAN as the server (private IP range)."
+msgstr ""
+
+#: app/templates/setup_required.html:21
+msgid ""
+"If you are using Nginx Proxy Manager / a reverse proxy, configure trusted"
+" proxies in <code>app/config/settings.yaml</code>:"
+msgstr ""
+
+#: app/templates/upload.html:10
+msgid "Upload NSP/NSZ/XCI/XCZ files directly into the library."
+msgstr ""
+
+#: app/templates/upload.html:16
+msgid "Choose where to place your uploaded files."
+msgstr ""
+
+#: app/templates/upload.html:20
+msgid "Files"
+msgstr ""
+
+#: app/templates/upload.html:24
+msgid "Drag & drop files here"
+msgstr ""
+
+#: app/templates/upload.html:25
+msgid "or click to browse"
+msgstr ""
+
+#: app/templates/upload.html:30
+msgid "Allowed: NSP, NSZ, XCI, XCZ. Large uploads may take a while."
+msgstr ""
+
+#: app/templates/upload.html:33
+msgid "Clear list"
+msgstr ""
+
+#: app/templates/upload.html:40 app/templates/users.html:206
+msgid "Reset"
+msgstr ""
+
+#: app/templates/upload.html:44
+msgid "Upload progress"
+msgstr ""
+
+#: app/templates/upload.html:60 app/templates/upload.html:65
+msgid "No libraries found"
+msgstr ""
+
+#: app/templates/upload.html:92
+#, python-brace-format
+msgid "{count} file • {size}"
+msgstr ""
+
+#: app/templates/upload.html:92
+#, python-brace-format
+msgid "{count} files • {size}"
+msgstr ""
+
+#: app/templates/upload.html:145
+msgid "Select at least one file."
+msgstr ""
+
+#: app/templates/upload.html:156 app/templates/upload.html:172
+#, python-brace-format
+msgid "Uploading... {percent}"
+msgstr ""
+
+#: app/templates/upload.html:182
+#, python-brace-format
+msgid "Uploaded {uploaded} files. Skipped {skipped}."
+msgstr ""
+
+#: app/templates/upload.html:198
+#, python-brace-format
+msgid "Upload failed (HTTP {status})."
+msgstr ""
+
+#: app/templates/upload.html:198
+msgid "unknown"
+msgstr ""
+
+#: app/templates/users.html:11
+msgid "Create accounts and manage permissions."
+msgstr ""
+
+#: app/templates/users.html:15
+msgid "Create an admin account"
+msgstr ""
+
+#: app/templates/users.html:16
+msgid ""
+"Authentication is currently disabled until an admin account exists. "
+"Create the first admin user below."
+msgstr ""
+
+#: app/templates/users.html:26
+msgid "Search username"
+msgstr ""
+
+#: app/templates/users.html:32
+msgid "10 / page"
+msgstr ""
+
+#: app/templates/users.html:33
+msgid "25 / page"
+msgstr ""
+
+#: app/templates/users.html:34
+msgid "50 / page"
+msgstr ""
+
+#: app/templates/users.html:35
+msgid "100 / page"
+msgstr ""
+
+#: app/templates/users.html:42
+msgid "Add user"
+msgstr ""
+
+#: app/templates/users.html:47 app/templates/users.html:97
+#: app/templates/users.html:702 app/templates/users.html:703
+msgid "Loading users..."
+msgstr ""
+
+#: app/templates/users.html:54
+msgid "Add a new user:"
+msgstr ""
+
+#: app/templates/users.html:67 app/templates/users.html:104
+#: app/templates/users.html:150
+msgid "Permissions"
+msgstr ""
+
+#: app/templates/users.html:75 app/templates/users.html:158
+#: app/templates/users.html:651
+msgid "Backup"
+msgstr ""
+
+#: app/templates/users.html:84
+msgid "Create user"
+msgstr ""
+
+#: app/templates/users.html:94
+msgid "Accounts"
+msgstr ""
+
+#: app/templates/users.html:95
+msgid "Usernames, permissions, last-seen client details, and account actions."
+msgstr ""
+
+#: app/templates/users.html:114
+msgid "Users pagination"
+msgstr ""
+
+#: app/templates/users.html:123 app/templates/users.html:691
+msgid "Delete user"
+msgstr ""
+
+#: app/templates/users.html:140 app/templates/users.html:679
+#: app/templates/users.html:908
+msgid "Modify user"
+msgstr ""
+
+#: app/templates/users.html:169 app/templates/users.html:234
+#: app/templates/users.html:724 app/templates/users.html:909
+msgid "Save"
+msgstr ""
+
+#: app/templates/users.html:180 app/templates/users.html:689
+msgid "Reset password"
+msgstr ""
+
+#: app/templates/users.html:185
+msgid "New password"
+msgstr ""
+
+#: app/templates/users.html:190
+msgid "Confirm password"
+msgstr ""
+
+#: app/templates/users.html:192 app/templates/users.html:1064
+msgid "Passwords must match."
+msgstr ""
+
+#: app/templates/users.html:195
+msgid "Generated password"
+msgstr ""
+
+#: app/templates/users.html:199
+msgid "Generate"
+msgstr ""
+
+#: app/templates/users.html:201
+msgid "Generate a strong password and copy it."
+msgstr ""
+
+#: app/templates/users.html:217 app/templates/users.html:686
+msgid "Freeze account"
+msgstr ""
+
+#: app/templates/users.html:221
+msgid ""
+"Frozen accounts remain visible, but cannot access the library. When they "
+"connect, they only receive the MOTD message below."
+msgstr ""
+
+#: app/templates/users.html:223
+msgid "MOTD message"
+msgstr ""
+
+#: app/templates/users.html:224
+msgid "Your account is frozen. Contact the admin."
+msgstr ""
+
+#: app/templates/users.html:225
+msgid "Shown to this user when they try to access the shop."
+msgstr ""
+
+#: app/templates/users.html:229
+msgid "Freeze this account"
+msgstr ""
+
+#: app/templates/users.html:245
+msgid "User history"
+msgstr ""
+
+#: app/templates/users.html:246 app/templates/users.html:276
+#: app/templates/users.html:603 app/templates/users.html:757
+#: app/templates/users.html:758
+msgid "Loading history..."
+msgstr ""
+
+#: app/templates/users.html:252
+msgid "Recent completed transfer events for this account."
+msgstr ""
+
+#: app/templates/users.html:498
+msgid "Prev"
+msgstr ""
+
+#: app/templates/users.html:561
+msgid "No download history for this user yet."
+msgstr ""
+
+#: app/templates/users.html:593
+#, python-brace-format
+msgid "{downloads} downloads, {titles} titles, {ips} IPs, {bytes} sent"
+msgstr ""
+
+#: app/templates/users.html:602
+#, python-brace-format
+msgid "Loading history for {name}..."
+msgstr ""
+
+#: app/templates/users.html:606 app/templates/users.html:607
+#: app/templates/users.html:612 app/templates/users.html:613
+msgid "Failed to load history."
+msgstr ""
+
+#: app/templates/users.html:623
+msgid "1 user"
+msgstr ""
+
+#: app/templates/users.html:623
+#, python-brace-format
+msgid "{count} users"
+msgstr ""
+
+#: app/templates/users.html:624
+msgid "1 account"
+msgstr ""
+
+#: app/templates/users.html:624
+#, python-brace-format
+msgid "{count} accounts"
+msgstr ""
+
+#: app/templates/users.html:631
+msgid "No users found."
+msgstr ""
+
+#: app/templates/users.html:665
+msgid "UID"
+msgstr ""
+
+#: app/templates/users.html:668
+msgid "Loc"
+msgstr ""
+
+#: app/templates/users.html:672
+#, python-brace-format
+msgid "ID {id}"
+msgstr ""
+
+#: app/templates/users.html:683
+msgid "View history"
+msgstr ""
+
+#: app/templates/users.html:724
+msgid "Freeze"
+msgstr ""
+
+#: app/templates/users.html:727
+msgid "Unfreeze"
+msgstr ""
+
+#: app/templates/users.html:739
+#, python-brace-format
+msgid "Edit freeze for {name}"
+msgstr ""
+
+#: app/templates/users.html:739
+#, python-brace-format
+msgid "Freeze {name}"
+msgstr ""
+
+#: app/templates/users.html:751
+#, python-brace-format
+msgid "History for {name}"
+msgstr ""
+
+#: app/templates/users.html:996
+#, python-brace-format
+msgid "Reset password for {name}"
+msgstr ""
+
+#: app/templates/users.html:1111
+#, python-brace-format
+msgid "Delete user {name} ?"
+msgstr ""
+
