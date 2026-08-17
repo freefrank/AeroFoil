@@ -442,14 +442,14 @@ class LibraryHelperTests(unittest.TestCase):
         remove_mock.assert_not_called()
         delete_file_mock.assert_not_called()
 
-    @patch("app.library.delete_file_by_filepath")
+    @patch("app.library.delete_files_by_filepaths_batch")
     @patch("app.library.os.remove")
     @patch("app.library.os.path.exists", return_value=False)
     def test_delete_target_apps_cleans_db_when_disk_file_missing(
         self,
         exists_mock,
         remove_mock,
-        delete_file_mock,
+        delete_batch_mock,
     ):
         target_app = self._make_app(1, "0100AAAA", "UPDATE", 3)
         file_entry = self._make_file(102, "X:\\library\\missing.nsp", [target_app])
@@ -461,7 +461,7 @@ class LibraryHelperTests(unittest.TestCase):
         self.assertEqual(result["deleted"], 1)
         self.assertEqual(result["skipped"], 0)
         remove_mock.assert_not_called()
-        delete_file_mock.assert_called_once_with("X:\\library\\missing.nsp")
+        delete_batch_mock.assert_called_once_with(["X:\\library\\missing.nsp"], commit=True)
 
     def test_delete_library_content_rejects_unknown_scope(self):
         result = delete_library_content("unknown-scope", dry_run=True)
@@ -635,14 +635,14 @@ class LibraryHelperTests(unittest.TestCase):
         self.assertEqual(payload["skipped"], 0)
         self.assertEqual(payload["details"], ["Deleted: X:\\library\\orphaned-dlc.nsp."])
 
-    @patch("app.library.delete_file_by_filepath")
+    @patch("app.library.delete_files_by_filepaths_batch")
     @patch("app.library.os.remove")
     @patch("app.library.os.path.exists", return_value=True)
     def test_delete_target_apps_marks_mutated_on_success(
         self,
         exists_mock,
         remove_mock,
-        delete_file_mock,
+        delete_batch_mock,
     ):
         target_app = self._make_app(1, "0100CCCC", "UPDATE", 5)
         file_entry = self._make_file(103, "X:\\library\\owned.nsp", [target_app])
@@ -651,6 +651,7 @@ class LibraryHelperTests(unittest.TestCase):
         result = _delete_target_apps([target_app], dry_run=False, verbose=False)
 
         self.assertTrue(result["mutated"])
+        delete_batch_mock.assert_called_once_with(["X:\\library\\owned.nsp"], commit=True)
 
     @patch("app.library.delete_file_by_filepath")
     @patch("app.library.os.remove")
@@ -753,14 +754,14 @@ class LibraryHelperTests(unittest.TestCase):
         self.assertTrue(dlc_items[0]["ignored"])
         self.assertFalse(dlc_items[0]["owned"])
 
-    @patch("app.app._run_post_library_change")
+    @patch("app.app._apply_scoped_title_sweeps")
     @patch("app.app.post_library_change")
     @patch("app.app.delete_library_content")
-    def test_manage_delete_library_content_uses_sync_post_change(
+    def test_manage_delete_library_content_runs_scoped_sweeps_and_background_rebuild(
         self,
         delete_content_mock,
         post_library_change_mock,
-        run_post_library_change_mock,
+        scoped_sweeps_mock,
     ):
         delete_content_mock.return_value = {
             "success": True,
@@ -780,15 +781,17 @@ class LibraryHelperTests(unittest.TestCase):
 
         self.assertEqual(status_code, 200)
         self.assertTrue(response.get_json()["success"])
-        run_post_library_change_mock.assert_called_once_with()
-        post_library_change_mock.assert_not_called()
+        scoped_sweeps_mock.assert_called_once_with()
+        post_library_change_mock.assert_called_once_with()
 
-    @patch("app.app._run_post_library_change")
+    @patch("app.app._apply_scoped_title_sweeps")
+    @patch("app.app.post_library_change")
     @patch("app.app.delete_library_content")
-    def test_manage_delete_library_content_skips_sync_post_change_for_dry_run(
+    def test_manage_delete_library_content_skips_post_change_for_dry_run(
         self,
         delete_content_mock,
-        run_post_library_change_mock,
+        post_library_change_mock,
+        scoped_sweeps_mock,
     ):
         delete_content_mock.return_value = {
             "success": True,
@@ -808,14 +811,17 @@ class LibraryHelperTests(unittest.TestCase):
 
         self.assertEqual(status_code, 200)
         self.assertTrue(response.get_json()["success"])
-        run_post_library_change_mock.assert_not_called()
+        scoped_sweeps_mock.assert_not_called()
+        post_library_change_mock.assert_not_called()
 
-    @patch("app.app._run_post_library_change")
+    @patch("app.app._apply_scoped_title_sweeps")
+    @patch("app.app.post_library_change")
     @patch("app.app.delete_library_content")
-    def test_manage_delete_library_content_skips_sync_post_change_when_not_mutated(
+    def test_manage_delete_library_content_skips_post_change_when_not_mutated(
         self,
         delete_content_mock,
-        run_post_library_change_mock,
+        post_library_change_mock,
+        scoped_sweeps_mock,
     ):
         delete_content_mock.return_value = {
             "success": False,
@@ -835,7 +841,8 @@ class LibraryHelperTests(unittest.TestCase):
 
         self.assertEqual(status_code, 400)
         self.assertFalse(response.get_json()["success"])
-        run_post_library_change_mock.assert_not_called()
+        scoped_sweeps_mock.assert_not_called()
+        post_library_change_mock.assert_not_called()
 
     @patch("app.app.post_library_change")
     @patch("app.app.organize_library")

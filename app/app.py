@@ -5274,6 +5274,7 @@ def manage_delete_updates():
     verbose = bool(data.get('verbose', False))
     results = delete_older_updates(dry_run=dry_run, verbose=verbose)
     if not dry_run and results.get('mutated'):
+        _apply_scoped_title_sweeps()
         post_library_change()
     return jsonify(results)
 
@@ -5285,6 +5286,7 @@ def manage_delete_duplicates():
     verbose = bool(data.get('verbose', False))
     results = delete_duplicates(dry_run=dry_run, verbose=verbose)
     if not dry_run and results.get('mutated'):
+        _apply_scoped_title_sweeps()
         post_library_change()
     return jsonify(results)
 
@@ -5310,7 +5312,11 @@ def manage_delete_library_content():
         version=version,
     )
     if not dry_run and results.get('mutated'):
-        _run_post_library_change()
+        # Scoped sweeps are enough for the UI refresh that follows; the full
+        # rebuild (caches, shop payload, identification) runs debounced in the
+        # background instead of blocking the delete response.
+        _apply_scoped_title_sweeps()
+        post_library_change()
     status_code = 200 if results.get('success') else 400
     return jsonify(results), status_code
 
@@ -5322,6 +5328,7 @@ def manage_delete_orphaned_addons():
     verbose = bool(data.get('verbose', False))
     results = delete_orphaned_addons(dry_run=dry_run, verbose=verbose)
     if not dry_run and results.get('mutated'):
+        _apply_scoped_title_sweeps()
         post_library_change()
     return jsonify(results)
 
@@ -7987,6 +7994,29 @@ def shop_banner_api(title_id):
         )
     return response
 
+
+def _apply_scoped_title_sweeps():
+    """Bring the apps/titles rollups in line with a just-committed mutation so
+    the response (and the UI refresh it triggers) reflects it immediately.
+    The heavy cache rebuild still runs in the debounced background rebuild."""
+    if not library_rebuild_run_lock.acquire(blocking=False):
+        # A full rebuild is running; it drains the dirty titles itself.
+        return
+    try:
+        dirty_pks, full_requested = drain_dirty_title_pks()
+        if full_requested:
+            # A full sweep is too heavy for the request path; hand it back to
+            # the background rebuild and only refresh the cheap rollups here.
+            mark_all_titles_dirty()
+            mark_titles_dirty(dirty_pks)
+            update_titles(title_pks=[])
+        elif dirty_pks:
+            sweep_scope = sorted(dirty_pks)
+            add_missing_apps_to_db(title_pks=sweep_scope)
+            update_titles(title_pks=sweep_scope)
+        invalidate_library_cache_state_token()
+    finally:
+        library_rebuild_run_lock.release()
 
 def _run_post_library_change():
     if _is_conversion_running():

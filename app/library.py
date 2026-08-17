@@ -2341,6 +2341,7 @@ def _delete_target_apps(target_apps, dry_run=False, verbose=False, detail_limit=
         add_detail('No deletable files matched the requested delete target.')
         return results
 
+    removed_filepaths = []
     for filepath in unique_filepaths:
         if dry_run:
             results['deleted'] += 1
@@ -2349,15 +2350,25 @@ def _delete_target_apps(target_apps, dry_run=False, verbose=False, detail_limit=
         try:
             if os.path.exists(filepath):
                 os.remove(filepath)
-            delete_file_by_filepath(filepath)
+            removed_filepaths.append(filepath)
             results['deleted'] += 1
             results['mutated'] = True
+            logger.info(f"Deleted file: {filepath}")
             add_detail(f"Deleted: {filepath}.")
         except Exception as e:
             logger.error(f"Failed to delete file {filepath}: {e}")
-            db.session.rollback()
             results['errors'].append(str(e))
             add_detail(f"Error deleting {filepath}: {e}.")
+
+    if removed_filepaths:
+        # One transaction for the whole batch; per-file commits made large
+        # deletes pay one fsync per file.
+        try:
+            delete_files_by_filepaths_batch(removed_filepaths, commit=True)
+        except Exception as e:
+            db.session.rollback()
+            logger.error(f"Failed to remove deleted files from the database: {e}")
+            results['errors'].append(str(e))
 
     if results['errors']:
         results['success'] = False
