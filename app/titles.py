@@ -140,6 +140,17 @@ _english_titles_index_ready = False
 _local_file_metadata_cache = {}
 _local_file_metadata_cache_lock = threading.Lock()
 _LOCAL_FILE_METADATA_CACHE_MAX = 2048
+# Extracting local metadata opens the container and decrypts NCA headers —
+# roughly a second per file — so results are persisted across restarts.
+# Only successful parses are persisted; negative results stay in-memory so a
+# replaced file is retried after a restart.
+_LOCAL_METADATA_CACHE_FILE = os.path.join(CACHE_DIR, 'local_metadata_cache.json')
+_LOCAL_METADATA_CACHE_VERSION = 1
+_LOCAL_METADATA_FLUSH_MIN_INTERVAL_S = 10.0
+_LOCAL_METADATA_FLUSH_MAX_PENDING = 50
+_local_metadata_cache_loaded = False
+_local_metadata_dirty_count = 0
+_local_metadata_last_flush_ts = 0.0
 
 try:
     _libc = ctypes.CDLL("libc.so.6")
@@ -288,6 +299,12 @@ def _get_read_index_connection(path):
     return conn
 
 def _release_process_memory():
+    # Rebuild end is the natural point to persist any parses still below the
+    # flush threshold.
+    try:
+        flush_local_metadata_cache()
+    except Exception:
+        pass
     try:
         gc.collect()
     except Exception:
@@ -1543,7 +1560,69 @@ def _merge_preferred_title_info(base_info, preferred_info):
     return merged
 
 
+def _ensure_local_metadata_cache_loaded():
+    global _local_metadata_cache_loaded
+    if _local_metadata_cache_loaded:
+        return
+    with _local_file_metadata_cache_lock:
+        if _local_metadata_cache_loaded:
+            return
+        _local_metadata_cache_loaded = True
+        try:
+            with open(_LOCAL_METADATA_CACHE_FILE, 'r', encoding='utf-8') as handle:
+                payload = json.load(handle)
+        except FileNotFoundError:
+            return
+        except Exception as e:
+            logger.warning(f"Failed to load the persisted local metadata cache: {e}")
+            return
+        if int((payload or {}).get('version') or 0) != _LOCAL_METADATA_CACHE_VERSION:
+            return
+        loaded = 0
+        for key, value in ((payload.get('entries') or {})).items():
+            if isinstance(value, dict) and value:
+                _local_file_metadata_cache.setdefault(str(key), value)
+                loaded += 1
+                if loaded >= _LOCAL_FILE_METADATA_CACHE_MAX:
+                    break
+        if loaded:
+            logger.info(f"Loaded {loaded} persisted local metadata entries.")
+
+def _flush_local_metadata_cache_locked(force=False):
+    """Persist successful parses. Caller must hold _local_file_metadata_cache_lock."""
+    global _local_metadata_dirty_count, _local_metadata_last_flush_ts
+    if _local_metadata_dirty_count <= 0:
+        return
+    now = time.time()
+    if (
+        not force
+        and _local_metadata_dirty_count < _LOCAL_METADATA_FLUSH_MAX_PENDING
+        and (now - _local_metadata_last_flush_ts) < _LOCAL_METADATA_FLUSH_MIN_INTERVAL_S
+    ):
+        return
+    entries = {
+        key: value
+        for key, value in _local_file_metadata_cache.items()
+        if isinstance(value, dict) and value
+    }
+    try:
+        os.makedirs(CACHE_DIR, exist_ok=True)
+        tmp_path = f"{_LOCAL_METADATA_CACHE_FILE}.tmp"
+        with open(tmp_path, 'w', encoding='utf-8') as handle:
+            json.dump({'version': _LOCAL_METADATA_CACHE_VERSION, 'entries': entries}, handle, ensure_ascii=False)
+        os.replace(tmp_path, _LOCAL_METADATA_CACHE_FILE)
+        _local_metadata_dirty_count = 0
+        _local_metadata_last_flush_ts = now
+    except Exception as e:
+        logger.warning(f"Failed to persist the local metadata cache: {e}")
+
+def flush_local_metadata_cache():
+    with _local_file_metadata_cache_lock:
+        _flush_local_metadata_cache_locked(force=True)
+
 def _set_local_file_metadata_cache(cache_key, value):
+    global _local_metadata_dirty_count
+    _ensure_local_metadata_cache_loaded()
     with _local_file_metadata_cache_lock:
         _local_file_metadata_cache[cache_key] = value
         if len(_local_file_metadata_cache) > _LOCAL_FILE_METADATA_CACHE_MAX:
@@ -1551,6 +1630,9 @@ def _set_local_file_metadata_cache(cache_key, value):
                 _local_file_metadata_cache.pop(next(iter(_local_file_metadata_cache)))
             except Exception:
                 _local_file_metadata_cache.clear()
+        if isinstance(value, dict) and value:
+            _local_metadata_dirty_count += 1
+            _flush_local_metadata_cache_locked()
 
 
 def _get_local_metadata_language_preferences(app_settings=None):
@@ -1714,6 +1796,7 @@ def _build_local_fallback_info(lookup_id, _seen=None, preferred_language=None, p
         return None
     seen.add(key)
     cache_key = f"local_fallback:{key}:{region}:{language}"
+    _ensure_local_metadata_cache_loaded()
     with _local_file_metadata_cache_lock:
         cached = _local_file_metadata_cache.get(cache_key)
     if cached is not None:
