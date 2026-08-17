@@ -883,7 +883,12 @@ def _get_discovery_sections(limit=12):
                     disk_ok = (now - disk_ts) <= SHOP_SECTIONS_CACHE_TTL_S
                 if disk_payload and disk_ok:
                     payload = disk_payload
-                    _store_shop_sections_cache(payload, max(limit, 50), disk_ts, state_token, persist_disk=False)
+                    disk_size = disk_cache.get('size_bytes')
+                    _store_shop_sections_cache(
+                        payload, max(limit, 50), disk_ts, state_token,
+                        persist_disk=disk_size is None,
+                        payload_size=disk_size,
+                    )
 
     if payload is None:
         payload = _build_shop_sections_payload(max(limit, 50))
@@ -907,7 +912,7 @@ def _get_discovery_sections(limit=12):
 SHOP_SECTIONS_CACHE_TTL_S = _read_cache_ttl('SHOP_SECTIONS_CACHE_TTL_S', None)
 SHOP_SECTIONS_ALL_ITEMS_CAP = _read_cache_ttl('SHOP_SECTIONS_ALL_ITEMS_CAP', None)
 SHOP_SECTIONS_ALL_ITEMS_CAP_NO_TITLEDB = _read_cache_ttl('SHOP_SECTIONS_ALL_ITEMS_CAP_NO_TITLEDB', 120)
-SHOP_SECTIONS_MAX_IN_MEMORY_BYTES = _read_cache_ttl('SHOP_SECTIONS_MAX_IN_MEMORY_BYTES', 4 * 1024 * 1024)
+SHOP_SECTIONS_MAX_IN_MEMORY_BYTES = _read_cache_ttl('SHOP_SECTIONS_MAX_IN_MEMORY_BYTES', 64 * 1024 * 1024)
 MEDIA_INDEX_TTL_S = _read_cache_ttl('MEDIA_INDEX_TTL_S', None)
 REQUEST_SETTINGS_SYNC_INTERVAL_S = _read_cache_ttl('REQUEST_SETTINGS_SYNC_INTERVAL_S', 5)
 MISSING_FILES_SWEEP_INTERVAL_S = _read_cache_ttl('MISSING_FILES_SWEEP_INTERVAL_S', 21600)
@@ -917,8 +922,19 @@ TITLES_TOTAL_CACHE_MAX_ENTRIES = _read_int_env('AEROFOIL_TITLES_TOTAL_CACHE_MAX_
 TITLES_TOTAL_CACHE_MAX_ENTRIES = _read_int_env('OWNFOIL_TITLES_TOTAL_CACHE_MAX_ENTRIES', TITLES_TOTAL_CACHE_MAX_ENTRIES, minimum=16, maximum=4096)
 # ===============================
 
-def _load_shop_sections_cache_from_disk():
-    cache_path = SHOP_SECTIONS_CACHE_FILE
+def _shop_sections_cache_path(cache_limit=None):
+    # The uncapped CyberFoil payload (limit=-1) gets its own file so it does not
+    # evict the capped web payload (and vice versa) on alternating traffic.
+    try:
+        if cache_limit is not None and int(cache_limit) == -1:
+            base, ext = os.path.splitext(SHOP_SECTIONS_CACHE_FILE)
+            return f"{base}.cyberfoil{ext}"
+    except (TypeError, ValueError):
+        pass
+    return SHOP_SECTIONS_CACHE_FILE
+
+def _load_shop_sections_cache_from_disk(cache_limit=None):
+    cache_path = _shop_sections_cache_path(cache_limit)
     if not os.path.exists(cache_path):
         return None
     try:
@@ -932,14 +948,15 @@ def _load_shop_sections_cache_from_disk():
         return None
     return data
 
-def _save_shop_sections_cache_to_disk(payload, limit, timestamp, state_token=None):
-    cache_path = SHOP_SECTIONS_CACHE_FILE
+def _save_shop_sections_cache_to_disk(payload, limit, timestamp, state_token=None, size_bytes=None):
+    cache_path = _shop_sections_cache_path(limit)
     os.makedirs(os.path.dirname(cache_path), exist_ok=True)
     data = {
         'payload': payload,
         'limit': limit,
         'timestamp': timestamp,
         'state_token': state_token,
+        'size_bytes': size_bytes,
     }
     try:
         with open(cache_path, 'w', encoding='utf-8') as handle:
@@ -953,7 +970,7 @@ def _estimate_json_size_bytes(payload):
     except Exception:
         return None
 
-def _store_shop_sections_cache(payload, limit, timestamp, state_token, persist_disk=True):
+def _store_shop_sections_cache(payload, limit, timestamp, state_token, persist_disk=True, payload_size=None):
     cache_payload = payload
     if '::missing' in str(state_token or ''):
         # Keep cold-boot payload on disk only; avoid retaining large placeholder payloads in RAM.
@@ -963,7 +980,8 @@ def _store_shop_sections_cache(payload, limit, timestamp, state_token, persist_d
     if cache_payload is not None and max_bytes is not None:
         try:
             max_bytes = max(0, int(max_bytes))
-            payload_size = _estimate_json_size_bytes(cache_payload)
+            if payload_size is None:
+                payload_size = _estimate_json_size_bytes(cache_payload)
             if payload_size is not None and payload_size > max_bytes:
                 logger.info(
                     "Skipping in-memory shop sections cache (%s bytes > %s bytes); using disk cache only.",
@@ -974,22 +992,24 @@ def _store_shop_sections_cache(payload, limit, timestamp, state_token, persist_d
         except Exception:
             pass
 
+    # Never clear the encrypted-response cache here: its keys embed the state
+    # token, so entries for stale tokens miss naturally and are evicted by the
+    # size bound. Clearing it whenever an oversized payload was stored meant it
+    # could never hit while the payload lived on disk only.
     with shop_sections_cache_lock:
         if cache_payload is None:
             shop_sections_cache['payload'] = None
             shop_sections_cache['limit'] = None
             shop_sections_cache['timestamp'] = 0
             shop_sections_cache['state_token'] = None
-            shop_sections_cache['encrypted'] = {}
         else:
             shop_sections_cache['payload'] = cache_payload
             shop_sections_cache['limit'] = limit
             shop_sections_cache['timestamp'] = timestamp
             shop_sections_cache['state_token'] = state_token
-            shop_sections_cache['encrypted'] = {}
 
     if persist_disk:
-        _save_shop_sections_cache_to_disk(payload, limit, timestamp, state_token=state_token)
+        _save_shop_sections_cache_to_disk(payload, limit, timestamp, state_token=state_token, size_bytes=payload_size)
 
 def _summarize_shop_sections_payload(payload):
     summary = {
@@ -6199,7 +6219,7 @@ def shop_sections_api():
 
     if payload is None:
         if SHOP_SECTIONS_CACHE_TTL_S is None or SHOP_SECTIONS_CACHE_TTL_S > 0:
-            disk_cache = _load_shop_sections_cache_from_disk()
+            disk_cache = _load_shop_sections_cache_from_disk(cache_limit)
             if (
                 disk_cache
                 and disk_cache.get('limit') == cache_limit
@@ -6212,7 +6232,15 @@ def shop_sections_api():
                     disk_ok = (now - disk_ts) <= SHOP_SECTIONS_CACHE_TTL_S
                 if disk_payload and disk_ok:
                     payload = disk_payload
-                    _store_shop_sections_cache(payload, cache_limit, disk_ts, state_token, persist_disk=False)
+                    # Reuse the size recorded with the disk cache so the store
+                    # does not re-serialize a multi-MB payload per request;
+                    # legacy cache files without a size get re-persisted once.
+                    disk_size = disk_cache.get('size_bytes')
+                    _store_shop_sections_cache(
+                        payload, cache_limit, disk_ts, state_token,
+                        persist_disk=disk_size is None,
+                        payload_size=disk_size,
+                    )
 
     if payload is None:
         payload = _build_shop_sections_payload(limit, full_catalog=is_cyberfoil)
