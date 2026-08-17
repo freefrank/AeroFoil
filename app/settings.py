@@ -1,6 +1,7 @@
 from app.constants import *
 import yaml
 import os
+import re
 from urllib.parse import urlparse
 import time
 import hashlib
@@ -152,6 +153,21 @@ def _merge_titles_manual_overrides(raw_overrides):
     return merged
 
 
+def _normalize_metadata_fallbacks(raw_fallbacks, limit=4):
+    """Keep an ordered, deduplicated list of "REGION.lang" entries."""
+    out = []
+    if isinstance(raw_fallbacks, (list, tuple)):
+        for entry in raw_fallbacks:
+            entry = str(entry or '').strip()
+            if not re.fullmatch(r"[A-Z]{2}\.[a-z]{2}", entry):
+                continue
+            if entry not in out:
+                out.append(entry)
+            if len(out) >= limit:
+                break
+    return out
+
+
 def _normalize_titles_settings(raw_titles):
     defaults = DEFAULT_SETTINGS.get('titles', {}) or {}
     merged = defaults.copy()
@@ -166,6 +182,7 @@ def _normalize_titles_settings(raw_titles):
         merged.get('prefer_english_metadata'),
         default=defaults.get('prefer_english_metadata', False),
     )
+    merged['metadata_fallbacks'] = _normalize_metadata_fallbacks(merged.get('metadata_fallbacks'))
     user_overrides = _normalize_titles_manual_overrides(merged.get('manual_overrides'))
     merged['manual_overrides'] = user_overrides
     merged['effective_manual_overrides'] = _merge_titles_manual_overrides(user_overrides)
@@ -925,7 +942,7 @@ def delete_library_path_from_settings(path):
                 })
     return success, errors
 
-def set_titles_settings(region, language, prefer_english_metadata=False):
+def set_titles_settings(region, language, prefer_english_metadata=False, metadata_fallbacks=None):
     settings = load_settings(force_reload=True)
     settings.setdefault('titles', {})
     settings['titles'].update({
@@ -933,6 +950,8 @@ def set_titles_settings(region, language, prefer_english_metadata=False):
         'language': language,
         'prefer_english_metadata': prefer_english_metadata,
     })
+    if metadata_fallbacks is not None:
+        settings['titles']['metadata_fallbacks'] = _normalize_metadata_fallbacks(metadata_fallbacks)
     settings['titles'] = _normalize_titles_settings(settings.get('titles'))
     with open(CONFIG_FILE, 'w') as yaml_file:
         yaml.dump(settings, yaml_file)

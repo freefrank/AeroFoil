@@ -113,6 +113,9 @@ DEFAULT_SETTINGS = {
         "language": "en",
         "region": "US",
         "prefer_english_metadata": False,
+        # Ordered "REGION.lang" entries (e.g. "US.en") consulted when the
+        # primary region database has no entry for a title.
+        "metadata_fallbacks": [],
         "valid_keys": False,
         "manual_overrides": {},
     },

@@ -119,6 +119,7 @@ _cnmts_fixed_index_file = os.path.join(TITLEDB_DIR, 'cnmts-fixed.index.sqlite3')
 _cnmts_index_file = _cnmts_default_index_file
 _titles_index_file = os.path.join(TITLEDB_DIR, 'titles.index.sqlite3')
 _english_titles_index_file = os.path.join(TITLEDB_DIR, 'titles.english.index.sqlite3')
+_fallback_titles_index_file = os.path.join(TITLEDB_DIR, 'titles.fallback.index.sqlite3')
 _titledb_lock = threading.Lock()
 _missing_titledb_log_lock = threading.Lock()
 _missing_titledb_last_log = {}
@@ -135,8 +136,11 @@ _title_lookup_cache = {}
 _title_lookup_cache_lock = threading.Lock()
 _english_title_lookup_cache = {}
 _english_title_lookup_cache_lock = threading.Lock()
+_fallback_title_lookup_cache = {}
+_fallback_title_lookup_cache_lock = threading.Lock()
 _TITLE_LOOKUP_CACHE_MAX = 32768
 _english_titles_index_ready = False
+_fallback_titles_index_ready = False
 _local_file_metadata_cache = {}
 _local_file_metadata_cache_lock = threading.Lock()
 _LOCAL_FILE_METADATA_CACHE_MAX = 2048
@@ -183,6 +187,7 @@ def _reset_titledb_state():
     global _titles_images_by_title_id
     global _titles_db_loaded
     global _english_titles_index_ready
+    global _fallback_titles_index_ready
 
     _cnmts_db = None
     _titles_db = None
@@ -197,11 +202,14 @@ def _reset_titledb_state():
     _titles_desc_by_title_id = None
     _titles_images_by_title_id = None
     _english_titles_index_ready = False
+    _fallback_titles_index_ready = False
     _titles_db_loaded = False
     with _title_lookup_cache_lock:
         _title_lookup_cache.clear()
     with _english_title_lookup_cache_lock:
         _english_title_lookup_cache.clear()
+    with _fallback_title_lookup_cache_lock:
+        _fallback_title_lookup_cache.clear()
     with _identify_app_cache_lock:
         _identify_app_cache.clear()
     _bump_index_conn_generation()
@@ -243,6 +251,19 @@ def _get_local_preferred_english_titles_files(app_settings=None):
     preferred_files = titledb.get_preferred_english_titles_files(app_settings or load_settings(), available_files=current_files)
     out = []
     for file_name in preferred_files:
+        path = os.path.join(TITLEDB_DIR, file_name)
+        if os.path.isfile(path):
+            out.append(path)
+    return out
+
+def _get_local_fallback_titles_files(app_settings=None):
+    try:
+        current_files = os.listdir(TITLEDB_DIR)
+    except FileNotFoundError:
+        return []
+    fallback_files = titledb.get_fallback_titles_files(app_settings or load_settings(), available_files=current_files)
+    out = []
+    for file_name in fallback_files:
         path = os.path.join(TITLEDB_DIR, file_name)
         if os.path.isfile(path):
             out.append(path)
@@ -748,6 +769,16 @@ def _ensure_english_titles_index(region_titles_files):
             _english_title_lookup_cache.clear()
     return _english_titles_index_ready
 
+def _ensure_fallback_titles_index(region_titles_files):
+    global _fallback_titles_index_ready
+    _fallback_titles_index_ready = bool(
+        _ensure_titles_index_from_sources(region_titles_files, _fallback_titles_index_file, log_label='fallback')
+    )
+    if _fallback_titles_index_ready:
+        with _fallback_title_lookup_cache_lock:
+            _fallback_title_lookup_cache.clear()
+    return _fallback_titles_index_ready
+
 def _cnmts_index_row_count():
     if not _cnmts_index_ready:
         return 0
@@ -1024,6 +1055,7 @@ def load_titledb():
     global _titles_desc_by_title_id
     global _titles_images_by_title_id
     global _english_titles_index_ready
+    global _fallback_titles_index_ready
     global identification_in_progress_count
     global _titles_db_loaded
     global _missing_files_recovery_last_attempt_ts
@@ -1032,6 +1064,16 @@ def load_titledb():
     with _titledb_lock:
         app_settings = load_settings()
         required_files = _required_titledb_files(app_settings)
+        # Optional per-region databases (english preference, fallbacks) join the
+        # change signature so downloads or settings changes trigger a reload,
+        # but never count as missing required files.
+        optional_signature_files = [
+            ('optional', path)
+            for path in (
+                _get_local_preferred_english_titles_files(app_settings)
+                + _get_local_fallback_titles_files(app_settings)
+            )
+        ]
 
         if _titles_db_loaded:
             # Refresh in-memory indexes when TitleDB files changed on disk so
@@ -1040,7 +1082,7 @@ def load_titledb():
             if missing_files:
                 identification_in_progress_count += 1
                 return True
-            current_signature = _build_titledb_data_signature(required_files)
+            current_signature = _build_titledb_data_signature(required_files + optional_signature_files)
             if (
                 current_signature == str(_titledb_data_signature or '')
                 or identification_in_progress_count > 0
@@ -1089,6 +1131,7 @@ def load_titledb():
         versions_file = dict(required_files).get('versions')
         versions_txt_file = dict(required_files).get('versions_txt')
         english_titles_files = _get_local_preferred_english_titles_files(app_settings)
+        fallback_titles_files = _get_local_fallback_titles_files(app_settings)
         _cnmts_index_file = (
             _cnmts_fixed_index_file
             if os.path.basename(str(cnmts_file or '')).lower() == 'cnmts-fixed.json'
@@ -1102,11 +1145,14 @@ def load_titledb():
                 _titles_index_ready = False
                 _versions_index_ready = False
                 _english_titles_index_ready = False
+                _fallback_titles_index_ready = False
                 _ensure_versions_index(versions_file)
                 _ensure_cnmts_index(cnmts_file)
                 _ensure_titles_index(region_titles_file)
                 if english_titles_files:
                     _ensure_english_titles_index(english_titles_files)
+                if fallback_titles_files:
+                    _ensure_fallback_titles_index(fallback_titles_files)
 
                 _cnmts_db = None
                 _titles_db = None
@@ -1161,7 +1207,7 @@ def load_titledb():
                         _versions_txt_db[app_id] = version
 
                 _titles_db_loaded = True
-                _titledb_data_signature = _build_titledb_data_signature(required_files)
+                _titledb_data_signature = _build_titledb_data_signature(required_files + optional_signature_files)
                 identification_in_progress_count += 1
                 logger.info("TitleDBs loaded.")
                 _release_process_memory()
@@ -1544,6 +1590,14 @@ def _get_english_title_info_from_index(title_key):
         _english_titles_index_file,
         _english_title_lookup_cache,
         _english_title_lookup_cache_lock,
+    )
+
+def _get_fallback_region_title_info_from_index(title_key):
+    return _get_title_info_from_index_file(
+        title_key,
+        _fallback_titles_index_file,
+        _fallback_title_lookup_cache,
+        _fallback_title_lookup_cache_lock,
     )
 
 def _merge_preferred_title_info(base_info, preferred_info):
@@ -1934,6 +1988,15 @@ def get_game_info(title_id):
             preferred_title_info = _get_english_title_info_from_index(title_key)
 
         resolved_title_info = _merge_preferred_title_info(title_info, preferred_title_info)
+        if _fallback_titles_index_ready and (
+            not resolved_title_info
+            or not str(resolved_title_info.get('name') or '').strip()
+        ):
+            # The primary database has no (usable) entry: fall back to the
+            # configured fallback databases. Primary fields still win.
+            fallback_info = _get_fallback_region_title_info_from_index(title_key)
+            if fallback_info:
+                resolved_title_info = _merge_preferred_title_info(fallback_info, resolved_title_info)
         if not resolved_title_info:
             raise KeyError(title_id)
 

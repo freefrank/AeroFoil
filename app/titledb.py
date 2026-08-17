@@ -16,6 +16,23 @@ logger = logging.getLogger('main')
 def get_region_titles_file(app_settings):
     return f"titles.{app_settings['titles']['region']}.{app_settings['titles']['language']}.json"
 
+def get_fallback_titles_files(app_settings, available_files=None):
+    """Ordered region titles files used when the primary database misses a title."""
+    titles_settings = (app_settings or {}).get('titles') or {}
+    primary_file = get_region_titles_file(app_settings)
+    out = []
+    for entry in (titles_settings.get('metadata_fallbacks') or []):
+        entry = str(entry or '').strip()
+        if not re.fullmatch(r"[A-Z]{2}\.[a-z]{2}", entry):
+            continue
+        file_name = f"titles.{entry}.json"
+        if file_name == primary_file or file_name in out:
+            continue
+        if available_files is not None and file_name not in available_files:
+            continue
+        out.append(file_name)
+    return out
+
 def get_preferred_english_titles_files(app_settings, available_files=None):
     titles_settings = (app_settings or {}).get('titles') or {}
     if not bool(titles_settings.get('prefer_english_metadata')):
@@ -276,9 +293,10 @@ def update_titledb_files(app_settings):
         raise
     
     english_titles_files = get_preferred_english_titles_files(app_settings, available_files=remote_files)
+    fallback_titles_files = get_fallback_titles_files(app_settings, available_files=remote_files)
     update_available, latest_remote_commit = is_titledb_update_available(rzf)
     if update_available:
-        files_to_update = TITLEDB_DEFAULT_FILES + [region_titles_file] + english_titles_files
+        files_to_update = TITLEDB_DEFAULT_FILES + [region_titles_file] + english_titles_files + fallback_titles_files
         need_descriptions = True
         old_region_titles_files = [f for f in os.listdir(TITLEDB_DIR) if re.match(r"titles\.[A-Z]{2}\.[a-z]{2}\.json", f) and f not in files_to_update]
         files_to_update += old_region_titles_files
@@ -300,6 +318,14 @@ def update_titledb_files(app_settings):
             ", ".join(missing_english_files)
         )
         files_to_update.extend(missing_english_files)
+
+    missing_fallback_files = [file for file in fallback_titles_files if file not in current_files]
+    if missing_fallback_files:
+        logger.info(
+            "Missing fallback TitleDB file(s): %s. They will be downloaded.",
+            ", ".join(missing_fallback_files)
+        )
+        files_to_update.extend(missing_fallback_files)
 
     missing_optional_files = [
         file for file in TITLEDB_OPTIONAL_FILES

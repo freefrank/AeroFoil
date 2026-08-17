@@ -4731,7 +4731,12 @@ def set_titles_settings_api():
     settings = request.json
     region = settings['region']
     language = settings['language']
-    prefer_english_metadata = bool(settings.get('prefer_english_metadata'))
+    if 'prefer_english_metadata' in settings:
+        prefer_english_metadata = bool(settings.get('prefer_english_metadata'))
+    else:
+        # The settings form does not submit this key; keep the stored value
+        # instead of silently resetting it on every save.
+        prefer_english_metadata = bool(((load_settings() or {}).get('titles') or {}).get('prefer_english_metadata'))
     languages_file = os.path.join(TITLEDB_DIR, 'languages.json')
     if os.path.exists(languages_file):
         with open(languages_file) as f:
@@ -4756,8 +4761,36 @@ def set_titles_settings_api():
                 }]
         }
         return jsonify(resp)
-    
-    set_titles_settings(region, language, prefer_english_metadata=prefer_english_metadata)
+
+    metadata_fallbacks = None
+    raw_fallbacks = settings.get('metadata_fallbacks')
+    if raw_fallbacks is not None:
+        if not isinstance(raw_fallbacks, list):
+            raw_fallbacks = []
+        metadata_fallbacks = []
+        for entry in raw_fallbacks:
+            entry = str(entry or '').strip()
+            if not entry:
+                continue
+            parts = entry.split('.')
+            if len(parts) != 2 or parts[0] not in languages or parts[1] not in languages.get(parts[0], []):
+                resp = {
+                    'success': False,
+                    'errors': [{
+                            'path': 'titles',
+                            'error': _('The fallback database %(pair)s is not available.', pair=entry)
+                        }]
+                }
+                return jsonify(resp)
+            if entry not in metadata_fallbacks:
+                metadata_fallbacks.append(entry)
+
+    set_titles_settings(
+        region,
+        language,
+        prefer_english_metadata=prefer_english_metadata,
+        metadata_fallbacks=metadata_fallbacks,
+    )
     reload_conf()
     titledb.update_titledb(app_settings)
     post_library_change()

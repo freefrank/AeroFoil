@@ -547,6 +547,17 @@
                                     </select>
                                 </div>
                                 <div id="selectRegionLanguageHelp" class="form-text">{{ _('Region and language used to retrieve game information.') }}</div>
+                                <div class="col-md-6">
+                                    <label for="selectFallback1" class="form-label">{{ _('Fallback database 1:') }}</label>
+                                    <select id="selectFallback1" class="form-select" aria-label="{{ _('Select first fallback database') }}">
+                                    </select>
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="selectFallback2" class="form-label">{{ _('Fallback database 2:') }}</label>
+                                    <select id="selectFallback2" class="form-select" aria-label="{{ _('Select second fallback database') }}">
+                                    </select>
+                                </div>
+                                <div id="selectFallbackHelp" class="form-text">{{ _('Optional: when the primary database has no entry for a title, these databases are consulted in order.') }}</div>
                             </div>
                         </div>
 
@@ -1661,6 +1672,7 @@
         data = {
             region: getInputVal("selectRegion"),
             language: getInputVal("selectLanguage"),
+            metadata_fallbacks: [getInputVal("selectFallback1"), getInputVal("selectFallback2")].filter(Boolean),
         }
 
         $.ajax({
@@ -2972,6 +2984,15 @@
                 $('#selectRegion').append(`<option value="${key}">${key}</option>`);
             });
 
+            ['#selectFallback1', '#selectFallback2'].forEach(function (sel) {
+                $(sel).append(`<option value="">${ {{ _('None')|tojson }} }</option>`);
+                Object.keys(languages).forEach(function (region) {
+                    (languages[region] || []).forEach(function (lang) {
+                        $(sel).append(`<option value="${region}.${lang}">${region} / ${lang}</option>`);
+                    });
+                });
+            });
+
             $('#selectRegion').on('change', function () {
                 $('#selectLanguage').empty()
                 region = $(this).find(":selected").val();
@@ -3008,6 +3029,9 @@
             setInputVal("selectRegion", titlesSettings['region']);
             $('#selectRegion').trigger('change');
             setInputVal("selectLanguage", titlesSettings['language']);
+            const metadataFallbacks = titlesSettings['metadata_fallbacks'] || [];
+            setInputVal("selectFallback1", metadataFallbacks[0] || '');
+            setInputVal("selectFallback2", metadataFallbacks[1] || '');
             setConsoleKeysLoadedState(!!titlesSettings['valid_keys']);
 
             // Shop settings
