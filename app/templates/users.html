@@ -7,13 +7,13 @@
         <div class="col">
             <div class="settings-container container mt-3">
 
-                <h2 class="pb-2">Users</h2>
-                <p class="text-muted">Create accounts and manage permissions.</p>
+                <h2 class="pb-2">{{ _('Users') }}</h2>
+                <p class="text-muted">{{ _('Create accounts and manage permissions.') }}</p>
 
                 {% if admin_account_created == false %}
                 <div class="alert alert-danger" role="alert">
-                    <h4 class="alert-heading">Create an admin account</h4>
-                    <p class="mb-0">Authentication is currently disabled until an admin account exists. Create the first admin user below.</p>
+                    <h4 class="alert-heading">{{ _('Create an admin account') }}</h4>
+                    <p class="mb-0">{{ _('Authentication is currently disabled until an admin account exists. Create the first admin user below.') }}</p>
                 </div>
                 {% endif %}
 
@@ -23,65 +23,65 @@
                             <div class="flex-grow-1">
                                 <div class="input-group">
                                     <span class="input-group-text"><i class="bi bi-search"></i></span>
-                                    <input type="text" class="form-control" id="userSearchInput" placeholder="Search username">
-                                    <button class="btn btn-outline-secondary" type="button" id="clearUserSearchBtn">Clear</button>
+                                    <input type="text" class="form-control" id="userSearchInput" placeholder="{{ _('Search username') }}">
+                                    <button class="btn btn-outline-secondary" type="button" id="clearUserSearchBtn">{{ _('Clear') }}</button>
                                 </div>
                             </div>
                             <div class="d-flex gap-2">
                                 <select class="form-select" id="userPageSizeSelect" style="max-width: 140px;">
-                                    <option value="10">10 / page</option>
-                                    <option value="25" selected>25 / page</option>
-                                    <option value="50">50 / page</option>
-                                    <option value="100">100 / page</option>
+                                    <option value="10">{{ _('10 / page') }}</option>
+                                    <option value="25" selected>{{ _('25 / page') }}</option>
+                                    <option value="50">{{ _('50 / page') }}</option>
+                                    <option value="100">{{ _('100 / page') }}</option>
                                 </select>
                                 <button type="button" class="btn btn-outline-secondary text-nowrap" id="refreshUsersBtn">
-                                    <i class="bi bi-arrow-clockwise"></i> Refresh
+                                    <i class="bi bi-arrow-clockwise"></i> {{ _('Refresh') }}
                                 </button>
                                 <button class="btn btn-primary text-nowrap" type="button" data-bs-toggle="collapse" data-bs-target="#collapseNewUser"
                                     aria-expanded="false" aria-controls="collapseNewUser">
-                                    <i class="bi bi-person-plus"></i> Add user
+                                    <i class="bi bi-person-plus"></i> {{ _('Add user') }}
                                 </button>
                             </div>
                         </div>
                         <div class="d-flex justify-content-between align-items-center mt-2">
-                            <div class="text-muted small" id="usersCountLabel">Loading users...</div>
+                            <div class="text-muted small" id="usersCountLabel">{{ _('Loading users...') }}</div>
                         </div>
                     </div>
                 </div>
 
                 <div class="collapse" id="collapseNewUser">
                     <div class="card card-body mb-3">
-                        <label class="form-label">Add a new user:</label>
+                        <label class="form-label">{{ _('Add a new user:') }}</label>
                         <form class="row g-3" onsubmit="return false;">
                             <div class="col-md-4">
-                                <label for="inputNewUser" class="form-label">Username</label>
-                                <input type="text" class="form-control" id="inputNewUser" placeholder="Username">
-                                <div class="invalid-feedback" id="newUserNameFeedback">Username is required.</div>
+                                <label for="inputNewUser" class="form-label">{{ _('Username') }}</label>
+                                <input type="text" class="form-control" id="inputNewUser" placeholder="{{ _('Username') }}">
+                                <div class="invalid-feedback" id="newUserNameFeedback">{{ _('Username is required.') }}</div>
                             </div>
                             <div class="col-md-4">
-                                <label for="inputNewUserPassword" class="form-label">Password</label>
-                                <input type="password" class="form-control" id="inputNewUserPassword" placeholder="Password">
-                                <div class="invalid-feedback" id="newUserPasswordFeedback">Password is required.</div>
+                                <label for="inputNewUserPassword" class="form-label">{{ _('Password') }}</label>
+                                <input type="password" class="form-control" id="inputNewUserPassword" placeholder="{{ _('Password') }}">
+                                <div class="invalid-feedback" id="newUserPasswordFeedback">{{ _('Password is required.') }}</div>
                             </div>
                             <div class="col-md-4">
-                                <label class="form-label">Permissions</label>
+                                <label class="form-label">{{ _('Permissions') }}</label>
                                 <div class="d-flex flex-wrap gap-3">
                                     <div class="form-check">
                                         <input class="form-check-input" type="checkbox" id="checkboxNewUserShopAccess" checked>
-                                        <label class="form-check-label" for="checkboxNewUserShopAccess">Shop</label>
+                                        <label class="form-check-label" for="checkboxNewUserShopAccess">{{ _('Shop') }}</label>
                                     </div>
                                     <div class="form-check">
                                         <input class="form-check-input" type="checkbox" id="checkboxNewUserBackupAccess">
-                                        <label class="form-check-label" for="checkboxNewUserBackupAccess">Backup</label>
+                                        <label class="form-check-label" for="checkboxNewUserBackupAccess">{{ _('Backup') }}</label>
                                     </div>
                                     <div class="form-check">
                                         <input class="form-check-input" type="checkbox" id="checkboxNewUserAdminAccess">
-                                        <label class="form-check-label" for="checkboxNewUserAdminAccess">Admin</label>
+                                        <label class="form-check-label" for="checkboxNewUserAdminAccess">{{ _('Admin') }}</label>
                                     </div>
                                 </div>
                             </div>
                             <div class="col-12">
-                                <button type="button" class="btn btn-primary" onClick='submitNewUser()'>Create user</button>
+                                <button type="button" class="btn btn-primary" onClick='submitNewUser()'>{{ _('Create user') }}</button>
                             </div>
                         </form>
                     </div>
@@ -91,19 +91,19 @@
                     <div class="card-body">
                         <div class="d-flex flex-wrap align-items-start justify-content-between gap-3 mb-3">
                             <div>
-                                <h5 class="card-title mb-1">Accounts</h5>
-                                <div class="text-muted small">Usernames, permissions, last-seen client details, and account actions.</div>
+                                <h5 class="card-title mb-1">{{ _('Accounts') }}</h5>
+                                <div class="text-muted small">{{ _('Usernames, permissions, last-seen client details, and account actions.') }}</div>
                             </div>
-                            <div class="text-muted small" id="usersCountLabelInline">Loading users...</div>
+                            <div class="text-muted small" id="usersCountLabelInline">{{ _('Loading users...') }}</div>
                         </div>
                         <div class="table-responsive">
                             <table class="table table-hover align-middle users-table mb-0" id="userTable">
                                 <thead>
                                     <tr>
-                                        <th scope="col" role="button" id="usersSortUser" data-sort="user">User <span class="text-muted" id="sortUserIcon"></span></th>
-                                        <th scope="col" role="button" id="usersSortPerms" data-sort="perms">Permissions <span class="text-muted" id="sortPermsIcon"></span></th>
-                                        <th scope="col">Client</th>
-                                        <th scope="col" class="text-end">Actions</th>
+                                        <th scope="col" role="button" id="usersSortUser" data-sort="user">{{ _('User') }} <span class="text-muted" id="sortUserIcon"></span></th>
+                                        <th scope="col" role="button" id="usersSortPerms" data-sort="perms">{{ _('Permissions') }} <span class="text-muted" id="sortPermsIcon"></span></th>
+                                        <th scope="col">{{ _('Client') }}</th>
+                                        <th scope="col" class="text-end">{{ _('Actions') }}</th>
                                     </tr>
                                 </thead>
                                 <tbody></tbody>
@@ -111,7 +111,7 @@
                         </div>
                     </div>
                 </div>
-                <nav aria-label="Users pagination" class="mt-3">
+                <nav aria-label="{{ _('Users pagination') }}" class="mt-3">
                     <ul class="pagination justify-content-center" id="usersPagination"></ul>
                 </nav>
 
@@ -120,13 +120,13 @@
                     <div class="modal-dialog modal-dialog-centered">
                         <div class="modal-content">
                             <div class="modal-header">
-                                <h1 class="modal-title fs-5" id="deleteUserModalLabel">Delete user</h1>
+                                <h1 class="modal-title fs-5" id="deleteUserModalLabel">{{ _('Delete user') }}</h1>
                                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                             </div>
                             <div class="modal-body">...</div>
                             <div class="modal-footer">
-                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                                <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Delete</button>
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ _('Cancel') }}</button>
+                                <button type="button" class="btn btn-danger" data-bs-dismiss="modal">{{ _('Delete') }}</button>
                             </div>
                         </div>
                     </div>
@@ -137,36 +137,36 @@
                     <div class="modal-dialog modal-dialog-centered">
                         <div class="modal-content">
                             <div class="modal-header">
-                                <h1 class="modal-title fs-5" id="editUserModalLabel">Modify user</h1>
+                                <h1 class="modal-title fs-5" id="editUserModalLabel">{{ _('Modify user') }}</h1>
                                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                             </div>
                             <div class="modal-body">
                                 <div class="mb-3">
-                                    <label for="editUserNameInput" class="form-label">Username</label>
+                                    <label for="editUserNameInput" class="form-label">{{ _('Username') }}</label>
                                     <input type="text" class="form-control" id="editUserNameInput">
-                                    <div id="editUserNameFeedback" class="invalid-feedback">Username is required.</div>
+                                    <div id="editUserNameFeedback" class="invalid-feedback">{{ _('Username is required.') }}</div>
                                 </div>
                                 <div class="mb-2">
-                                    <label class="form-label">Permissions</label>
+                                    <label class="form-label">{{ _('Permissions') }}</label>
                                     <div class="d-flex flex-wrap gap-3">
                                         <div class="form-check">
                                             <input class="form-check-input" type="checkbox" id="checkboxEditUserShopAccess">
-                                            <label class="form-check-label" for="checkboxEditUserShopAccess">Shop</label>
+                                            <label class="form-check-label" for="checkboxEditUserShopAccess">{{ _('Shop') }}</label>
                                         </div>
                                         <div class="form-check">
                                             <input class="form-check-input" type="checkbox" id="checkboxEditUserBackupAccess">
-                                            <label class="form-check-label" for="checkboxEditUserBackupAccess">Backup</label>
+                                            <label class="form-check-label" for="checkboxEditUserBackupAccess">{{ _('Backup') }}</label>
                                         </div>
                                         <div class="form-check">
                                             <input class="form-check-input" type="checkbox" id="checkboxEditUserAdminAccess">
-                                            <label class="form-check-label" for="checkboxEditUserAdminAccess">Admin</label>
+                                            <label class="form-check-label" for="checkboxEditUserAdminAccess">{{ _('Admin') }}</label>
                                         </div>
                                     </div>
                                 </div>
                             </div>
                             <div class="modal-footer">
-                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                                <button type="button" id="submitModifyUserBtn" class="btn btn-primary" onClick='submitModifyUser()'>Save</button>
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ _('Cancel') }}</button>
+                                <button type="button" id="submitModifyUserBtn" class="btn btn-primary" onClick='submitModifyUser()'>{{ _('Save') }}</button>
                             </div>
                         </div>
                     </div>
@@ -177,33 +177,33 @@
                     <div class="modal-dialog modal-dialog-centered">
                         <div class="modal-content">
                             <div class="modal-header">
-                                <h1 class="modal-title fs-5" id="resetPasswordModalLabel">Reset password</h1>
+                                <h1 class="modal-title fs-5" id="resetPasswordModalLabel">{{ _('Reset password') }}</h1>
                                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                             </div>
                             <div class="modal-body">
                                 <div class="mb-3">
-                                    <label for="resetPasswordInput" class="form-label">New password</label>
+                                    <label for="resetPasswordInput" class="form-label">{{ _('New password') }}</label>
                                     <input type="password" class="form-control" id="resetPasswordInput">
-                                    <div id="resetPasswordFeedback" class="invalid-feedback">Password is required.</div>
+                                    <div id="resetPasswordFeedback" class="invalid-feedback">{{ _('Password is required.') }}</div>
                                 </div>
                                 <div class="mb-3">
-                                    <label for="resetPasswordConfirmInput" class="form-label">Confirm password</label>
+                                    <label for="resetPasswordConfirmInput" class="form-label">{{ _('Confirm password') }}</label>
                                     <input type="password" class="form-control" id="resetPasswordConfirmInput">
-                                    <div id="resetPasswordConfirmFeedback" class="invalid-feedback">Passwords must match.</div>
+                                    <div id="resetPasswordConfirmFeedback" class="invalid-feedback">{{ _('Passwords must match.') }}</div>
                                 </div>
                                 <div class="mb-2">
-                                    <label for="generatedPasswordInput" class="form-label">Generated password</label>
+                                    <label for="generatedPasswordInput" class="form-label">{{ _('Generated password') }}</label>
                                     <div class="input-group">
                                         <input type="text" class="form-control" id="generatedPasswordInput" readonly>
-                                        <button type="button" class="btn btn-outline-secondary" id="copyGeneratedPasswordBtn">Copy</button>
-                                        <button type="button" class="btn btn-outline-primary" id="generatePasswordBtn">Generate</button>
+                                        <button type="button" class="btn btn-outline-secondary" id="copyGeneratedPasswordBtn">{{ _('Copy') }}</button>
+                                        <button type="button" class="btn btn-outline-primary" id="generatePasswordBtn">{{ _('Generate') }}</button>
                                     </div>
-                                    <div id="generatedPasswordHelp" class="form-text">Generate a strong password and copy it.</div>
+                                    <div id="generatedPasswordHelp" class="form-text">{{ _('Generate a strong password and copy it.') }}</div>
                                 </div>
                             </div>
                             <div class="modal-footer">
-                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                                <button type="button" id="submitResetPasswordBtn" class="btn btn-primary" onClick='submitResetPassword()'>Reset</button>
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ _('Cancel') }}</button>
+                                <button type="button" id="submitResetPasswordBtn" class="btn btn-primary" onClick='submitResetPassword()'>{{ _('Reset') }}</button>
                             </div>
                         </div>
                     </div>
@@ -214,24 +214,24 @@
                     <div class="modal-dialog modal-dialog-centered">
                         <div class="modal-content">
                             <div class="modal-header">
-                                <h1 class="modal-title fs-5" id="freezeUserModalLabel">Freeze account</h1>
+                                <h1 class="modal-title fs-5" id="freezeUserModalLabel">{{ _('Freeze account') }}</h1>
                                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                             </div>
                             <div class="modal-body">
-                                <p class="text-muted mb-2">Frozen accounts remain visible, but cannot access the library. When they connect, they only receive the MOTD message below.</p>
+                                <p class="text-muted mb-2">{{ _('Frozen accounts remain visible, but cannot access the library. When they connect, they only receive the MOTD message below.') }}</p>
                                 <div class="mb-3">
-                                    <label for="freezeMessageInput" class="form-label">MOTD message</label>
-                                    <textarea class="form-control" id="freezeMessageInput" rows="3" placeholder="Your account is frozen. Contact the admin."></textarea>
-                                    <div class="form-text">Shown to this user when they try to access the shop.</div>
+                                    <label for="freezeMessageInput" class="form-label">{{ _('MOTD message') }}</label>
+                                    <textarea class="form-control" id="freezeMessageInput" rows="3" placeholder="{{ _('Your account is frozen. Contact the admin.') }}"></textarea>
+                                    <div class="form-text">{{ _('Shown to this user when they try to access the shop.') }}</div>
                                 </div>
                                 <div class="form-check">
                                     <input class="form-check-input" type="checkbox" id="freezeEnabledCheck" checked>
-                                    <label class="form-check-label" for="freezeEnabledCheck">Freeze this account</label>
+                                    <label class="form-check-label" for="freezeEnabledCheck">{{ _('Freeze this account') }}</label>
                                 </div>
                             </div>
                             <div class="modal-footer">
-                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                                <button type="button" id="submitFreezeBtn" class="btn btn-warning" onClick='submitFreezeUser()'>Save</button>
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ _('Cancel') }}</button>
+                                <button type="button" id="submitFreezeBtn" class="btn btn-warning" onClick='submitFreezeUser()'>{{ _('Save') }}</button>
                             </div>
                         </div>
                     </div>
@@ -242,16 +242,16 @@
                         <div class="modal-content">
                             <div class="modal-header">
                                 <div>
-                                    <h1 class="modal-title fs-5" id="userHistoryModalLabel">User history</h1>
-                                    <div class="text-muted small" id="userHistorySummaryText">Loading history...</div>
+                                    <h1 class="modal-title fs-5" id="userHistoryModalLabel">{{ _('User history') }}</h1>
+                                    <div class="text-muted small" id="userHistorySummaryText">{{ _('Loading history...') }}</div>
                                 </div>
                                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                             </div>
                             <div class="modal-body">
                                 <div class="d-flex justify-content-between align-items-center gap-3 mb-3">
-                                    <div class="text-muted small">Recent completed transfer events for this account.</div>
+                                    <div class="text-muted small">{{ _('Recent completed transfer events for this account.') }}</div>
                                     <div class="d-flex align-items-center gap-2">
-                                        <label for="userHistoryLimitSelect" class="form-label mb-0 small text-muted">Rows</label>
+                                        <label for="userHistoryLimitSelect" class="form-label mb-0 small text-muted">{{ _('Rows') }}</label>
                                         <select class="form-select form-select-sm" id="userHistoryLimitSelect" style="width: 110px;">
                                             <option value="25">25</option>
                                             <option value="50" selected>50</option>
@@ -264,16 +264,16 @@
                                     <table class="table table-sm table-striped align-middle users-table mb-0">
                                         <thead>
                                             <tr>
-                                                <th>When</th>
-                                                <th>Title</th>
-                                                <th>File</th>
-                                                <th>IP</th>
-                                                <th>Status</th>
-                                                <th>Sent</th>
+                                                <th>{{ _('When') }}</th>
+                                                <th>{{ _('Title') }}</th>
+                                                <th>{{ _('File') }}</th>
+                                                <th>{{ _('IP') }}</th>
+                                                <th>{{ _('Status') }}</th>
+                                                <th>{{ _('Sent') }}</th>
                                             </tr>
                                         </thead>
                                         <tbody id="userHistoryTableBody">
-                                            <tr><td colspan="6" class="text-muted">Loading history...</td></tr>
+                                            <tr><td colspan="6" class="text-muted">{{ _('Loading history...') }}</td></tr>
                                         </tbody>
                                     </table>
                                 </div>
@@ -495,7 +495,7 @@
             $pager.append(li);
         }
 
-        addItem('Prev', currentPage - 1, currentPage <= 1, false);
+        addItem({{ _('Prev')|tojson }}, currentPage - 1, currentPage <= 1, false);
 
         // Compact window around current page.
         const windowSize = 2;
@@ -522,7 +522,7 @@
             addItem(String(totalPages), totalPages, false, currentPage === totalPages);
         }
 
-        addItem('Next', currentPage + 1, currentPage >= totalPages, false);
+        addItem({{ _('Next')|tojson }}, currentPage + 1, currentPage >= totalPages, false);
     }
 
     function _formatTimestamp(tsSeconds) {
@@ -558,11 +558,11 @@
         const $tbody = $('#userHistoryTableBody');
         $tbody.empty();
         if (!rows.length) {
-            $tbody.append('<tr><td colspan="6" class="text-muted">No download history for this user yet.</td></tr>');
+            $tbody.append('<tr><td colspan="6" class="text-muted">' + {{ _('No download history for this user yet.')|tojson }} + '</td></tr>');
         } else {
             rows.forEach(item => {
                 const at = _escapeHtml(_formatTimestamp(item['at']));
-                const titleName = _escapeHtml(item['title_name'] || item['filename'] || 'Unknown title');
+                const titleName = _escapeHtml(item['title_name'] || item['filename'] || {{ _('Unknown title')|tojson }});
                 const titleId = _escapeHtml(item['title_id'] || '-');
                 const filename = _escapeHtml(item['filename'] || '-');
                 const remoteAddr = _escapeHtml(item['remote_addr'] || '-');
@@ -590,7 +590,7 @@
         const uniqueIps = Number(summary?.unique_ips || 0);
         const totalBytes = _formatBytes(summary?.total_bytes || 0);
         $('#userHistorySummaryText').text(
-            `${downloads} downloads, ${uniqueTitles} titles, ${uniqueIps} IPs, ${totalBytes} sent`
+            {{ _('{downloads} downloads, {titles} titles, {ips} IPs, {bytes} sent')|tojson }}.replace('{downloads}', downloads).replace('{titles}', uniqueTitles).replace('{ips}', uniqueIps).replace('{bytes}', totalBytes)
         );
     }
 
@@ -599,18 +599,18 @@
             return;
         }
         const limit = parseInt($('#userHistoryLimitSelect').val() || '50', 10) || 50;
-        $('#userHistorySummaryText').text(`Loading history for ${historyUserName}...`);
-        $('#userHistoryTableBody').html('<tr><td colspan="6" class="text-muted">Loading history...</td></tr>');
+        $('#userHistorySummaryText').text({{ _('Loading history for {name}...')|tojson }}.replace('{name}', historyUserName));
+        $('#userHistoryTableBody').html('<tr><td colspan="6" class="text-muted">' + {{ _('Loading history...')|tojson }} + '</td></tr>');
         $.getJSON(`/api/admin/user-history/${encodeURIComponent(historyUserId)}?limit=${encodeURIComponent(limit)}`, function (result) {
             if (!result || !result['success']) {
-                $('#userHistorySummaryText').text(result?.error || 'Failed to load history.');
-                $('#userHistoryTableBody').html('<tr><td colspan="6" class="text-danger">Failed to load history.</td></tr>');
+                $('#userHistorySummaryText').text(result?.error || {{ _('Failed to load history.')|tojson }});
+                $('#userHistoryTableBody').html('<tr><td colspan="6" class="text-danger">' + {{ _('Failed to load history.')|tojson }} + '</td></tr>');
                 return;
             }
             renderUserHistory(result['history'], result['summary']);
         }).fail(function () {
-            $('#userHistorySummaryText').text('Failed to load history.');
-            $('#userHistoryTableBody').html('<tr><td colspan="6" class="text-danger">Failed to load history.</td></tr>');
+            $('#userHistorySummaryText').text({{ _('Failed to load history.')|tojson }});
+            $('#userHistoryTableBody').html('<tr><td colspan="6" class="text-danger">' + {{ _('Failed to load history.')|tojson }} + '</td></tr>');
         });
     }
 
@@ -620,15 +620,15 @@
         const startIdx = (currentPage - 1) * pageSize;
         const pageItems = users.slice(startIdx, startIdx + pageSize);
 
-        $('#usersCountLabel').text(total === 1 ? '1 user' : `${total} users`);
-        $('#usersCountLabelInline').text(total === 1 ? '1 account' : `${total} accounts`);
+        $('#usersCountLabel').text(total === 1 ? {{ _('1 user')|tojson }} : {{ _('{count} users')|tojson }}.replace('{count}', total));
+        $('#usersCountLabelInline').text(total === 1 ? {{ _('1 account')|tojson }} : {{ _('{count} accounts')|tojson }}.replace('{count}', total));
         _renderSortIcons();
         _renderPagination(total);
 
         const $tbody = $('#userTable tbody');
         $tbody.empty();
         if (!pageItems.length) {
-            $tbody.append('<tr><td colspan="4" class="text-muted">No users found.</td></tr>');
+            $tbody.append('<tr><td colspan="4" class="text-muted">' + {{ _('No users found.')|tojson }} + '</td></tr>');
             return;
         }
 
@@ -639,19 +639,19 @@
 
             let badges = '';
             if (user['frozen']) {
-                badges += '<span class="badge text-bg-warning me-1">Frozen</span>';
+                badges += '<span class="badge text-bg-warning me-1">' + {{ _('Frozen')|tojson }} + '</span>';
             }
             if (isAdmin) {
-                badges += '<span class="badge text-bg-danger me-1">Admin</span>';
+                badges += '<span class="badge text-bg-danger me-1">' + {{ _('Admin')|tojson }} + '</span>';
             }
             if (isShop) {
-                badges += '<span class="badge text-bg-success me-1">Shop</span>';
+                badges += '<span class="badge text-bg-success me-1">' + {{ _('Shop')|tojson }} + '</span>';
             }
             if (isBackup) {
-                badges += '<span class="badge text-bg-info me-1">Backup</span>';
+                badges += '<span class="badge text-bg-info me-1">' + {{ _('Backup')|tojson }} + '</span>';
             }
             if (!badges) {
-                badges = '<span class="badge text-bg-secondary">None</span>';
+                badges = '<span class="badge text-bg-secondary">' + {{ _('None')|tojson }} + '</span>';
             }
 
             const username = _escapeHtml(user['user']);
@@ -662,33 +662,33 @@
             const countryCode = String(user['last_login_country_code'] || '').trim().toLowerCase();
             const flagIcon = countryCode ? `<img src="https://cdn.jsdelivr.net/npm/flag-icons@7.2.3/flags/4x3/${countryCode}.svg" alt="" class="flag-icon" loading="lazy" />` : '';
             const clientMeta = [
-                `<div class="client-meta-line"><span class="client-meta-label">UID</span><span class="client-meta-value"><code>${uidValue}</code></span></div>`,
-                `<div class="client-meta-line"><span class="client-meta-label">Login</span><span class="client-meta-value">${_escapeHtml(lastLoginAt)}</span></div>`,
-                `<div class="client-meta-line"><span class="client-meta-label">IP</span><span class="client-meta-value">${lastLoginIp}</span></div>`,
-                `<div class="client-meta-line"><span class="client-meta-label">Loc</span><span class="client-meta-value">${flagIcon}${_escapeHtml(locationLabel)}</span></div>`,
+                `<div class="client-meta-line"><span class="client-meta-label">${ {{ _('UID')|tojson }} }</span><span class="client-meta-value"><code>${uidValue}</code></span></div>`,
+                `<div class="client-meta-line"><span class="client-meta-label">${ {{ _('Login')|tojson }} }</span><span class="client-meta-value">${_escapeHtml(lastLoginAt)}</span></div>`,
+                `<div class="client-meta-line"><span class="client-meta-label">${ {{ _('IP')|tojson }} }</span><span class="client-meta-value">${lastLoginIp}</span></div>`,
+                `<div class="client-meta-line"><span class="client-meta-label">${ {{ _('Loc')|tojson }} }</span><span class="client-meta-value">${flagIcon}${_escapeHtml(locationLabel)}</span></div>`,
             ].join('');
             const tr = $('<tr>');
             tr.append(
-                `<td><div class="user-name-block"><code class="user-name-code">${username}</code><div class="user-name-meta">ID ${_escapeHtml(String(user['id']))}</div></div></td>`
+                `<td><div class="user-name-block"><code class="user-name-code">${username}</code><div class="user-name-meta">${ {{ _('ID {id}')|tojson }}.replace('{id}', _escapeHtml(String(user['id']))) }</div></div></td>`
             );
             tr.append(`<td><div class="user-perms">${badges}</div></td>`);
             tr.append(`<td><div class="client-meta">${clientMeta}</div></td>`);
             tr.append(
                 '<td class="text-end">'
                 + '<div class="user-actions">'
-                + '<button type="button" class="btn btn-outline-info btn-sm" data-bs-toggle="modal" data-bs-target="#editUserModal" data-bs-title="Modify user" data-bs-placement="top"'
+                + '<button type="button" class="btn btn-outline-info btn-sm" data-bs-toggle="modal" data-bs-target="#editUserModal" data-bs-title="' + {{ _('Modify user')|tojson }} + '" data-bs-placement="top"'
                 + ' data-bs-id="' + user['id'] + '" data-bs-user="' + _escapeHtml(user['user']) + '"'
                 + ' data-bs-admin="' + user['admin_access'] + '" data-bs-shop="' + user['shop_access'] + '" data-bs-backup="' + user['backup_access'] + '">'
                 + '<i class="bi bi-pencil-square"></i></button>'
-                + '<button type="button" class="btn btn-outline-secondary btn-sm" data-bs-toggle="modal" data-bs-target="#userHistoryModal" data-bs-title="View history" data-bs-placement="top"'
+                + '<button type="button" class="btn btn-outline-secondary btn-sm" data-bs-toggle="modal" data-bs-target="#userHistoryModal" data-bs-title="' + {{ _('View history')|tojson }} + '" data-bs-placement="top"'
                 + ' data-bs-id="' + user['id'] + '" data-bs-user="' + _escapeHtml(user['user']) + '">'
                 + '<i class="bi bi-clock-history"></i></button>'
-                + '<button type="button" class="btn ' + (user['frozen'] ? 'btn-warning' : 'btn-outline-warning') + ' btn-sm" data-bs-toggle="modal" data-bs-target="#freezeUserModal" data-bs-title="Freeze account" data-bs-placement="top"'
+                + '<button type="button" class="btn ' + (user['frozen'] ? 'btn-warning' : 'btn-outline-warning') + ' btn-sm" data-bs-toggle="modal" data-bs-target="#freezeUserModal" data-bs-title="' + {{ _('Freeze account')|tojson }} + '" data-bs-placement="top"'
                 + ' data-bs-id="' + user['id'] + '" data-bs-user="' + _escapeHtml(user['user']) + '" data-bs-frozen="' + (user['frozen'] ? 'true' : 'false') + '" data-bs-message="' + _escapeHtml(user['frozen_message'] || '') + '">'
                 + '<i class="bi bi-snow"></i></button>'
-                + '<button type="button" class="btn btn-outline-warning btn-sm" data-bs-toggle="modal" data-bs-target="#resetPasswordModal" data-bs-title="Reset password" data-bs-placement="top"'
+                + '<button type="button" class="btn btn-outline-warning btn-sm" data-bs-toggle="modal" data-bs-target="#resetPasswordModal" data-bs-title="' + {{ _('Reset password')|tojson }} + '" data-bs-placement="top"'
                 + ' data-bs-id="' + user['id'] + '" data-bs-user="' + _escapeHtml(user['user']) + '"><i class="bi bi-key"></i></button>'
-                + '<button type="button" class="btn btn-outline-danger btn-sm" data-bs-toggle="modal" data-bs-target="#deleteUserModal" data-bs-title="Delete user" data-bs-placement="top"'
+                + '<button type="button" class="btn btn-outline-danger btn-sm" data-bs-toggle="modal" data-bs-target="#deleteUserModal" data-bs-title="' + {{ _('Delete user')|tojson }} + '" data-bs-placement="top"'
                 + ' data-bs-id="' + user['id'] + '" data-bs-user="' + _escapeHtml(user['user']) + '"><i class="bi bi-x-circle"></i></button>'
                 + '</div>'
                 + '</td>'
@@ -699,8 +699,8 @@
     }
 
     function fillUserTable() {
-        $('#usersCountLabel').text('Loading users...');
-        $('#usersCountLabelInline').text('Loading users...');
+        $('#usersCountLabel').text({{ _('Loading users...')|tojson }});
+        $('#usersCountLabelInline').text({{ _('Loading users...')|tojson }});
         $.getJSON("/api/users", function (result) {
             // Note: /api/users returns a list, not a success wrapper.
             allUsers = result || [];
@@ -721,10 +721,10 @@
         const $btn = $('#submitFreezeBtn');
         if (enabled) {
             $message.prop('disabled', false);
-            $btn.text(freezeWasFrozen ? 'Save' : 'Freeze');
+            $btn.text(freezeWasFrozen ? {{ _('Save')|tojson }} : {{ _('Freeze')|tojson }});
         } else {
             $message.prop('disabled', true);
-            $btn.text('Unfreeze');
+            $btn.text({{ _('Unfreeze')|tojson }});
         }
     }
 
@@ -736,7 +736,7 @@
             const frozen = button.getAttribute('data-bs-frozen') === 'true'
             const message = button.getAttribute('data-bs-message') || ''
             freezeWasFrozen = frozen;
-            $('#freezeUserModalLabel').text((frozen ? 'Edit freeze for ' : 'Freeze ') + username);
+            $('#freezeUserModalLabel').text(frozen ? {{ _('Edit freeze for {name}')|tojson }}.replace('{name}', username) : {{ _('Freeze {name}')|tojson }}.replace('{name}', username));
             $('#freezeEnabledCheck').prop('checked', frozen);
             setInputVal('freezeMessageInput', message);
             _updateFreezeModalState();
@@ -747,15 +747,15 @@
         userHistoryModal.on('show.bs.modal', event => {
             const button = event.relatedTarget;
             historyUserId = button.getAttribute('data-bs-id');
-            historyUserName = button.getAttribute('data-bs-user') || 'User';
-            $('#userHistoryModalLabel').text(`History for ${historyUserName}`);
+            historyUserName = button.getAttribute('data-bs-user') || {{ _('User')|tojson }};
+            $('#userHistoryModalLabel').text({{ _('History for {name}')|tojson }}.replace('{name}', historyUserName));
             loadUserHistory();
         });
         userHistoryModal.on('hidden.bs.modal', () => {
             historyUserId = null;
             historyUserName = '';
-            $('#userHistorySummaryText').text('Loading history...');
-            $('#userHistoryTableBody').html('<tr><td colspan="6" class="text-muted">Loading history...</td></tr>');
+            $('#userHistorySummaryText').text({{ _('Loading history...')|tojson }});
+            $('#userHistoryTableBody').html('<tr><td colspan="6" class="text-muted">' + {{ _('Loading history...')|tojson }} + '</td></tr>');
         });
     }
 
@@ -843,11 +843,11 @@
 
         if (!user) {
             $('#inputNewUser').addClass('is-invalid');
-            $('#newUserNameFeedback').text('Username is required.');
+            $('#newUserNameFeedback').text({{ _('Username is required.')|tojson }});
             formOk = false;
         } else if (allUsernames.includes(user)) {
             $('#inputNewUser').addClass('is-invalid');
-            $('#newUserNameFeedback').text('Username already exists.');
+            $('#newUserNameFeedback').text({{ _('Username already exists.')|tojson }});
             formOk = false;
         } else {
             $('#inputNewUser').removeClass('is-invalid');
@@ -855,7 +855,7 @@
 
         if (!password) {
             $('#inputNewUserPassword').addClass('is-invalid');
-            $('#newUserPasswordFeedback').text('Password is required.');
+            $('#newUserPasswordFeedback').text({{ _('Password is required.')|tojson }});
             formOk = false;
         } else {
             $('#inputNewUserPassword').removeClass('is-invalid');
@@ -905,8 +905,8 @@
             const backupAccess = button.getAttribute('data-bs-backup') === 'true'
 
             setInputVal("editUserNameInput", editOriginalUser)
-            $('#editUserModalLabel').text('Modify user');
-            $('#submitModifyUserBtn').text('Save');
+            $('#editUserModalLabel').text({{ _('Modify user')|tojson }});
+            $('#submitModifyUserBtn').text({{ _('Save')|tojson }});
             $("#checkboxEditUserAdminAccess").prop("checked", adminAccess)
             $("#checkboxEditUserShopAccess").prop("checked", adminAccess || shopAccess)
             $("#checkboxEditUserBackupAccess").prop("checked", adminAccess || backupAccess)
@@ -925,7 +925,7 @@
                 $("#checkboxEditUserBackupAccess").attr("disabled", false);
             }
             $('#editUserNameInput').removeClass('is-invalid');
-            $('#editUserNameFeedback').text('Username is required.');
+            $('#editUserNameFeedback').text({{ _('Username is required.')|tojson }});
         })
     }
 
@@ -939,11 +939,11 @@
 
         if (!user) {
             $('#editUserNameInput').addClass('is-invalid');
-            $('#editUserNameFeedback').text('Username is required.');
+            $('#editUserNameFeedback').text({{ _('Username is required.')|tojson }});
             formOk = false;
         } else if (user != editOriginalUser && allUsernames.includes(user)) {
             $('#editUserNameInput').addClass('is-invalid');
-            $('#editUserNameFeedback').text('Username already exists.');
+            $('#editUserNameFeedback').text({{ _('Username already exists.')|tojson }});
             formOk = false;
         } else {
             $('#editUserNameInput').removeClass('is-invalid');
@@ -993,7 +993,7 @@
             const button = event.relatedTarget
             resetUserId = button.getAttribute('data-bs-id')
             const username = button.getAttribute('data-bs-user')
-            $('#resetPasswordModalLabel').text('Reset password for ' + username);
+            $('#resetPasswordModalLabel').text({{ _('Reset password for {name}')|tojson }}.replace('{name}', username));
             setInputVal("resetPasswordInput", "")
             setInputVal("resetPasswordConfirmInput", "")
             setInputVal("generatedPasswordInput", "")
@@ -1053,7 +1053,7 @@
 
         if (!password) {
             $('#resetPasswordInput').addClass('is-invalid');
-            $('#resetPasswordFeedback').text('Password is required.');
+            $('#resetPasswordFeedback').text({{ _('Password is required.')|tojson }});
             formOk = false;
         } else {
             $('#resetPasswordInput').removeClass('is-invalid');
@@ -1061,7 +1061,7 @@
 
         if (!confirmPassword || confirmPassword != password) {
             $('#resetPasswordConfirmInput').addClass('is-invalid');
-            $('#resetPasswordConfirmFeedback').text('Passwords must match.');
+            $('#resetPasswordConfirmFeedback').text({{ _('Passwords must match.')|tojson }});
             formOk = false;
         } else {
             $('#resetPasswordConfirmInput').removeClass('is-invalid');
@@ -1108,7 +1108,7 @@
             const modalBody = deleteUserModal.find('.modal-body')
             const deleteBtn = deleteUserModal.find('.btn-danger')
             deleteBtn.attr('onClick', 'deleteUser(' + id + ');');
-            modalBody.text("Delete user " + user + " ?")
+            modalBody.text({{ _('Delete user {name} ?')|tojson }}.replace('{name}', user))
         })
     }
 

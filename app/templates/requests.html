@@ -10,16 +10,16 @@
         <div class="d-flex align-items-center justify-content-between gap-3 flex-wrap">
           <div>
             {% if current_user.is_admin or admin_account_created == false %}
-            <h2 class="pb-2">Requests</h2>
-            <p class="text-muted">User title requests and download search.</p>
+            <h2 class="pb-2">{{ _('Requests') }}</h2>
+            <p class="text-muted">{{ _('User title requests and download search.') }}</p>
             {% else %}
-            <h2 class="pb-2">Request A Title</h2>
-            <p class="text-muted">Search TitleDB and request content not yet in your library.</p>
+            <h2 class="pb-2">{{ _('Request A Title') }}</h2>
+            <p class="text-muted">{{ _('Search TitleDB and request content not yet in your library.') }}</p>
             {% endif %}
           </div>
           <div class="d-flex align-items-center gap-2">
             {% if current_user.is_admin or admin_account_created == false %}
-            <button class="btn btn-outline-light btn-sm text-nowrap" id="refreshRequestsBtn"><i class="bi bi-arrow-clockwise"></i> Refresh</button>
+            <button class="btn btn-outline-light btn-sm text-nowrap" id="refreshRequestsBtn"><i class="bi bi-arrow-clockwise"></i> {{ _('Refresh') }}</button>
             {% endif %}
           </div>
         </div>
@@ -29,18 +29,18 @@
             <div class="row g-3 mb-3">
               <div class="col-12">
                 <div class="input-group">
-                  <input type="text" class="form-control" id="requestSearchBox" placeholder="Search by name or title id (e.g. Mario, 0100...)" autocomplete="off">
+                  <input type="text" class="form-control" id="requestSearchBox" placeholder="{{ _('Search by name or title id (e.g. Mario, 0100...)') }}" autocomplete="off">
                   <button class="btn btn-warning text-nowrap" id="submitRequestBtn" disabled>
-                    <i class="bi bi-send"></i> Submit request
+                    <i class="bi bi-send"></i> {{ _('Submit request') }}
                   </button>
                 </div>
                 <div class="list-group mt-2" id="requestSearchResults"></div>
               </div>
               <div class="col-12">
                 <div class="border rounded p-3 h-100">
-                  <div class="fw-semibold mb-2">Selected</div>
-                  <div class="text-muted small text-truncate text-nowrap" id="selectedTitleText" title="None">None</div>
-                  <div class="form-text mt-2 mb-0">Choose a search result, then submit the request below.</div>
+                  <div class="fw-semibold mb-2">{{ _('Selected') }}</div>
+                  <div class="text-muted small text-truncate text-nowrap" id="selectedTitleText" title="{{ _('None') }}">{{ _('None') }}</div>
+                  <div class="form-text mt-2 mb-0">{{ _('Choose a search result, then submit the request below.') }}</div>
                 </div>
               </div>
             </div>
@@ -50,18 +50,18 @@
             <div class="border-top mt-3 pt-3">
               <div class="d-flex flex-column flex-lg-row gap-2 align-items-lg-center">
                 <div class="flex-grow-1">
-                  <input type="text" class="form-control" id="adminSearchBox" placeholder="Filter by title id, name, user...">
+                  <input type="text" class="form-control" id="adminSearchBox" placeholder="{{ _('Filter by title id, name, user...') }}">
                 </div>
               </div>
               <div class="table-responsive mt-3">
                 <table class="table table-dark table-sm align-middle mb-0">
                   <thead>
                     <tr>
-                      <th>Requested</th>
-                      <th>Title</th>
-                      <th>User</th>
-                      <th>Status</th>
-                      <th class="text-end">Actions</th>
+                      <th>{{ _('Requested') }}</th>
+                      <th>{{ _('Title') }}</th>
+                      <th>{{ _('User') }}</th>
+                      <th>{{ _('Status') }}</th>
+                      <th class="text-end">{{ _('Actions') }}</th>
                     </tr>
                   </thead>
                   <tbody id="requestsTableBody"></tbody>
@@ -84,8 +84,8 @@
     <div class="modal-dialog modal-xl modal-dialog-centered">
       <div class="modal-content">
         <div class="modal-header">
-          <h1 class="modal-title fs-5" id="requestTorrentSearchModalLabel">Download search results</h1>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          <h1 class="modal-title fs-5" id="requestTorrentSearchModalLabel">{{ _('Download search results') }}</h1>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="{{ _('Close') }}"></button>
         </div>
         <div class="modal-body">
           <div id="requestTorrentSearchStatus" class="text-muted mb-2"></div>
@@ -93,20 +93,20 @@
             <table class="table table-sm table-striped align-middle">
               <thead>
                 <tr>
-                  <th scope="col">Title</th>
-                  <th scope="col">Indexer</th>
+                  <th scope="col">{{ _('Title') }}</th>
+                  <th scope="col">{{ _('Indexer') }}</th>
                   {% if download_ui_visibility.show_protocol_column %}
-                  <th scope="col">Protocol</th>
+                  <th scope="col">{{ _('Protocol') }}</th>
                   {% endif %}
                   {% if download_ui_visibility.show_usenet_columns %}
-                  <th scope="col">Age</th>
+                  <th scope="col">{{ _('Age') }}</th>
                   {% endif %}
-                  <th scope="col">Size</th>
+                  <th scope="col">{{ _('Size') }}</th>
                   {% if download_ui_visibility.show_torrent_columns %}
-                  <th scope="col">Seeders</th>
-                  <th scope="col">Leechers</th>
+                  <th scope="col">{{ _('Seeders') }}</th>
+                  <th scope="col">{{ _('Leechers') }}</th>
                   {% endif %}
-                  <th scope="col">Action</th>
+                  <th scope="col">{{ _('Action') }}</th>
                 </tr>
               </thead>
               <tbody id="requestTorrentSearchResults"></tbody>
@@ -144,7 +144,7 @@
   function getProtocolLabel(protocol) {
     const value = String(protocol || '').trim().toLowerCase();
     if (value === 'usenet') return 'NZB';
-    if (value === 'torrent') return 'Torrent';
+    if (value === 'torrent') return {{ _('Torrent')|tojson }};
     return value || '-';
   }
 
@@ -157,7 +157,7 @@
     if (Number.isNaN(date.getTime())) {
       return '';
     }
-    return `Published ${date.toLocaleString()}`;
+    return {{ _('Published {date}')|tojson }}.replace('{date}', date.toLocaleString());
   }
 
   function buildRequestDownloadSearchRow(item) {
@@ -191,7 +191,7 @@
     const button = document.createElement('button');
     button.type = 'button';
     button.className = 'btn btn-sm btn-warning queue-download-btn';
-    button.textContent = 'Queue';
+    button.textContent = {{ _('Queue')|tojson }};
     button.dataset.downloadUrl = String(item.download_url || '');
     button.dataset.title = String(item.title || '');
     button.dataset.protocol = String(item.protocol || '');
@@ -239,10 +239,10 @@
       a.innerHTML = `
         <div class="d-flex justify-content-between align-items-start gap-2">
           <div>
-            <div class="fw-semibold">${escapeHtml(item.name || 'Unrecognized')}</div>
+            <div class="fw-semibold">${escapeHtml(item.name || {{ _('Unrecognized')|tojson }})}</div>
             <div class="text-muted small">${escapeHtml(item.id || '')} ${item.category ? `| ${escapeHtml(item.category)}` : ''}</div>
           </div>
-          ${disabled ? '<span class="badge text-bg-secondary">In library</span>' : ''}
+          ${disabled ? '<span class="badge text-bg-secondary">' + {{ _('In library')|tojson }} + '</span>' : ''}
         </div>
       `;
       a.addEventListener('click', () => {
@@ -266,7 +266,7 @@
       const results = await fetchSearchResults(q);
       renderTitleSearchResults('requestSearchResults', results, item => {
         selectedTitle = item;
-        const selectedText = `${item.name || 'Unrecognized'} (${item.id})`;
+        const selectedText = `${item.name || {{ _('Unrecognized')|tojson }}} (${item.id})`;
         const selectedTitleText = document.getElementById('selectedTitleText');
         selectedTitleText.textContent = selectedText;
         selectedTitleText.title = selectedText;
@@ -280,20 +280,20 @@
   async function submitRequest() {
     const status = document.getElementById('requestSubmitStatus');
     if (!selectedTitle) return;
-    status.textContent = 'Submitting...';
+    status.textContent = {{ _('Submitting...')|tojson }};
     const data = await apiPost('/api/requests', {
       title_id: selectedTitle.id,
       title_name: selectedTitle.name,
     });
     if (data && data.success) {
-      status.textContent = data.message || 'Request created.';
+      status.textContent = data.message || {{ _('Request created.')|tojson }};
       document.getElementById('submitRequestBtn').disabled = true;
       selectedTitle = null;
       const selectedTitleText = document.getElementById('selectedTitleText');
-      selectedTitleText.textContent = 'None';
-      selectedTitleText.title = 'None';
+      selectedTitleText.textContent = {{ _('None')|tojson }};
+      selectedTitleText.title = {{ _('None')|tojson }};
     } else {
-      status.textContent = (data && data.message) ? data.message : 'Request failed.';
+      status.textContent = (data && data.message) ? data.message : {{ _('Request failed.')|tojson }};
     }
   }
 
@@ -316,7 +316,7 @@
       tr.innerHTML = `
         <td class="small text-muted">${escapeHtml(when)}</td>
         <td>
-          <div class="fw-semibold">${escapeHtml(r.title_name || 'Unrecognized')}</div>
+          <div class="fw-semibold">${escapeHtml(r.title_name || {{ _('Unrecognized')|tojson }})}</div>
           <div class="text-muted small">${escapeHtml(r.title_id || '')}</div>
         </td>
         <td>${escapeHtml(userText)}</td>
@@ -324,9 +324,9 @@
         <td class="text-end">
           <div class="btn-group btn-group-sm" role="group">
             <button class="btn btn-warning search-request-btn" data-title-id="${escapeHtml(r.title_id || '')}" data-title-name="${escapeHtml(r.title_name || '')}">
-              <i class="bi bi-search"></i> Search downloads
+              <i class="bi bi-search"></i> ${ {{ _('Search downloads')|tojson }} }
             </button>
-            <button class="btn btn-outline-danger delete-request-btn" data-request-id="${escapeHtml(String(r.id || ''))}" title="Delete request">
+            <button class="btn btn-outline-danger delete-request-btn" data-request-id="${escapeHtml(String(r.id || ''))}" title="${escapeHtml({{ _('Delete request')|tojson }})}">
               <i class="bi bi-trash"></i>
             </button>
           </div>
@@ -338,15 +338,15 @@
 
   async function refreshAdminRequests() {
     const status = document.getElementById('requestsStatus');
-    status.textContent = 'Loading...';
+    status.textContent = {{ _('Loading...')|tojson }};
     const data = await apiGet('/api/requests?all=1');
     if (!data || data.success !== true) {
-      status.textContent = (data && data.message) ? data.message : 'Failed to load.';
+      status.textContent = (data && data.message) ? data.message : {{ _('Failed to load.')|tojson }};
       return;
     }
     adminRequests = data.requests || [];
     renderAdminRequestsTable();
-    status.textContent = `Showing ${adminRequests.length} request(s).`;
+    status.textContent = {{ _('Showing {count} request(s).')|tojson }}.replace('{count}', adminRequests.length);
 
     // Mark currently-open requests as seen for this admin.
     try {
@@ -361,22 +361,22 @@
     const statusEl = document.getElementById('requestTorrentSearchStatus');
     const bodyEl = document.getElementById('requestTorrentSearchResults');
     bodyEl.innerHTML = '';
-    statusEl.textContent = 'Searching Prowlarr...';
+    statusEl.textContent = {{ _('Searching Prowlarr...')|tojson }};
     const modal = new bootstrap.Modal(modalEl);
     modal.show();
 
     // API to be added (next step)
     const data = await apiGet(`/api/requests/search?title_id=${encodeURIComponent(titleId)}&title_name=${encodeURIComponent(titleName || '')}`);
     if (!data || data.success !== true) {
-      statusEl.textContent = (data && data.message) ? data.message : 'Search failed.';
+      statusEl.textContent = (data && data.message) ? data.message : {{ _('Search failed.')|tojson }};
       return;
     }
     const results = data.results || [];
     if (!results.length) {
-      statusEl.textContent = 'No results found.';
+      statusEl.textContent = {{ _('No results found.')|tojson }};
       return;
     }
-    statusEl.textContent = `Found ${results.length} results.`;
+    statusEl.textContent = {{ _('Found {count} results.')|tojson }}.replace('{count}', results.length);
     results.forEach(item => {
       bodyEl.appendChild(buildRequestDownloadSearchRow(item));
     });
@@ -399,13 +399,13 @@
     const requestId = btn.getAttribute('data-request-id');
     if (!requestId) return;
 
-    if (!confirm('Delete this request?')) return;
+    if (!confirm({{ _('Delete this request?')|tojson }})) return;
 
     btn.setAttribute('disabled', 'true');
     try {
       const data = await apiPost('/api/requests/delete', { request_id: requestId });
       if (!data || data.success !== true) {
-        alert((data && data.message) ? data.message : 'Delete failed.');
+        alert((data && data.message) ? data.message : {{ _('Delete failed.')|tojson }});
         return;
       }
       await refreshAdminRequests();
@@ -432,7 +432,7 @@
       });
       // best-effort feedback in modal header
       const statusEl = document.getElementById('requestTorrentSearchStatus');
-      statusEl.textContent = (data && data.message) ? data.message : (data && data.success ? 'Queued.' : 'Queue failed.');
+      statusEl.textContent = (data && data.message) ? data.message : (data && data.success ? {{ _('Queued.')|tojson }} : {{ _('Queue failed.')|tojson }});
     } finally {
       btn.removeAttribute('disabled');
     }

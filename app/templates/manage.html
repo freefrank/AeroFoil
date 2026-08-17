@@ -33,11 +33,11 @@
             <div class="settings-container container mt-3">
                 <div class="d-flex align-items-center justify-content-between gap-3 flex-wrap">
                     <div>
-                        <h2 class="pb-2">Manage</h2>
-                        <p class="text-muted">Library maintenance actions and converter jobs.</p>
+                        <h2 class="pb-2">{{ _('Manage') }}</h2>
+                        <p class="text-muted">{{ _('Library maintenance actions and converter jobs.') }}</p>
                     </div>
                     <div class="d-flex align-items-center gap-2">
-                        <span class="badge text-bg-secondary" id="manageHealthBadge">Checking converter...</span>
+                        <span class="badge text-bg-secondary" id="manageHealthBadge">{{ _('Checking converter...') }}</span>
                     </div>
                 </div>
 
@@ -49,81 +49,81 @@
                             <div class="card-body">
                                 <div class="d-flex align-items-center justify-content-between mb-3">
                                     <div>
-                                        <h5 class="card-title mb-1">Maintenance</h5>
-                                        <div class="text-muted small">Organize and clean up your libraries.</div>
+                                        <h5 class="card-title mb-1">{{ _('Maintenance') }}</h5>
+                                        <div class="text-muted small">{{ _('Organize and clean up your libraries.') }}</div>
                                     </div>
                                 </div>
                                 <div class="vstack gap-3">
                                     <div class="border rounded p-3">
-                                        <div class="fw-semibold">Library organization</div>
-                                        <div class="text-muted small mb-2">Rename and organize identified content into structured folders.</div>
+                                        <div class="fw-semibold">{{ _('Library organization') }}</div>
+                                        <div class="text-muted small mb-2">{{ _('Rename and organize identified content into structured folders.') }}</div>
                                         <div class="d-flex flex-wrap gap-3 align-items-center">
                                             <div class="form-check">
                                                 <input class="form-check-input" type="checkbox" id="organizeDryRun" checked>
-                                                <label class="form-check-label" for="organizeDryRun">Dry run</label>
+                                                <label class="form-check-label" for="organizeDryRun">{{ _('Dry run') }}</label>
                                             </div>
                                             <div class="form-check">
                                                 <input class="form-check-input" type="checkbox" id="organizeVerbose">
-                                                <label class="form-check-label" for="organizeVerbose">Verbose</label>
+                                                <label class="form-check-label" for="organizeVerbose">{{ _('Verbose') }}</label>
                                             </div>
                                             <button type="button" id="organizeLibraryBtn" class="btn btn-primary ms-auto"
-                                                onClick='organizeLibrary()'>Organize library</button>
+                                                onClick='organizeLibrary()'>{{ _('Organize library') }}</button>
                                         </div>
                                     </div>
                                     <div class="border rounded p-3">
-                                        <div class="fw-semibold">Library scan</div>
-                                        <div class="text-muted small mb-2">Scan configured libraries for new files.</div>
+                                        <div class="fw-semibold">{{ _('Library scan') }}</div>
+                                        <div class="text-muted small mb-2">{{ _('Scan configured libraries for new files.') }}</div>
                                         <div class="d-flex flex-wrap gap-3 align-items-center">
                                             <button type="button" id="scanLibraryBtn" class="btn btn-outline-primary ms-auto"
-                                                onClick='scanLibrary()'>Scan library</button>
+                                                onClick='scanLibrary()'>{{ _('Scan library') }}</button>
                                         </div>
                                     </div>
                                     <div class="border rounded p-3">
-                                        <div class="fw-semibold">Delete older updates</div>
-                                        <div class="text-muted small mb-2">Keep the latest owned update per title and remove older update files.</div>
+                                        <div class="fw-semibold">{{ _('Delete older updates') }}</div>
+                                        <div class="text-muted small mb-2">{{ _('Keep the latest owned update per title and remove older update files.') }}</div>
                                         <div class="d-flex flex-wrap gap-3 align-items-center">
                                             <div class="form-check">
                                                 <input class="form-check-input" type="checkbox" id="deleteUpdatesDryRun" checked>
-                                                <label class="form-check-label" for="deleteUpdatesDryRun">Dry run</label>
+                                                <label class="form-check-label" for="deleteUpdatesDryRun">{{ _('Dry run') }}</label>
                                             </div>
                                             <div class="form-check">
                                                 <input class="form-check-input" type="checkbox" id="deleteUpdatesVerbose">
-                                                <label class="form-check-label" for="deleteUpdatesVerbose">Verbose</label>
+                                                <label class="form-check-label" for="deleteUpdatesVerbose">{{ _('Verbose') }}</label>
                                             </div>
                                             <button type="button" id="deleteUpdatesBtn" class="btn btn-danger ms-auto"
-                                                onClick='promptDeleteOlderUpdates()'>Delete older updates</button>
+                                                onClick='promptDeleteOlderUpdates()'>{{ _('Delete older updates') }}</button>
                                         </div>
                                     </div>
                                     <div class="border rounded p-3">
-                                        <div class="fw-semibold">Delete orphaned updates and DLC</div>
-                                        <div class="text-muted small mb-2">Remove owned updates and DLC files whose parent title has no owned base game.</div>
+                                        <div class="fw-semibold">{{ _('Delete orphaned updates and DLC') }}</div>
+                                        <div class="text-muted small mb-2">{{ _('Remove owned updates and DLC files whose parent title has no owned base game.') }}</div>
                                         <div class="d-flex flex-wrap gap-3 align-items-center">
                                             <div class="form-check">
                                                 <input class="form-check-input" type="checkbox" id="deleteOrphanedDryRun" checked>
-                                                <label class="form-check-label" for="deleteOrphanedDryRun">Dry run</label>
+                                                <label class="form-check-label" for="deleteOrphanedDryRun">{{ _('Dry run') }}</label>
                                             </div>
                                             <div class="form-check">
                                                 <input class="form-check-input" type="checkbox" id="deleteOrphanedVerbose">
-                                                <label class="form-check-label" for="deleteOrphanedVerbose">Verbose</label>
+                                                <label class="form-check-label" for="deleteOrphanedVerbose">{{ _('Verbose') }}</label>
                                             </div>
                                             <button type="button" id="deleteOrphanedAddonsBtn" class="btn btn-danger ms-auto"
-                                                onClick='promptDeleteOrphanedAddons()'>Delete orphaned updates and DLC</button>
+                                                onClick='promptDeleteOrphanedAddons()'>{{ _('Delete orphaned updates and DLC') }}</button>
                                         </div>
                                     </div>
                                     <div class="border rounded p-3">
-                                        <div class="fw-semibold">Delete duplicates</div>
-                                        <div class="text-muted small mb-2">Keep one owned file per app ID/version and remove duplicate file entries, even across different extensions.</div>
+                                        <div class="fw-semibold">{{ _('Delete duplicates') }}</div>
+                                        <div class="text-muted small mb-2">{{ _('Keep one owned file per app ID/version and remove duplicate file entries, even across different extensions.') }}</div>
                                         <div class="d-flex flex-wrap gap-3 align-items-center">
                                             <div class="form-check">
                                                 <input class="form-check-input" type="checkbox" id="deleteDuplicatesDryRun" checked>
-                                                <label class="form-check-label" for="deleteDuplicatesDryRun">Dry run</label>
+                                                <label class="form-check-label" for="deleteDuplicatesDryRun">{{ _('Dry run') }}</label>
                                             </div>
                                             <div class="form-check">
                                                 <input class="form-check-input" type="checkbox" id="deleteDuplicatesVerbose">
-                                                <label class="form-check-label" for="deleteDuplicatesVerbose">Verbose</label>
+                                                <label class="form-check-label" for="deleteDuplicatesVerbose">{{ _('Verbose') }}</label>
                                             </div>
                                             <button type="button" id="deleteDuplicatesBtn" class="btn btn-danger ms-auto"
-                                                onClick='promptDeleteDuplicates()'>Delete duplicates</button>
+                                                onClick='promptDeleteDuplicates()'>{{ _('Delete duplicates') }}</button>
                                         </div>
                                     </div>
                                 </div>
@@ -134,92 +134,92 @@
                             <div class="card-body">
                                 <div class="d-flex align-items-center justify-content-between mb-3">
                                     <div>
-                                        <h5 class="card-title mb-1">Conversion</h5>
-                                        <div class="text-muted small">Convert NSP/XCI to NSZ using your configured tool.</div>
+                                        <h5 class="card-title mb-1">{{ _('Conversion') }}</h5>
+                                        <div class="text-muted small">{{ _('Convert NSP/XCI to NSZ using your configured tool.') }}</div>
                                     </div>
                                 </div>
                                 <div class="vstack gap-3">
                                     <div class="border rounded p-3">
-                                        <label for="convertSingleSelect" class="form-label fw-semibold">Manual single-file conversion</label>
+                                        <label for="convertSingleSelect" class="form-label fw-semibold">{{ _('Manual single-file conversion') }}</label>
                                         <div class="input-group">
                                             <select class="form-select" id="convertSingleSelect">
-                                                <option value="">Loading files...</option>
+                                                <option value="">{{ _('Loading files...') }}</option>
                                             </select>
                                             <button class="btn btn-outline-secondary" type="button" id="refreshConvertiblesBtn"
-                                                onClick="loadConvertibleFiles()">Refresh</button>
+                                                onClick="loadConvertibleFiles()">{{ _('Refresh') }}</button>
                                             <button class="btn btn-outline-warning" type="button" id="convertSingleBtn"
-                                                onClick="convertSingleFile()">Convert selected</button>
+                                                onClick="convertSingleFile()">{{ _('Convert selected') }}</button>
                                         </div>
                                         <div class="d-flex flex-wrap gap-3 align-items-center mt-2">
                                             <div class="input-group" style="max-width: 180px;">
-                                                <span class="input-group-text">Threads</span>
-                                                <input type="number" min="1" class="form-control" id="convertSingleThreadsInput" placeholder="Auto">
+                                                <span class="input-group-text">{{ _('Threads') }}</span>
+                                                <input type="number" min="1" class="form-control" id="convertSingleThreadsInput" placeholder="{{ _('Auto') }}">
                                             </div>
                                             <div class="input-group" style="max-width: 200px;">
-                                                <span class="input-group-text">Timeout</span>
-                                                <input type="number" min="1" class="form-control" id="convertSingleTimeoutInput" placeholder="sec">
+                                                <span class="input-group-text">{{ _('Timeout') }}</span>
+                                                <input type="number" min="1" class="form-control" id="convertSingleTimeoutInput" placeholder="{{ _('sec') }}">
                                             </div>
                                             <div class="form-check">
                                                 <input class="form-check-input" type="checkbox" id="convertSingleDeleteOriginal" checked>
-                                                <label class="form-check-label" for="convertSingleDeleteOriginal">Delete original</label>
+                                                <label class="form-check-label" for="convertSingleDeleteOriginal">{{ _('Delete original') }}</label>
                                             </div>
                                             <div class="form-check">
                                                 <input class="form-check-input" type="checkbox" id="convertSingleDryRun" checked>
-                                                <label class="form-check-label" for="convertSingleDryRun">Dry run</label>
+                                                <label class="form-check-label" for="convertSingleDryRun">{{ _('Dry run') }}</label>
                                             </div>
                                             <div class="form-check">
                                                 <input class="form-check-input" type="checkbox" id="convertSingleVerbose">
-                                                <label class="form-check-label" for="convertSingleVerbose">Verbose</label>
+                                                <label class="form-check-label" for="convertSingleVerbose">{{ _('Verbose') }}</label>
                                             </div>
                                             <div class="form-check">
                                                 <input class="form-check-input" type="checkbox" id="convertSingleVerify" checked>
-                                                <label class="form-check-label" for="convertSingleVerify">Verify output</label>
+                                                <label class="form-check-label" for="convertSingleVerify">{{ _('Verify output') }}</label>
                                             </div>
                                         </div>
-                                        <div class="form-text">Only NSP/XCI files are listed.</div>
+                                        <div class="form-text">{{ _('Only NSP/XCI files are listed.') }}</div>
                                     </div>
                                     <div class="border rounded p-3">
                                         <div class="d-flex justify-content-between align-items-center mb-2">
-                                            <div class="fw-semibold mb-0">Batch conversion settings</div>
+                                            <div class="fw-semibold mb-0">{{ _('Batch conversion settings') }}</div>
                                             <button type="button" class="btn btn-sm btn-outline-secondary" id="convertBatchSettingsToggleBtn" data-bs-toggle="collapse" data-bs-target="#convertBatchSettingsCollapse" aria-expanded="false" aria-controls="convertBatchSettingsCollapse">
                                                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16" style="vertical-align: -0.125em;">
                                                     <path fill-rule="evenodd" d="M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z"/>
                                                 </svg>
-                                                Show
+                                                {{ _('Show') }}
                                             </button>
                                         </div>
                                         <div class="collapse" id="convertBatchSettingsCollapse">
                                         <div class="d-flex flex-wrap gap-3 align-items-center">
                                             <div class="input-group" style="max-width: 220px;">
-                                                <span class="input-group-text">Library</span>
+                                                <span class="input-group-text">{{ _('Library') }}</span>
                                                 <select class="form-select" id="convertLibrarySelect"></select>
                                             </div>
                                             <div class="input-group" style="max-width: 180px;">
-                                                <span class="input-group-text">Threads</span>
-                                                <input type="number" min="1" class="form-control" id="convertThreadsInput" placeholder="Auto">
+                                                <span class="input-group-text">{{ _('Threads') }}</span>
+                                                <input type="number" min="1" class="form-control" id="convertThreadsInput" placeholder="{{ _('Auto') }}">
                                             </div>
                                             <div class="input-group" style="max-width: 200px;">
-                                                <span class="input-group-text">Timeout</span>
-                                                <input type="number" min="1" class="form-control" id="convertTimeoutInput" placeholder="sec">
+                                                <span class="input-group-text">{{ _('Timeout') }}</span>
+                                                <input type="number" min="1" class="form-control" id="convertTimeoutInput" placeholder="{{ _('sec') }}">
                                             </div>
                                             <div class="form-check">
                                                 <input class="form-check-input" type="checkbox" id="convertDeleteOriginal" checked>
-                                                <label class="form-check-label" for="convertDeleteOriginal">Delete original</label>
+                                                <label class="form-check-label" for="convertDeleteOriginal">{{ _('Delete original') }}</label>
                                             </div>
                                             <div class="form-check">
                                                 <input class="form-check-input" type="checkbox" id="convertDryRun" checked>
-                                                <label class="form-check-label" for="convertDryRun">Dry run</label>
+                                                <label class="form-check-label" for="convertDryRun">{{ _('Dry run') }}</label>
                                             </div>
                                             <div class="form-check">
                                                 <input class="form-check-input" type="checkbox" id="convertVerbose">
-                                                <label class="form-check-label" for="convertVerbose">Verbose</label>
+                                                <label class="form-check-label" for="convertVerbose">{{ _('Verbose') }}</label>
                                             </div>
                                             <div class="form-check">
                                                 <input class="form-check-input" type="checkbox" id="convertVerify" checked>
-                                                <label class="form-check-label" for="convertVerify">Verify output</label>
+                                                <label class="form-check-label" for="convertVerify">{{ _('Verify output') }}</label>
                                             </div>
                                             <button type="button" id="convertNszBtn" class="btn btn-warning ms-auto"
-                                                onClick='convertToNsz()'>Start Library Conversion</button>
+                                                onClick='convertToNsz()'>{{ _('Start Library Conversion') }}</button>
                                         </div>
                                         </div>
                                     </div>
@@ -231,10 +231,10 @@
                         <div class="card mb-3">
                             <div class="card-body d-flex flex-column">
                                 <div class="d-flex align-items-center justify-content-between mb-2">
-                                    <h5 class="card-title mb-0">Task output</h5>
+                                    <h5 class="card-title mb-0">{{ _('Task output') }}</h5>
                                     <div class="btn-group">
-                                        <button class="btn btn-outline-secondary btn-sm" type="button" onClick="showManageOutput([])">Clear</button>
-                                        <button class="btn btn-outline-danger btn-sm" type="button" id="cancelJobBtn" onClick="promptCancelActiveJob()" disabled>Cancel</button>
+                                        <button class="btn btn-outline-secondary btn-sm" type="button" onClick="showManageOutput([])">{{ _('Clear') }}</button>
+                                        <button class="btn btn-outline-danger btn-sm" type="button" id="cancelJobBtn" onClick="promptCancelActiveJob()" disabled>{{ _('Cancel') }}</button>
                                     </div>
                                 </div>
                                 <div class="mb-2">
@@ -251,21 +251,21 @@
                         </div>
                         <div class="card mb-3">
                             <div class="card-body">
-                                <h5 class="card-title">Recent jobs</h5>
-                                <div id="manageJobHistory" class="small text-muted">No jobs yet.</div>
+                                <h5 class="card-title">{{ _('Recent jobs') }}</h5>
+                                <div id="manageJobHistory" class="small text-muted">{{ _('No jobs yet.') }}</div>
                             </div>
                         </div>
                         <div class="card mb-3">
                             <div class="card-body">
                                 <details id="manageDiagnosticsDetails">
-                                    <summary class="fw-semibold">Diagnostics</summary>
-                                    <div class="text-muted small mt-2 mb-2">Live memory and scan diagnostics.</div>
+                                    <summary class="fw-semibold">{{ _('Diagnostics') }}</summary>
+                                    <div class="text-muted small mt-2 mb-2">{{ _('Live memory and scan diagnostics.') }}</div>
                                     <div class="d-flex justify-content-end gap-2 mb-2">
-                                        <button class="btn btn-outline-secondary btn-sm" type="button" id="expandDiagnosticsBtn" onClick="toggleDiagnosticsExpand()">Expand</button>
-                                        <button class="btn btn-outline-secondary btn-sm" type="button" id="copyDiagnosticsBtn" onClick="copyDiagnostics()">Copy</button>
+                                        <button class="btn btn-outline-secondary btn-sm" type="button" id="expandDiagnosticsBtn" onClick="toggleDiagnosticsExpand()">{{ _('Expand') }}</button>
+                                        <button class="btn btn-outline-secondary btn-sm" type="button" id="copyDiagnosticsBtn" onClick="copyDiagnostics()">{{ _('Copy') }}</button>
                                     </div>
                                     <div id="manageDiagnosticsResizeShell">
-                                        <pre id="manageDiagnostics" class="mb-0 small">Loading diagnostics...</pre>
+                                        <pre id="manageDiagnostics" class="mb-0 small">{{ _('Loading diagnostics...') }}</pre>
                                     </div>
                                 </details>
                             </div>
@@ -281,13 +281,13 @@
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
             <div class="modal-header">
-                <h1 class="modal-title fs-5" id="manageConfirmModalLabel">Confirm action</h1>
+                <h1 class="modal-title fs-5" id="manageConfirmModalLabel">{{ _('Confirm action') }}</h1>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body" id="manageConfirmModalBody">...</div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                <button type="button" class="btn btn-danger" id="manageConfirmModalBtn">Confirm</button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ _('Cancel') }}</button>
+                <button type="button" class="btn btn-danger" id="manageConfirmModalBtn">{{ _('Confirm') }}</button>
             </div>
         </div>
     </div>
@@ -311,10 +311,10 @@
             return;
         }
         manageConfirmAction = options.onConfirm || null;
-        $('#manageConfirmModalLabel').text(options.title || 'Confirm action');
+        $('#manageConfirmModalLabel').text(options.title || {{ _('Confirm action')|tojson }});
         $('#manageConfirmModalBody').text(options.message || '');
         manageConfirmModalBtn
-            .text(options.confirmLabel || 'Confirm')
+            .text(options.confirmLabel || {{ _('Confirm')|tojson }})
             .removeClass('btn-danger btn-warning btn-primary')
             .addClass(options.confirmClass || 'btn-danger')
             .prop('disabled', false);
@@ -325,7 +325,7 @@
         manageConfirmModalEl.addEventListener('hidden.bs.modal', function () {
             manageConfirmAction = null;
             manageConfirmModalBtn
-                .text('Confirm')
+                .text({{ _('Confirm')|tojson }})
                 .removeClass('btn-warning btn-primary')
                 .addClass('btn-danger')
                 .prop('disabled', false);
@@ -345,11 +345,11 @@
     function promptDeleteOlderUpdates() {
         const dryRun = $('#deleteUpdatesDryRun').is(':checked');
         showManageConfirmDialog({
-            title: dryRun ? 'Preview older update cleanup' : 'Delete older updates',
+            title: dryRun ? {{ _('Preview older update cleanup')|tojson }} : {{ _('Delete older updates')|tojson }},
             message: dryRun
-                ? 'Run a dry run for older update cleanup? No files will be deleted.'
-                : 'Delete older update files and keep only the latest owned update per title?',
-            confirmLabel: dryRun ? 'Run dry run' : 'Delete updates',
+                ? {{ _('Run a dry run for older update cleanup? No files will be deleted.')|tojson }}
+                : {{ _('Delete older update files and keep only the latest owned update per title?')|tojson }},
+            confirmLabel: dryRun ? {{ _('Run dry run')|tojson }} : {{ _('Delete updates')|tojson }},
             confirmClass: 'btn-danger',
             onConfirm: deleteOlderUpdates
         });
@@ -358,11 +358,11 @@
     function promptDeleteDuplicates() {
         const dryRun = $('#deleteDuplicatesDryRun').is(':checked');
         showManageConfirmDialog({
-            title: dryRun ? 'Preview duplicate cleanup' : 'Delete duplicates',
+            title: dryRun ? {{ _('Preview duplicate cleanup')|tojson }} : {{ _('Delete duplicates')|tojson }},
             message: dryRun
-                ? 'Run a dry run for duplicate cleanup? No files will be deleted.'
-                : 'Delete duplicate owned files and keep one file per app ID and version?',
-            confirmLabel: dryRun ? 'Run dry run' : 'Delete duplicates',
+                ? {{ _('Run a dry run for duplicate cleanup? No files will be deleted.')|tojson }}
+                : {{ _('Delete duplicate owned files and keep one file per app ID and version?')|tojson }},
+            confirmLabel: dryRun ? {{ _('Run dry run')|tojson }} : {{ _('Delete duplicates')|tojson }},
             confirmClass: 'btn-danger',
             onConfirm: deleteDuplicates
         });
@@ -383,13 +383,14 @@
                 if (result['success']) {
                     const deletedFolders = result['folders_deleted'] != null ? result['folders_deleted'] : 0;
                     const failedFolders = result['folders_failed'] != null ? result['folders_failed'] : 0;
+                    const failedNote = failedFolders ? ' ' + {{ _('({failed} failed)')|tojson }}.replace('{failed}', failedFolders) : '';
                     const folderNote = deletedFolders || failedFolders
-                        ? ` Deleted ${deletedFolders} empty folders${failedFolders ? ` (${failedFolders} failed)` : ''}.`
+                        ? ' ' + {{ _('Deleted {deleted} empty folders{failed_note}.')|tojson }}.replace('{deleted}', deletedFolders).replace('{failed_note}', failedNote)
                         : '';
-                    showManageAlert(`Organize complete. Moved ${result['moved']} items. Skipped ${result['skipped']}.${folderNote}`, 'success');
+                    showManageAlert({{ _('Organize complete. Moved {moved} items. Skipped {skipped}.{folder_note}')|tojson }}.replace('{moved}', result['moved']).replace('{skipped}', result['skipped']).replace('{folder_note}', folderNote), 'success');
                     showManageOutput(result['details']);
                 } else {
-                    showManageAlert(`Organize failed: ${result['errors'].join('; ')}`, 'danger');
+                    showManageAlert({{ _('Organize failed: {errors}')|tojson }}.replace('{errors}', result['errors'].join('; ')), 'danger');
                     showManageOutput(result['details']);
                 }
             },
@@ -408,9 +409,9 @@
             contentType: "application/json",
             success: function (result) {
                 if (result['success']) {
-                    showManageAlert('Library scan started.', 'success');
+                    showManageAlert({{ _('Library scan started.')|tojson }}, 'success');
                 } else {
-                    showManageAlert('Library scan failed.', 'danger');
+                    showManageAlert({{ _('Library scan failed.')|tojson }}, 'danger');
                 }
             },
             complete: function () {
@@ -432,10 +433,10 @@
             contentType: "application/json",
             success: function (result) {
                 if (result['success']) {
-                    showManageAlert(`Delete updates complete. Deleted ${result['deleted']} files.`, 'success');
+                    showManageAlert({{ _('Delete updates complete. Deleted {deleted} files.')|tojson }}.replace('{deleted}', result['deleted']), 'success');
                     showManageOutput(result['details']);
                 } else {
-                    showManageAlert(`Delete updates failed: ${result['errors'].join('; ')}`, 'danger');
+                    showManageAlert({{ _('Delete updates failed: {errors}')|tojson }}.replace('{errors}', result['errors'].join('; ')), 'danger');
                     showManageOutput(result['details']);
                 }
             },
@@ -458,10 +459,10 @@
             contentType: "application/json",
             success: function (result) {
                 if (result['success']) {
-                    showManageAlert(`Delete duplicates complete. Deleted ${result['deleted']} files.`, 'success');
+                    showManageAlert({{ _('Delete duplicates complete. Deleted {deleted} files.')|tojson }}.replace('{deleted}', result['deleted']), 'success');
                     showManageOutput(result['details']);
                 } else {
-                    showManageAlert(`Delete duplicates failed: ${result['errors'].join('; ')}`, 'danger');
+                    showManageAlert({{ _('Delete duplicates failed: {errors}')|tojson }}.replace('{errors}', result['errors'].join('; ')), 'danger');
                     showManageOutput(result['details']);
                 }
             },
@@ -474,11 +475,11 @@
     function promptDeleteOrphanedAddons() {
         const dryRun = $('#deleteOrphanedDryRun').is(':checked');
         showManageConfirmDialog({
-            title: dryRun ? 'Preview orphaned add-on cleanup' : 'Delete orphaned updates and DLC',
+            title: dryRun ? {{ _('Preview orphaned add-on cleanup')|tojson }} : {{ _('Delete orphaned updates and DLC')|tojson }},
             message: dryRun
-                ? 'Run a dry run for orphaned updates and DLC? No files will be deleted.'
-                : 'Delete all owned updates and DLC entries whose parent title has no owned base game?',
-            confirmLabel: dryRun ? 'Run dry run' : 'Delete orphaned add-ons',
+                ? {{ _('Run a dry run for orphaned updates and DLC? No files will be deleted.')|tojson }}
+                : {{ _('Delete all owned updates and DLC entries whose parent title has no owned base game?')|tojson }},
+            confirmLabel: dryRun ? {{ _('Run dry run')|tojson }} : {{ _('Delete orphaned add-ons')|tojson }},
             confirmClass: 'btn-danger',
             onConfirm: deleteOrphanedAddons
         });
@@ -497,10 +498,10 @@
             contentType: "application/json",
             success: function (result) {
                 if (result['success']) {
-                    showManageAlert(`Delete orphaned add-ons complete. Deleted ${result['deleted']} files.`, 'success');
+                    showManageAlert({{ _('Delete orphaned add-ons complete. Deleted {deleted} files.')|tojson }}.replace('{deleted}', result['deleted']), 'success');
                     showManageOutput(result['details']);
                 } else {
-                    showManageAlert(`Delete orphaned add-ons failed: ${result['errors'].join('; ')}`, 'danger');
+                    showManageAlert({{ _('Delete orphaned add-ons failed: {errors}')|tojson }}.replace('{errors}', result['errors'].join('; ')), 'danger');
                     showManageOutput(result['details']);
                 }
             },
@@ -529,9 +530,9 @@
             success: function (result) {
                 if (result['success']) {
                     showVerboseOutput = $('#convertVerbose').is(':checked');
-                    startJobPolling(result['job_id'], 'Bulk conversion started...');
+                    startJobPolling(result['job_id'], {{ _('Bulk conversion started...')|tojson }});
                 } else {
-                    showManageAlert(`Conversion failed: ${result['errors'].join('; ')}`, 'danger');
+                    showManageAlert({{ _('Conversion failed: {errors}')|tojson }}.replace('{errors}', result['errors'].join('; ')), 'danger');
                 }
             },
             complete: function () {
@@ -542,20 +543,20 @@
 
     function loadConvertibleFiles() {
         $('#convertSingleSelect').prop('disabled', true);
-        $('#convertSingleSelect').empty().append('<option value="">Loading files...</option>');
+        $('#convertSingleSelect').empty().append('<option value="">' + {{ _('Loading files...')|tojson }} + '</option>');
         const libraryValue = getLibraryValue();
         const url = libraryValue ? `/api/manage/convertibles?library_id=${libraryValue}` : "/api/manage/convertibles";
         $.getJSON(url, function (result) {
             if (!result['success']) {
-                $('#convertSingleSelect').empty().append('<option value="">Failed to load files</option>');
+                $('#convertSingleSelect').empty().append('<option value="">' + {{ _('Failed to load files')|tojson }} + '</option>');
                 return;
             }
             const files = result['files'] || [];
             if (!files.length) {
-                $('#convertSingleSelect').empty().append('<option value="">No NSP/XCI files found</option>');
+                $('#convertSingleSelect').empty().append('<option value="">' + {{ _('No NSP/XCI files found')|tojson }} + '</option>');
                 return;
             }
-            $('#convertSingleSelect').empty().append('<option value="">Select a file</option>');
+            $('#convertSingleSelect').empty().append('<option value="">' + {{ _('Select a file')|tojson }} + '</option>');
             files.forEach(file => {
                 const sizeLabel = formatFileSize(file.size || 0);
                 const label = `${file.filename} (${file.extension}) - ${sizeLabel}`;
@@ -569,7 +570,7 @@
     function convertSingleFile() {
         const fileId = $('#convertSingleSelect').val();
         if (!fileId) {
-            showManageAlert('Select a file to convert.', 'warning');
+            showManageAlert({{ _('Select a file to convert.')|tojson }}, 'warning');
             return;
         }
         $('#convertSingleBtn').prop('disabled', true);
@@ -591,9 +592,9 @@
             success: function (result) {
                 if (result['success']) {
                     showVerboseOutput = $('#convertSingleVerbose').is(':checked');
-                    startJobPolling(result['job_id'], `Single conversion started for ${selectedLabel}`);
+                    startJobPolling(result['job_id'], {{ _('Single conversion started for {name}')|tojson }}.replace('{name}', selectedLabel));
                 } else {
-                    showManageAlert(`Single conversion failed: ${result['errors'].join('; ')}`, 'danger');
+                    showManageAlert({{ _('Single conversion failed: {errors}')|tojson }}.replace('{errors}', result['errors'].join('; ')), 'danger');
                 }
             },
             complete: function () {
@@ -716,7 +717,7 @@
         }
         $.getJSON(`/api/manage/convert-job/${activeJobId}`, function (result) {
             if (!result['success']) {
-                showManageAlert('Failed to fetch job status.', 'danger');
+                showManageAlert({{ _('Failed to fetch job status.')|tojson }}, 'danger');
                 clearInterval(jobPollTimer);
                 jobPollTimer = null;
                 return;
@@ -745,9 +746,9 @@
                 $('#cancelJobBtn').prop('disabled', true);
                 clearJobPollingStorage();
                 if (job['status'] === 'success') {
-                    showManageAlert('Conversion complete.', 'success');
+                    showManageAlert({{ _('Conversion complete.')|tojson }}, 'success');
                 } else {
-                    showManageAlert(`Conversion failed: ${job['errors'].join('; ')}`, 'danger');
+                    showManageAlert({{ _('Conversion failed: {errors}')|tojson }}.replace('{errors}', job['errors'].join('; ')), 'danger');
                 }
                 loadConvertibleFiles();
                 loadJobHistory();
@@ -758,22 +759,22 @@
     function updateProgressDisplay(done, total, percent, message, file, jobStatus = 'running') {
         const progressPercent = total ? Math.round((done / total) * 100) : 0;
         $('#manageProgressBar').css('width', `${progressPercent}%`);
-        $('#manageProgressText').text(`Progress: ${done}/${total} (${progressPercent}%)`);
+        $('#manageProgressText').text({{ _('Progress: {done}/{total} ({percent})')|tojson }}.replace('{done}', done).replace('{total}', total).replace('{percent}', progressPercent + '%'));
         if (file) {
-            $('#manageFileText').text(`File: ${file}`);
+            $('#manageFileText').text({{ _('File: {file}')|tojson }}.replace('{file}', file));
         } else {
             $('#manageFileText').text('');
         }
         if (jobStatus !== 'running') {
             if (jobStatus === 'success') {
-                $('#manageCompressionText').text('Converter progress: Complete');
+                $('#manageCompressionText').text({{ _('Converter progress: Complete')|tojson }});
             } else if (jobStatus === 'cancelled') {
-                $('#manageCompressionText').text('Converter progress: Cancelled');
+                $('#manageCompressionText').text({{ _('Converter progress: Cancelled')|tojson }});
             } else {
-                $('#manageCompressionText').text('Converter progress: Failed');
+                $('#manageCompressionText').text({{ _('Converter progress: Failed')|tojson }});
             }
         } else if (percent) {
-            $('#manageCompressionText').text(`Converter progress: ${percent.toFixed(0)}%`);
+            $('#manageCompressionText').text({{ _('Converter progress: {percent}')|tojson }}.replace('{percent}', percent.toFixed(0) + '%'));
         } else {
             $('#manageCompressionText').text('');
         }
@@ -787,9 +788,9 @@
             return;
         }
         showManageConfirmDialog({
-            title: 'Cancel conversion job',
-            message: 'Cancel the active conversion job? Any in-progress work may stop before the current file completes.',
-            confirmLabel: 'Cancel job',
+            title: {{ _('Cancel conversion job')|tojson }},
+            message: {{ _('Cancel the active conversion job? Any in-progress work may stop before the current file completes.')|tojson }},
+            confirmLabel: {{ _('Cancel job')|tojson }},
             confirmClass: 'btn-danger',
             onConfirm: cancelActiveJob
         });
@@ -804,7 +805,7 @@
             type: 'POST',
             success: function (result) {
                 if (result['success']) {
-                    showManageAlert('Job cancelled.', 'warning');
+                    showManageAlert({{ _('Job cancelled.')|tojson }}, 'warning');
                     $('#cancelJobBtn').prop('disabled', true);
                     clearJobPollingStorage();
                 }
@@ -819,7 +820,7 @@
             }
             const jobs = result['jobs'] || [];
             if (!jobs.length) {
-                $('#manageJobHistory').text('No jobs yet.');
+                $('#manageJobHistory').text({{ _('No jobs yet.')|tojson }});
                 return;
             }
             const lines = jobs.map(job => {
@@ -827,7 +828,7 @@
                 const summary = job['summary'] || {};
                 const converted = summary['converted'] || 0;
                 const skipped = summary['skipped'] || 0;
-                return `${new Date(job['created_at'] * 1000).toLocaleString()} - ${status} (converted ${converted}, skipped ${skipped})`;
+                return {{ _('{date} - {status} (converted {converted}, skipped {skipped})')|tojson }}.replace('{date}', new Date(job['created_at'] * 1000).toLocaleString()).replace('{status}', status).replace('{converted}', converted).replace('{skipped}', skipped);
             });
             $('#manageJobHistory').text(lines.join('\n'));
         });
@@ -856,10 +857,10 @@
             const keysOk = result['keys_present'];
             const nszOk = !!result['nsz_runner'];
             let badgeClass = 'text-bg-success';
-            let text = 'Converter ready';
+            let text = {{ _('Converter ready')|tojson }};
             if (!keysOk || !nszOk) {
                 badgeClass = 'text-bg-warning';
-                text = 'Converter needs attention';
+                text = {{ _('Converter needs attention')|tojson }};
             }
             $('#manageHealthBadge').removeClass('text-bg-success text-bg-warning text-bg-secondary').addClass(badgeClass).text(text);
         });
@@ -872,7 +873,7 @@
             }
             const libraries = result['libraries'] || [];
             const select = $('#convertLibrarySelect');
-            select.empty().append('<option value="">All libraries</option>');
+            select.empty().append('<option value="">' + {{ _('All libraries')|tojson }} + '</option>');
             libraries.forEach(lib => {
                 select.append(`<option value="${lib.id}">${lib.path}</option>`);
             });
@@ -944,13 +945,13 @@
     function copyDiagnostics() {
         const text = $('#manageDiagnostics').text() || '';
         if (!text.trim()) {
-            showManageAlert('No diagnostics text to copy yet.', 'warning');
+            showManageAlert({{ _('No diagnostics text to copy yet.')|tojson }}, 'warning');
             return;
         }
         const btn = $('#copyDiagnosticsBtn');
         const setCopiedState = function () {
             const original = btn.text();
-            btn.text('Copied');
+            btn.text({{ _('Copied')|tojson }});
             setTimeout(function () {
                 btn.text(original);
             }, 1200);
@@ -959,7 +960,7 @@
             navigator.clipboard.writeText(text).then(function () {
                 setCopiedState();
             }).catch(function () {
-                showManageAlert('Clipboard write failed.', 'danger');
+                showManageAlert({{ _('Clipboard write failed.')|tojson }}, 'danger');
             });
             return;
         }
@@ -977,7 +978,7 @@
         if (ok) {
             setCopiedState();
         } else {
-            showManageAlert('Clipboard not available in this browser.', 'danger');
+            showManageAlert({{ _('Clipboard not available in this browser.')|tojson }}, 'danger');
         }
     }
 
@@ -987,12 +988,12 @@
         const isExpanded = shell.hasClass('diagnostics-expanded');
         if (isExpanded) {
             shell.removeClass('diagnostics-expanded');
-            btn.text('Expand');
+            btn.text({{ _('Expand')|tojson }});
             btn.attr('aria-pressed', 'false');
             return;
         }
         shell.addClass('diagnostics-expanded');
-        btn.text('Collapse');
+        btn.text({{ _('Collapse')|tojson }});
         btn.attr('aria-pressed', 'true');
     }
 
@@ -1017,7 +1018,7 @@
             }
             try {
                 if (!result['success']) {
-                    $('#manageDiagnostics').text('Failed to load diagnostics.');
+                    $('#manageDiagnostics').text({{ _('Failed to load diagnostics.')|tojson }});
                     return;
                 }
                 const process = result['process'] || {};
@@ -1054,7 +1055,7 @@
                 lines.push(diagnosticsPhaseLine('generate_library', phases['generate_library']));
                 $('#manageDiagnostics').text(lines.join('\n'));
             } catch (error) {
-                $('#manageDiagnostics').text('Diagnostics parse error.');
+                $('#manageDiagnostics').text({{ _('Diagnostics parse error.')|tojson }});
             }
         }).fail(function (_jqXhr, textStatus) {
             if (requestSeq !== diagnosticsRequestSeq) {
@@ -1064,10 +1065,10 @@
                 return;
             }
             if (textStatus === 'timeout') {
-                $('#manageDiagnostics').text('Diagnostics request timed out.');
+                $('#manageDiagnostics').text({{ _('Diagnostics request timed out.')|tojson }});
                 return;
             }
-            $('#manageDiagnostics').text('Diagnostics endpoint unavailable.');
+            $('#manageDiagnostics').text({{ _('Diagnostics endpoint unavailable.')|tojson }});
         }).always(function () {
             if (requestSeq === diagnosticsRequestSeq) {
                 diagnosticsRequest = null;
@@ -1139,10 +1140,10 @@
             }
         });
         $('#convertBatchSettingsCollapse').on('show.bs.collapse', function () {
-            $('#convertBatchSettingsToggleBtn').html('<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16" style="vertical-align: -0.125em;"><path fill-rule="evenodd" d="M1.646 11.354a.5.5 0 0 0 .708 0L8 5.707l5.646 5.647a.5.5 0 0 0 .708-.708l-6-6a.5.5 0 0 0-.708 0l-6 6a.5.5 0 0 0 0 .708z"/></svg> Hide');
+            $('#convertBatchSettingsToggleBtn').html('<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16" style="vertical-align: -0.125em;"><path fill-rule="evenodd" d="M1.646 11.354a.5.5 0 0 0 .708 0L8 5.707l5.646 5.647a.5.5 0 0 0 .708-.708l-6-6a.5.5 0 0 0-.708 0l-6 6a.5.5 0 0 0 0 .708z"/></svg> ' + {{ _('Hide')|tojson }});
         });
         $('#convertBatchSettingsCollapse').on('hide.bs.collapse', function () {
-            $('#convertBatchSettingsToggleBtn').html('<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16" style="vertical-align: -0.125em;"><path fill-rule="evenodd" d="M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z"/></svg> Show');
+            $('#convertBatchSettingsToggleBtn').html('<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16" style="vertical-align: -0.125em;"><path fill-rule="evenodd" d="M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z"/></svg> ' + {{ _('Show')|tojson }});
         });
         $.getJSON("/api/manage/jobs?limit=1", function (result) {
             if (!result['success']) {

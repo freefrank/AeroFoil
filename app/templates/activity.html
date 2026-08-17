@@ -451,14 +451,14 @@
                 class="d-flex align-items-center justify-content-between p-3 border-bottom"
             >
                 <div>
-                    <h5 class="mb-0">Activity</h5>
-                    <div class="text-muted small">Audit and monitoring</div>
+                    <h5 class="mb-0">{{ _('Activity') }}</h5>
+                    <div class="text-muted small">{{ _('Audit and monitoring') }}</div>
                 </div>
                 <button
                     class="btn btn-sm d-md-none"
                     type="button"
                     id="activitySidebarToggle"
-                    aria-label="Toggle activity sidebar"
+                    aria-label="{{ _('Toggle activity sidebar') }}"
                 >
                     <i class="bi bi-list"></i>
                 </button>
@@ -467,54 +467,54 @@
                 <a class="nav-link active" href="#" data-section="overview"
                     ><i class="bi bi-grid-1x2"></i
                     ><span class="activity-nav-copy"
-                        ><span class="activity-nav-title">Overview</span
+                        ><span class="activity-nav-title">{{ _('Overview') }}</span
                         ><span class="activity-nav-subtitle"
-                            >KPIs and section shortcuts</span
+                            >{{ _('KPIs and section shortcuts') }}</span
                         ></span
                     ></a
                 >
                 <a class="nav-link" href="#" data-section="realtime"
                     ><i class="bi bi-activity"></i
                     ><span class="activity-nav-copy"
-                        ><span class="activity-nav-title">Realtime</span
+                        ><span class="activity-nav-title">{{ _('Realtime') }}</span
                         ><span class="activity-nav-subtitle"
-                            >Live sessions and connected clients</span
+                            >{{ _('Live sessions and connected clients') }}</span
                         ></span
                     ></a
                 >
                 <a class="nav-link" href="#" data-section="access"
                     ><i class="bi bi-clock-history"></i
                     ><span class="activity-nav-copy"
-                        ><span class="activity-nav-title">Access History</span
+                        ><span class="activity-nav-title">{{ _('Access History') }}</span
                         ><span class="activity-nav-subtitle"
-                            >Transfer and shop audit trail</span
+                            >{{ _('Transfer and shop audit trail') }}</span
                         ></span
                     ></a
                 >
                 <a class="nav-link" href="#" data-section="blocked"
                     ><i class="bi bi-slash-circle"></i
                     ><span class="activity-nav-copy"
-                        ><span class="activity-nav-title">Blocked IPs</span
+                        ><span class="activity-nav-title">{{ _('Blocked IPs') }}</span
                         ><span class="activity-nav-subtitle"
-                            >Permanent blacklist hits</span
+                            >{{ _('Permanent blacklist hits') }}</span
                         ></span
                     ></a
                 >
                 <a class="nav-link" href="#" data-section="clients"
                     ><i class="bi bi-phone"></i
                     ><span class="activity-nav-copy"
-                        ><span class="activity-nav-title">Client History</span
+                        ><span class="activity-nav-title">{{ _('Client History') }}</span
                         ><span class="activity-nav-subtitle"
-                            >Devices, user-agents, and metadata</span
+                            >{{ _('Devices, user-agents, and metadata') }}</span
                         ></span
                     ></a
                 >
                 <a class="nav-link" href="#" data-section="lockouts"
                     ><i class="bi bi-shield-lock"></i
                     ><span class="activity-nav-copy"
-                        ><span class="activity-nav-title">Lockouts</span
+                        ><span class="activity-nav-title">{{ _('Lockouts') }}</span
                         ><span class="activity-nav-subtitle"
-                            >Failed-login IP lockouts</span
+                            >{{ _('Failed-login IP lockouts') }}</span
                         ></span
                     ></a
                 >
@@ -528,10 +528,9 @@
                         class="d-flex flex-wrap align-items-start justify-content-between gap-2"
                     >
                         <div>
-                            <h2 class="mb-2">Activity</h2>
+                            <h2 class="mb-2">{{ _('Activity') }}</h2>
                             <div class="activity-subtitle small">
-                                Realtime monitoring, persistent audit logs, and
-                                access control telemetry in one workspace
+                                {{ _('Realtime monitoring, persistent audit logs, and access control telemetry in one workspace') }}
                             </div>
                         </div>
                         <div class="activity-page-meta">
@@ -539,28 +538,27 @@
                                 class="btn btn-outline-secondary btn-sm d-md-none"
                                 type="button"
                                 id="activitySidebarToggleMobile"
-                                aria-label="Toggle activity sidebar"
+                                aria-label="{{ _('Toggle activity sidebar') }}"
                             >
-                                <i class="bi bi-list"></i> Sections
+                                <i class="bi bi-list"></i> {{ _('Sections') }}
                             </button>
                             <span
                                 class="badge text-bg-secondary"
                                 id="lastRefreshLabel"
-                                >Last update: -</span
+                                >{{ _('Last update: -') }}</span
                             >
                             <span class="badge text-bg-secondary"
-                                >Live: 2.5s</span
+                                >{{ _('Live: 2.5s') }}</span
                             >
                             <span class="badge text-bg-secondary"
-                                >History: 15s</span
+                                >{{ _('History: 15s') }}</span
                             >
                             <button
                                 type="button"
                                 class="btn btn-outline-primary btn-sm"
                                 id="refreshNowBtn"
                             >
-                                <i class="bi bi-arrow-clockwise"></i> Refresh
-                                now
+                                <i class="bi bi-arrow-clockwise"></i> {{ _('Refresh now') }}
                             </button>
                         </div>
                     </div>
@@ -582,7 +580,7 @@
                             <div class="col-sm-6 col-xl-3">
                                 <div class="activity-kpi">
                                     <div class="activity-kpi-label">
-                                        Live Transfers
+                                        {{ _('Live Transfers') }}
                                     </div>
                                     <div
                                         class="activity-kpi-value"
@@ -595,7 +593,7 @@
                             <div class="col-sm-6 col-xl-3">
                                 <div class="activity-kpi">
                                     <div class="activity-kpi-label">
-                                        Connected Clients
+                                        {{ _('Connected Clients') }}
                                     </div>
                                     <div
                                         class="activity-kpi-value"
@@ -608,7 +606,7 @@
                             <div class="col-sm-6 col-xl-3">
                                 <div class="activity-kpi">
                                     <div class="activity-kpi-label">
-                                        Access Rows
+                                        {{ _('Access Rows') }}
                                     </div>
                                     <div
                                         class="activity-kpi-value"
@@ -621,7 +619,7 @@
                             <div class="col-sm-6 col-xl-3">
                                 <div class="activity-kpi">
                                     <div class="activity-kpi-label">
-                                        Client History Rows
+                                        {{ _('Client History Rows') }}
                                     </div>
                                     <div
                                         class="activity-kpi-value"
@@ -634,7 +632,7 @@
                             <div class="col-sm-6 col-xl-3">
                                 <div class="activity-kpi">
                                     <div class="activity-kpi-label">
-                                        Locked IPs
+                                        {{ _('Locked IPs') }}
                                     </div>
                                     <div
                                         class="activity-kpi-value"
@@ -648,12 +646,11 @@
                                 <div class="activity-section">
                                     <div class="activity-section-head mb-0">
                                         <div>
-                                            <h5 class="mb-0">Overview</h5>
+                                            <h5 class="mb-0">{{ _('Overview') }}</h5>
                                             <div
                                                 class="activity-section-subtitle"
                                             >
-                                                Use the left sidebar to focus on
-                                                one data set at a time
+                                                {{ _('Use the left sidebar to focus on one data set at a time') }}
                                             </div>
                                         </div>
                                     </div>
@@ -670,10 +667,9 @@
                         <section class="activity-section">
                             <div class="activity-section-head">
                                 <div>
-                                    <h5 class="mb-0">Realtime Monitor</h5>
+                                    <h5 class="mb-0">{{ _('Realtime Monitor') }}</h5>
                                     <div class="activity-section-subtitle">
-                                        Current transfer sessions and recently
-                                        seen clients
+                                        {{ _('Current transfer sessions and recently seen clients') }}
                                     </div>
                                 </div>
                             </div>
@@ -686,7 +682,7 @@
                                                 class="d-flex align-items-center justify-content-between"
                                             >
                                                 <h6 class="card-title mb-0">
-                                                    Live transfers
+                                                    {{ _('Live transfers') }}
                                                 </h6>
                                                 <span
                                                     class="badge text-bg-secondary"
@@ -703,25 +699,25 @@
                                                     <thead>
                                                         <tr>
                                                             <th scope="col">
-                                                                Started
+                                                                {{ _('Started') }}
                                                             </th>
                                                             <th scope="col">
-                                                                User
+                                                                {{ _('User') }}
                                                             </th>
                                                             <th scope="col">
-                                                                Remote
+                                                                {{ _('Remote') }}
                                                             </th>
                                                             <th scope="col">
-                                                                Location
+                                                                {{ _('Location') }}
                                                             </th>
                                                             <th scope="col">
-                                                                Title
+                                                                {{ _('Title') }}
                                                             </th>
                                                             <th scope="col">
-                                                                File
+                                                                {{ _('File') }}
                                                             </th>
                                                             <th scope="col">
-                                                                Sent
+                                                                {{ _('Sent') }}
                                                             </th>
                                                         </tr>
                                                     </thead>
@@ -733,7 +729,7 @@
                                                                 colspan="7"
                                                                 class="table-muted-empty"
                                                             >
-                                                                Loading...
+                                                                {{ _('Loading...') }}
                                                             </td>
                                                         </tr>
                                                     </tbody>
@@ -750,7 +746,7 @@
                                                 class="d-flex align-items-center justify-content-between"
                                             >
                                                 <h6 class="card-title mb-0">
-                                                    Connected clients
+                                                    {{ _('Connected clients') }}
                                                 </h6>
                                                 <span
                                                     class="badge text-bg-secondary"
@@ -767,22 +763,22 @@
                                                     <thead>
                                                         <tr>
                                                             <th scope="col">
-                                                                Last seen
+                                                                {{ _('Last seen') }}
                                                             </th>
                                                             <th scope="col">
-                                                                User
+                                                                {{ _('User') }}
                                                             </th>
                                                             <th scope="col">
-                                                                Remote
+                                                                {{ _('Remote') }}
                                                             </th>
                                                             <th scope="col">
-                                                                Location
+                                                                {{ _('Location') }}
                                                             </th>
                                                             <th scope="col">
-                                                                User-Agent
+                                                                {{ _('User-Agent') }}
                                                             </th>
                                                             <th scope="col">
-                                                                Client details
+                                                                {{ _('Client details') }}
                                                             </th>
                                                         </tr>
                                                     </thead>
@@ -794,7 +790,7 @@
                                                                 colspan="6"
                                                                 class="table-muted-empty"
                                                             >
-                                                                Loading...
+                                                                {{ _('Loading...') }}
                                                             </td>
                                                         </tr>
                                                     </tbody>
@@ -815,10 +811,9 @@
                         <section class="activity-section">
                             <div class="activity-section-head">
                                 <div>
-                                    <h5 class="mb-0">Access History</h5>
+                                    <h5 class="mb-0">{{ _('Access History') }}</h5>
                                     <div class="activity-section-subtitle">
-                                        Searchable and sortable recent
-                                        transfer/shop activity
+                                        {{ _('Searchable and sortable recent transfer/shop activity') }}
                                     </div>
                                 </div>
                             </div>
@@ -828,7 +823,7 @@
                                     <div class="activity-toolbar">
                                         <div>
                                             <h6 class="card-title mb-0">
-                                                Access history
+                                                {{ _('Access history') }}
                                                 <span
                                                     class="badge text-bg-secondary ms-1"
                                                     id="accessHistoryCount"
@@ -838,8 +833,7 @@
                                             <div
                                                 class="activity-section-subtitle"
                                             >
-                                                Recent transfers and shop
-                                                activity
+                                                {{ _('Recent transfers and shop activity') }}
                                             </div>
                                         </div>
                                         <div class="activity-toolbar-group">
@@ -849,7 +843,7 @@
                                                 id="clearAccessHistoryBtn"
                                             >
                                                 <i class="bi bi-trash"></i>
-                                                Clear log
+                                                {{ _('Clear log') }}
                                             </button>
                                             <button
                                                 type="button"
@@ -857,19 +851,19 @@
                                                 id="exportAccessHistoryBtn"
                                             >
                                                 <i class="bi bi-download"></i>
-                                                Export CSV
+                                                {{ _('Export CSV') }}
                                             </button>
                                             <input
                                                 id="accessSearch"
                                                 class="form-control form-control-sm"
                                                 style="width: 260px"
-                                                placeholder="Search by user, title, file, IP, kind"
+                                                placeholder="{{ _('Search by user, title, file, IP, kind') }}"
                                                 autocomplete="off"
                                             />
                                             <label
                                                 class="text-muted small mb-0"
                                                 for="activityLimit"
-                                                >Rows</label
+                                                >{{ _('Rows') }}</label
                                             >
                                             <select
                                                 id="activityLimit"
@@ -906,63 +900,63 @@
                                                         class="sortable"
                                                         data-sort-key="at"
                                                     >
-                                                        When
+                                                        {{ _('When') }}
                                                     </th>
                                                     <th
                                                         scope="col"
                                                         class="sortable"
                                                         data-sort-key="kind"
                                                     >
-                                                        Kind
+                                                        {{ _('Kind') }}
                                                     </th>
                                                     <th
                                                         scope="col"
                                                         class="sortable"
                                                         data-sort-key="user"
                                                     >
-                                                        User
+                                                        {{ _('User') }}
                                                     </th>
                                                     <th
                                                         scope="col"
                                                         class="sortable"
                                                         data-sort-key="remote_addr"
                                                     >
-                                                        Remote
+                                                        {{ _('Remote') }}
                                                     </th>
                                                     <th
                                                         scope="col"
                                                         class="sortable"
                                                         data-sort-key="country"
                                                     >
-                                                        Location
+                                                        {{ _('Location') }}
                                                     </th>
                                                     <th
                                                         scope="col"
                                                         class="sortable"
                                                         data-sort-key="title_id"
                                                     >
-                                                        Title
+                                                        {{ _('Title') }}
                                                     </th>
                                                     <th
                                                         scope="col"
                                                         class="sortable"
                                                         data-sort-key="filename"
                                                     >
-                                                        File
+                                                        {{ _('File') }}
                                                     </th>
                                                     <th
                                                         scope="col"
                                                         class="sortable"
                                                         data-sort-key="bytes_sent"
                                                     >
-                                                        Bytes
+                                                        {{ _('Bytes') }}
                                                     </th>
                                                     <th
                                                         scope="col"
                                                         class="sortable"
                                                         data-sort-key="ok"
                                                     >
-                                                        Status
+                                                        {{ _('Status') }}
                                                     </th>
                                                 </tr>
                                             </thead>
@@ -972,7 +966,7 @@
                                                         colspan="9"
                                                         class="table-muted-empty"
                                                     >
-                                                        Loading...
+                                                        {{ _('Loading...') }}
                                                     </td>
                                                 </tr>
                                             </tbody>
@@ -991,10 +985,9 @@
                         <section class="activity-section">
                             <div class="activity-section-head">
                                 <div>
-                                    <h5 class="mb-0">Client History</h5>
+                                    <h5 class="mb-0">{{ _('Client History') }}</h5>
                                     <div class="activity-section-subtitle">
-                                        Persisted log of connected clients and
-                                        metadata
+                                        {{ _('Persisted log of connected clients and metadata') }}
                                     </div>
                                 </div>
                             </div>
@@ -1004,7 +997,7 @@
                                     <div class="activity-toolbar">
                                         <div>
                                             <h6 class="card-title mb-0">
-                                                Client history
+                                                {{ _('Client history') }}
                                                 <span
                                                     class="badge text-bg-secondary ms-1"
                                                     id="clientHistoryCount"
@@ -1014,8 +1007,7 @@
                                             <div
                                                 class="activity-section-subtitle"
                                             >
-                                                Persisted log of connected
-                                                clients
+                                                {{ _('Persisted log of connected clients') }}
                                             </div>
                                         </div>
                                         <div class="activity-toolbar-group">
@@ -1025,7 +1017,7 @@
                                                 id="clearClientsHistoryBtn"
                                             >
                                                 <i class="bi bi-trash"></i>
-                                                Clear log
+                                                {{ _('Clear log') }}
                                             </button>
                                             <button
                                                 type="button"
@@ -1033,12 +1025,12 @@
                                                 id="exportClientsHistoryBtn"
                                             >
                                                 <i class="bi bi-download"></i>
-                                                Export CSV
+                                                {{ _('Export CSV') }}
                                             </button>
                                             <label
                                                 class="text-muted small mb-0"
                                                 for="clientsHistoryLimit"
-                                                >Rows</label
+                                                >{{ _('Rows') }}</label
                                             >
                                             <select
                                                 id="clientsHistoryLimit"
@@ -1070,17 +1062,17 @@
                                         >
                                             <thead>
                                                 <tr>
-                                                    <th scope="col">When</th>
-                                                    <th scope="col">User</th>
-                                                    <th scope="col">Remote</th>
+                                                    <th scope="col">{{ _('When') }}</th>
+                                                    <th scope="col">{{ _('User') }}</th>
+                                                    <th scope="col">{{ _('Remote') }}</th>
                                                     <th scope="col">
-                                                        Location
+                                                        {{ _('Location') }}
                                                     </th>
                                                     <th scope="col">
-                                                        User-Agent
+                                                        {{ _('User-Agent') }}
                                                     </th>
                                                     <th scope="col">
-                                                        Client details
+                                                        {{ _('Client details') }}
                                                     </th>
                                                     <th scope="col"></th>
                                                 </tr>
@@ -1091,7 +1083,7 @@
                                                         colspan="7"
                                                         class="table-muted-empty"
                                                     >
-                                                        Loading...
+                                                        {{ _('Loading...') }}
                                                     </td>
                                                 </tr>
                                             </tbody>
@@ -1110,10 +1102,9 @@
                         <section class="activity-section">
                             <div class="activity-section-head">
                                 <div>
-                                    <h5 class="mb-0">Blocked IPs</h5>
+                                    <h5 class="mb-0">{{ _('Blocked IPs') }}</h5>
                                     <div class="activity-section-subtitle">
-                                        Requests blocked by IP blacklist and
-                                        country rules
+                                        {{ _('Requests blocked by IP blacklist and country rules') }}
                                     </div>
                                 </div>
                             </div>
@@ -1123,7 +1114,7 @@
                                     <div class="activity-toolbar">
                                         <div>
                                             <h6 class="card-title mb-0">
-                                                Blocked requests
+                                                {{ _('Blocked requests') }}
                                                 <span
                                                     class="badge text-bg-secondary ms-1"
                                                     id="blockedIpsCount"
@@ -1133,8 +1124,7 @@
                                             <div
                                                 class="activity-section-subtitle"
                                             >
-                                                404 responses returned for
-                                                denied IP or country rules
+                                                {{ _('404 responses returned for denied IP or country rules') }}
                                             </div>
                                         </div>
                                         <div class="activity-toolbar-group">
@@ -1142,7 +1132,7 @@
                                                 id="blockedIpsSearch"
                                                 class="form-control form-control-sm"
                                                 style="width: 260px"
-                                                placeholder="Search by IP, path, UA"
+                                                placeholder="{{ _('Search by IP, path, UA') }}"
                                                 autocomplete="off"
                                             />
                                         </div>
@@ -1155,16 +1145,16 @@
                                         >
                                             <thead>
                                                 <tr>
-                                                    <th scope="col">When</th>
-                                                    <th scope="col">Remote</th>
+                                                    <th scope="col">{{ _('When') }}</th>
+                                                    <th scope="col">{{ _('Remote') }}</th>
                                                     <th scope="col">
-                                                        Location
+                                                        {{ _('Location') }}
                                                     </th>
-                                                    <th scope="col">Path</th>
+                                                    <th scope="col">{{ _('Path') }}</th>
                                                     <th scope="col">
-                                                        User-Agent
+                                                        {{ _('User-Agent') }}
                                                     </th>
-                                                    <th scope="col">Status</th>
+                                                    <th scope="col">{{ _('Status') }}</th>
                                                 </tr>
                                             </thead>
                                             <tbody id="blockedIpsBody">
@@ -1173,7 +1163,7 @@
                                                         colspan="6"
                                                         class="table-muted-empty"
                                                     >
-                                                        Loading...
+                                                        {{ _('Loading...') }}
                                                     </td>
                                                 </tr>
                                             </tbody>
@@ -1192,10 +1182,9 @@
                         <section class="activity-section">
                             <div class="activity-section-head">
                                 <div>
-                                    <h5 class="mb-0">Login Lockouts</h5>
+                                    <h5 class="mb-0">{{ _('Login Lockouts') }}</h5>
                                     <div class="activity-section-subtitle">
-                                        Current temporary IP lockouts from
-                                        failed authentication attempts
+                                        {{ _('Current temporary IP lockouts from failed authentication attempts') }}
                                     </div>
                                 </div>
                             </div>
@@ -1205,7 +1194,7 @@
                                     <div class="activity-toolbar">
                                         <div>
                                             <h6 class="card-title mb-0">
-                                                Temporary lockouts
+                                                {{ _('Temporary lockouts') }}
                                                 <span
                                                     class="badge text-bg-secondary ms-1"
                                                     id="authLockoutsCountActivity"
@@ -1215,8 +1204,7 @@
                                             <div
                                                 class="activity-section-subtitle"
                                             >
-                                                Unlock individual IPs or clear
-                                                all temporary lockouts
+                                                {{ _('Unlock individual IPs or clear all temporary lockouts') }}
                                             </div>
                                         </div>
                                         <div class="activity-toolbar-group">
@@ -1228,7 +1216,7 @@
                                                 <i
                                                     class="bi bi-arrow-clockwise"
                                                 ></i>
-                                                Refresh
+                                                {{ _('Refresh') }}
                                             </button>
                                             <button
                                                 type="button"
@@ -1236,7 +1224,7 @@
                                                 id="unlockAllAuthLockoutsBtnActivity"
                                             >
                                                 <i class="bi bi-unlock"></i>
-                                                Unlock all
+                                                {{ _('Unlock all') }}
                                             </button>
                                         </div>
                                     </div>
@@ -1249,17 +1237,17 @@
                                         >
                                             <thead>
                                                 <tr>
-                                                    <th scope="col">IP</th>
+                                                    <th scope="col">{{ _('IP') }}</th>
                                                     <th scope="col">
-                                                        Remaining
+                                                        {{ _('Remaining') }}
                                                     </th>
                                                     <th scope="col">
-                                                        Last failed
+                                                        {{ _('Last failed') }}
                                                     </th>
                                                     <th scope="col">
-                                                        Attempts
+                                                        {{ _('Attempts') }}
                                                     </th>
-                                                    <th scope="col">Action</th>
+                                                    <th scope="col">{{ _('Action') }}</th>
                                                 </tr>
                                             </thead>
                                             <tbody
@@ -1270,7 +1258,7 @@
                                                         colspan="5"
                                                         class="table-muted-empty"
                                                     >
-                                                        Loading...
+                                                        {{ _('Loading...') }}
                                                     </td>
                                                 </tr>
                                             </tbody>
@@ -1342,11 +1330,11 @@
             lastClientsRefreshAt || 0,
         );
         if (!latest) {
-            setText("lastRefreshLabel", "Last update: -");
+            setText("lastRefreshLabel", {{ _('Last update: -')|tojson }});
             return;
         }
         const asSeconds = Math.floor(latest / 1000);
-        setText("lastRefreshLabel", `Last update: ${formatTime(asSeconds)}`);
+        setText("lastRefreshLabel", {{ _('Last update: {time}')|tojson }}.replace('{time}', formatTime(asSeconds)));
     }
 
     function updateActivityLayoutMetrics() {
@@ -1363,16 +1351,16 @@
 
     function showError(message) {
         const el = $("#activityAlert");
-        el.text(message || "Failed to load activity.").removeClass("d-none");
+        el.text(message || {{ _('Failed to load activity.')|tojson }}).removeClass("d-none");
     }
 
     function renderClientDetails(item) {
         const fields = [
-            ["Theme", item?.theme],
+            [{{ _('Theme')|tojson }}, item?.theme],
             ["UID", item?.uid],
-            ["Version", item?.version],
-            ["Revision", item?.revision],
-            ["Language", item?.language],
+            [{{ _('Version')|tojson }}, item?.version],
+            [{{ _('Revision')|tojson }}, item?.revision],
+            [{{ _('Language')|tojson }}, item?.language],
             ["HAUTH", item?.hauth],
             ["UAUTH", item?.uauth],
         ];
@@ -1446,7 +1434,9 @@
 
         if (!list.length) {
             body.html(
-                '<tr><td colspan="7" class="table-muted-empty">No active transfers.</td></tr>',
+                '<tr><td colspan="7" class="table-muted-empty">' +
+                    {{ _('No active transfers.')|tojson }} +
+                    '</td></tr>',
             );
             return;
         }
@@ -1646,7 +1636,9 @@
 
         if (!list.length) {
             body.html(
-                '<tr><td colspan="6" class="table-muted-empty">No recent clients.</td></tr>',
+                '<tr><td colspan="6" class="table-muted-empty">' +
+                    {{ _('No recent clients.')|tojson }} +
+                    '</td></tr>',
             );
             return;
         }
@@ -1712,8 +1704,8 @@
         setText("kpiAccessRows", list.length);
         if (!list.length) {
             const msg = (accessHistoryQuery || "").trim()
-                ? "No history rows match your search."
-                : "No history yet.";
+                ? {{ _('No history rows match your search.')|tojson }}
+                : {{ _('No history yet.')|tojson }};
             body.html(
                 `<tr><td colspan="9" class="table-muted-empty">${escapeHtml(msg)}</td></tr>`,
             );
@@ -1739,7 +1731,7 @@
                 ? `<img src="https://cdn.jsdelivr.net/npm/flag-icons@7.2.3/flags/4x3/${countryCode}.svg" alt="" class="flag-icon" loading="lazy" />`
                 : "";
             const statusText =
-                item.ok === true ? "OK" : item.ok === false ? "Fail" : "-";
+                item.ok === true ? {{ _('OK')|tojson }} : item.ok === false ? {{ _('Fail')|tojson }} : "-";
             const statusClass =
                 item.ok === true
                     ? "text-bg-success"
@@ -1776,7 +1768,9 @@
         setText("kpiClientHistoryRows", list.length);
         if (!list.length) {
             body.html(
-                '<tr><td colspan="7" class="table-muted-empty">No client history yet.</td></tr>',
+                '<tr><td colspan="7" class="table-muted-empty">' +
+                    {{ _('No client history yet.')|tojson }} +
+                    '</td></tr>',
             );
             return;
         }
@@ -1808,7 +1802,7 @@
                     <td><span class="location-cell">${flagIcon}${escapeHtml(locationLabel)}</span></td>
                     <td class="text-truncate" style="max-width: 520px;">${escapeHtml(item.user_agent || "-")}</td>
                     <td style="min-width: 280px;">${renderClientDetails(item)}</td>
-                    <td class="text-end"><button type="button" class="btn btn-outline-danger btn-sm blacklist-ip-btn" data-ip="${escapeHtml(item.remote_addr || "")}"><i class="bi bi-shield-slash"></i> Block</button></td>
+                    <td class="text-end"><button type="button" class="btn btn-outline-danger btn-sm blacklist-ip-btn" data-ip="${escapeHtml(item.remote_addr || "")}"><i class="bi bi-shield-slash"></i> ${ {{ _('Block')|tojson }} }</button></td>
                 </tr>`,
             );
             body.append(row);
@@ -1821,8 +1815,8 @@
         setText("blockedIpsCount", list.length);
         if (!list.length) {
             const msg = (blockedIpsQuery || "").trim()
-                ? "No blocked requests match your search."
-                : "No blocked requests yet.";
+                ? {{ _('No blocked requests match your search.')|tojson }}
+                : {{ _('No blocked requests yet.')|tojson }};
             body.html(
                 `<tr><td colspan="6" class="table-muted-empty">${escapeHtml(msg)}</td></tr>`,
             );
@@ -1858,7 +1852,7 @@
                     <td><span class="location-cell">${flagIcon}${escapeHtml(locationLabel)}</span></td>
                     <td class="text-truncate" style="max-width: 420px;">${escapeHtml(item.filename || "-")}</td>
                     <td class="text-truncate" style="max-width: 520px;">${escapeHtml(item.user_agent || "-")}</td>
-                    <td><span class="badge text-bg-danger">Blocked${statusLabel}</span></td>
+                    <td><span class="badge text-bg-danger">${ {{ _('Blocked')|tojson }} }${statusLabel}</span></td>
                 </tr>`,
             );
             body.append(row);
@@ -1940,7 +1934,7 @@
         setText("authLockoutsCountActivity", list.length);
         setText("kpiLockedIps", list.length);
         if (!list.length) {
-            setAuthLockoutsPlaceholder("No temporary lockouts.");
+            setAuthLockoutsPlaceholder({{ _('No temporary lockouts.')|tojson }});
             return;
         }
 
@@ -1955,7 +1949,7 @@
                     <td>${escapeHtml(String(item?.failed_attempts_recent ?? 0))}</td>
                     <td>
                         <button type="button" class="btn btn-outline-warning btn-sm unlock-auth-lockout-btn-activity" data-ip="${escapeHtml(ip)}">
-                            <i class="bi bi-unlock"></i> Unlock
+                            <i class="bi bi-unlock"></i> ${ {{ _('Unlock')|tojson }} }
                         </button>
                     </td>
                 </tr>`,
@@ -1973,14 +1967,14 @@
         $.getJSON("/api/auth/lockouts", function (result) {
             if (!result || result.success !== true) {
                 renderAuthLockouts([]);
-                setAuthLockoutsPlaceholder("Failed to load lockouts.");
+                setAuthLockoutsPlaceholder({{ _('Failed to load lockouts.')|tojson }});
                 return;
             }
             renderAuthLockouts(result.items);
         })
             .fail(function () {
                 renderAuthLockouts([]);
-                setAuthLockoutsPlaceholder("Failed to load lockouts.");
+                setAuthLockoutsPlaceholder({{ _('Failed to load lockouts.')|tojson }});
             })
             .always(function () {
                 loadAuthLockouts.inFlight = false;
@@ -2004,16 +1998,16 @@
                     const msg =
                         resp && resp.error
                             ? resp.error
-                            : "Failed to add IP to blacklist.";
+                            : {{ _('Failed to add IP to blacklist.')|tojson }};
                     showError(msg);
                     return;
                 }
-                showToast(`Blacklisted ${trimmed}`, "success");
+                showToast({{ _('Blacklisted {ip}')|tojson }}.replace('{ip}', trimmed), "success");
             })
             .fail(function (xhr) {
                 const msg =
                     xhr?.responseJSON?.error ||
-                    "Failed to add IP to blacklist.";
+                    {{ _('Failed to add IP to blacklist.')|tojson }};
                 showError(msg);
             });
     }
@@ -2035,7 +2029,7 @@
     }
 
     function unlockAllAuthLockouts() {
-        if (!confirm("Unlock all temporarily locked IPs?")) {
+        if (!confirm({{ _('Unlock all temporarily locked IPs?')|tojson }})) {
             return;
         }
         $("#unlockAllAuthLockoutsBtnActivity").prop("disabled", true);
@@ -2088,12 +2082,12 @@
             `/api/admin/activity?limit=${encodeURIComponent(limit)}`,
             function (result) {
                 if (!result || result.success !== true) {
-                    showError(result?.message || "Failed to load activity.");
+                    showError(result?.message || {{ _('Failed to load activity.')|tojson }});
                     return;
                 }
                 if (result.access_history_error) {
                     showError(
-                        `Access history unavailable: ${result.access_history_error}`,
+                        {{ _('Access history unavailable: {error}')|tojson }}.replace('{error}', result.access_history_error),
                     );
                 }
                 renderLiveTransfers(result.live_transfers);
@@ -2108,7 +2102,7 @@
             },
         )
             .fail(function () {
-                showError("Failed to load activity.");
+                showError({{ _('Failed to load activity.')|tojson }});
             })
             .always(function () {
                 loadActivity.inFlight = false;
@@ -2146,7 +2140,7 @@
             if (!ip) {
                 return;
             }
-            if (!confirm(`Add ${ip} to the permanent blacklist?`)) {
+            if (!confirm({{ _('Add {ip} to the permanent blacklist?')|tojson }}.replace('{ip}', ip))) {
                 return;
             }
             blockIpFromClientHistory(ip);
@@ -2208,7 +2202,7 @@
         );
 
         $("#clearClientsHistoryBtn").on("click", function () {
-            if (!confirm("Clear the persisted client history log?")) {
+            if (!confirm({{ _('Clear the persisted client history log?')|tojson }})) {
                 return;
             }
             $("#clearClientsHistoryBtn").prop("disabled", true);
@@ -2242,7 +2236,7 @@
         });
 
         $("#clearAccessHistoryBtn").on("click", function () {
-            if (!confirm("Clear the persisted access history log?")) {
+            if (!confirm({{ _('Clear the persisted access history log?')|tojson }})) {
                 return;
             }
             $("#clearAccessHistoryBtn").prop("disabled", true);

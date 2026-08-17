@@ -14,8 +14,8 @@
             <div class="settings-container container mt-3">
                 <div class="d-flex align-items-center justify-content-between gap-3 flex-wrap">
                     <div>
-                        <h2 class="pb-2">Downloads</h2>
-                        <p class="text-muted">Live torrent and usenet status plus the pending AeroFoil download queue.</p>
+                        <h2 class="pb-2">{{ _('Downloads') }}</h2>
+                        <p class="text-muted">{{ _('Live torrent and usenet status plus the pending AeroFoil download queue.') }}</p>
                     </div>
                 </div>
 
@@ -27,37 +27,37 @@
                             <div class="card-body">
                                 <div class="d-flex align-items-center justify-content-between mb-3">
                                     <div>
-                                        <h5 class="card-title mb-1">Current Downloads</h5>
-                                        <div class="text-muted small">Active AeroFoil-managed downloads from your configured torrent and usenet clients.</div>
+                                        <h5 class="card-title mb-1">{{ _('Current Downloads') }}</h5>
+                                        <div class="text-muted small">{{ _('Active AeroFoil-managed downloads from your configured torrent and usenet clients.') }}</div>
                                     </div>
-                                    <button type="button" id="refreshActiveDownloadsBtn" class="btn btn-outline-primary btn-sm" onclick="loadActiveDownloads()">Refresh</button>
+                                    <button type="button" id="refreshActiveDownloadsBtn" class="btn btn-outline-primary btn-sm" onclick="loadActiveDownloads()">{{ _('Refresh') }}</button>
                                 </div>
-                                <div class="small text-muted mb-2" id="activeDownloadsSummary">Current download speed: -</div>
+                                <div class="small text-muted mb-2" id="activeDownloadsSummary">{{ _('Current download speed: %(speed)s', speed='-') }}</div>
                                 <div class="table-responsive">
                                     <table class="table table-dark table-sm align-middle">
                                         <thead>
                                             <tr>
-                                                <th>Name</th>
+                                                <th>{{ _('Name') }}</th>
                                                 {% if download_ui_visibility.show_protocol_column %}
-                                                <th>Protocol</th>
+                                                <th>{{ _('Protocol') }}</th>
                                                 {% endif %}
-                                                <th>Client</th>
-                                                <th>Status</th>
-                                                <th>Progress</th>
+                                                <th>{{ _('Client') }}</th>
+                                                <th>{{ _('Status') }}</th>
+                                                <th>{{ _('Progress') }}</th>
                                                 {% if download_ui_visibility.show_torrent_columns %}
-                                                <th>Down</th>
-                                                <th>Up</th>
-                                                <th>Peers</th>
-                                                <th>Seeders</th>
-                                                <th>Leechers</th>
+                                                <th>{{ _('Down') }}</th>
+                                                <th>{{ _('Up') }}</th>
+                                                <th>{{ _('Peers') }}</th>
+                                                <th>{{ _('Seeders') }}</th>
+                                                <th>{{ _('Leechers') }}</th>
                                                 {% endif %}
-                                                <th>ETA</th>
-                                                <th>Size</th>
-                                                <th>Done</th>
+                                                <th>{{ _('ETA') }}</th>
+                                                <th>{{ _('Size') }}</th>
+                                                <th>{{ _('Done') }}</th>
                                             </tr>
                                         </thead>
                                         <tbody id="activeDownloadsBody">
-                                            <tr><td colspan="{{ 9 + (1 if download_ui_visibility.show_protocol_column else 0) + (3 if download_ui_visibility.show_torrent_columns else 0) }}" class="text-muted">Loading...</td></tr>
+                                            <tr><td colspan="{{ 9 + (1 if download_ui_visibility.show_protocol_column else 0) + (3 if download_ui_visibility.show_torrent_columns else 0) }}" class="text-muted">{{ _('Loading...') }}</td></tr>
                                         </tbody>
                                     </table>
                                 </div>
@@ -69,23 +69,23 @@
                         <div class="card mb-3 downloads-queue-card">
                             <div class="card-body">
                                 <div class="d-flex align-items-center justify-content-between mb-2">
-                                    <h5 class="card-title mb-0">Queue</h5>
-                                    <button type="button" id="checkDownloadsBtn" class="btn btn-outline-primary btn-sm" onclick="checkCompletedDownloads()">Check completed</button>
+                                    <h5 class="card-title mb-0">{{ _('Queue') }}</h5>
+                                    <button type="button" id="checkDownloadsBtn" class="btn btn-outline-primary btn-sm" onclick="checkCompletedDownloads()">{{ _('Check completed') }}</button>
                                 </div>
-                                <div class="small text-muted mb-2" id="downloadsQueueStatus">Loading...</div>
+                                <div class="small text-muted mb-2" id="downloadsQueueStatus">{{ _('Loading...') }}</div>
                                 <div class="table-responsive mb-3">
                                     <table class="table table-dark table-sm align-middle mb-0">
                                         <thead>
                                             <tr>
-                                                <th>Title</th>
-                                                <th>Protocol</th>
-                                                <th>Client</th>
-                                                <th>State</th>
-                                                <th>Actions</th>
+                                                <th>{{ _('Title') }}</th>
+                                                <th>{{ _('Protocol') }}</th>
+                                                <th>{{ _('Client') }}</th>
+                                                <th>{{ _('State') }}</th>
+                                                <th>{{ _('Actions') }}</th>
                                             </tr>
                                         </thead>
                                         <tbody id="downloadsQueueBody">
-                                            <tr><td colspan="5" class="text-muted">Loading...</td></tr>
+                                            <tr><td colspan="5" class="text-muted">{{ _('Loading...') }}</td></tr>
                                         </tbody>
                                     </table>
                                 </div>
@@ -146,38 +146,38 @@
         const state = String(item?.state || 'queued');
         const reason = String(item?.state_reason || '');
         if (state === 'stuck' && reason) {
-            return `stuck: ${reason}`;
+            return {{ _('stuck: {reason}')|tojson }}.replace('{reason}', reason);
         }
         return state;
     }
 
     function loadQueueState() {
         const body = $('#downloadsQueueBody');
-        body.html(`<tr><td colspan="${queueColumnCount}" class="text-muted">Loading...</td></tr>`);
+        body.html(`<tr><td colspan="${queueColumnCount}" class="text-muted">${ {{ _('Loading...')|tojson }} }</td></tr>`);
         $.getJSON('/api/downloads/queue', function (result) {
             if (!result['success']) {
-                $('#downloadsQueueStatus').text('Failed to load queue state.');
-                body.html(`<tr><td colspan="${queueColumnCount}" class="text-danger">Failed to load queue state.</td></tr>`);
+                $('#downloadsQueueStatus').text({{ _('Failed to load queue state.')|tojson }});
+                body.html(`<tr><td colspan="${queueColumnCount}" class="text-danger">${ {{ _('Failed to load queue state.')|tojson }} }</td></tr>`);
                 return;
             }
             const state = result['state'] || {};
             const pending = state['pending'] || [];
-            const running = state['running'] ? 'running' : 'idle';
-            const lastRun = state['last_run'] ? new Date(state['last_run'] * 1000).toLocaleString() : 'never';
-            $('#downloadsQueueStatus').text(`Status: ${running}. Last check: ${lastRun}. Pending: ${pending.length}.`);
+            const running = state['running'] ? {{ _('running')|tojson }} : {{ _('idle')|tojson }};
+            const lastRun = state['last_run'] ? new Date(state['last_run'] * 1000).toLocaleString() : {{ _('never')|tojson }};
+            $('#downloadsQueueStatus').text({{ _('Status: {status}. Last check: {last_run}. Pending: {count}.')|tojson }}.replace('{status}', running).replace('{last_run}', lastRun).replace('{count}', pending.length));
             body.empty();
             if (!pending.length) {
-                body.html(`<tr><td colspan="${queueColumnCount}" class="text-muted">No pending downloads.</td></tr>`);
+                body.html(`<tr><td colspan="${queueColumnCount}" class="text-muted">${ {{ _('No pending downloads.')|tojson }} }</td></tr>`);
                 return;
             }
             pending.forEach(item => {
                 const row = $('<tr></tr>');
-                row.append($('<td class="small"></td>').text((item['label'] || 'Manual download').toString()));
+                row.append($('<td class="small"></td>').text((item['label'] || {{ _('Manual download')|tojson }}).toString()));
                 row.append($('<td class="small text-muted"></td>').text((item['protocol'] || '-').toString()));
                 row.append($('<td class="small text-muted"></td>').text((item['client_type'] || '-').toString()));
                 row.append($('<td class="small"></td>').text(formatQueueState(item)));
                 const actionCell = $('<td class="small"></td>');
-                const deleteButton = $('<button type="button" class="btn btn-outline-danger btn-sm"></button>').text('Delete');
+                const deleteButton = $('<button type="button" class="btn btn-outline-danger btn-sm"></button>').text({{ _('Delete')|tojson }});
                 deleteButton.prop('disabled', !item['deletable']);
                 deleteButton.attr('data-key', String(item['key'] || ''));
                 deleteButton.on('click', function () {
@@ -192,10 +192,10 @@
 
     function deleteQueuedDownload(key, button) {
         if (!key) {
-            showDownloadsAlert('Missing queue key.', 'danger');
+            showDownloadsAlert({{ _('Missing queue key.')|tojson }}, 'danger');
             return;
         }
-        if (!window.confirm('Delete this queued download and remove downloader files if possible?')) {
+        if (!window.confirm({{ _('Delete this queued download and remove downloader files if possible?')|tojson }})) {
             return;
         }
         button.prop('disabled', true);
@@ -206,15 +206,15 @@
             data: JSON.stringify({ key }),
             success: function (result) {
                 if (result['success']) {
-                    showDownloadsAlert(result['message'] || 'Removed queued download.', 'success');
+                    showDownloadsAlert(result['message'] || {{ _('Removed queued download.')|tojson }}, 'success');
                 } else {
-                    showDownloadsAlert(result['message'] || 'Failed to remove queued download.', 'danger');
+                    showDownloadsAlert(result['message'] || {{ _('Failed to remove queued download.')|tojson }}, 'danger');
                 }
                 loadQueueState();
                 loadActiveDownloads();
             },
             error: function () {
-                showDownloadsAlert('Failed to remove queued download.', 'danger');
+                showDownloadsAlert({{ _('Failed to remove queued download.')|tojson }}, 'danger');
                 loadQueueState();
                 loadActiveDownloads();
             },
@@ -226,22 +226,22 @@
 
     function loadActiveDownloads() {
         const body = $('#activeDownloadsBody');
-        $('#activeDownloadsSummary').text('Current download speed: -');
-        body.html(`<tr><td colspan="${activeDownloadsColumnCount}" class="text-muted">Loading...</td></tr>`);
+        $('#activeDownloadsSummary').text({{ _('Current download speed: {speed}')|tojson }}.replace('{speed}', '-'));
+        body.html(`<tr><td colspan="${activeDownloadsColumnCount}" class="text-muted">${ {{ _('Loading...')|tojson }} }</td></tr>`);
         $.getJSON('/api/downloads/active', function (result) {
             if (!result['success']) {
-                const msg = result['message'] || 'Failed to load active downloads.';
+                const msg = result['message'] || {{ _('Failed to load active downloads.')|tojson }};
                 const errorRow = $('<tr></tr>');
                 errorRow.append($(`<td colspan="${activeDownloadsColumnCount}" class="text-danger"></td>`).text(msg));
                 body.empty().append(errorRow);
-                $('#activeDownloadsSummary').text('Current download speed: -');
+                $('#activeDownloadsSummary').text({{ _('Current download speed: {speed}')|tojson }}.replace('{speed}', '-'));
                 return;
             }
             const items = result['items'] || [];
             const summary = result['summary'] || {};
-            $('#activeDownloadsSummary').text(`Current download speed: ${formatSpeed(summary['down_speed'])}`);
+            $('#activeDownloadsSummary').text({{ _('Current download speed: {speed}')|tojson }}.replace('{speed}', formatSpeed(summary['down_speed'])));
             if (!items.length) {
-                body.html(`<tr><td colspan="${activeDownloadsColumnCount}" class="text-muted">No active downloads.</td></tr>`);
+                body.html(`<tr><td colspan="${activeDownloadsColumnCount}" class="text-muted">${ {{ _('No active downloads.')|tojson }} }</td></tr>`);
                 return;
             }
             body.empty();
@@ -277,9 +277,9 @@
             type: 'POST',
             success: function (result) {
                 if (result['success']) {
-                    showDownloadsAlert(result['message'] || 'Checked completed downloads.', 'success');
+                    showDownloadsAlert(result['message'] || {{ _('Checked completed downloads.')|tojson }}, 'success');
                 } else {
-                    showDownloadsAlert(result['message'] || 'Check failed.', 'danger');
+                    showDownloadsAlert(result['message'] || {{ _('Check failed.')|tojson }}, 'danger');
                 }
                 loadQueueState();
                 loadActiveDownloads();

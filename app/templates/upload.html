@@ -6,42 +6,42 @@
     <div class="row">
         <div class="col">
             <div class="settings-container container mt-3">
-                <h2 class="pb-2">Upload</h2>
-                <p class="text-muted">Upload NSP/NSZ/XCI/XCZ files directly into the library.</p>
+                <h2 class="pb-2">{{ _('Upload') }}</h2>
+                <p class="text-muted">{{ _('Upload NSP/NSZ/XCI/XCZ files directly into the library.') }}</p>
 
                 <div class="upload-panel mb-3">
                     <div class="mb-3">
-                        <label for="uploadLibrarySelect" class="form-label">Library</label>
+                        <label for="uploadLibrarySelect" class="form-label">{{ _('Library') }}</label>
                         <select class="form-select" id="uploadLibrarySelect"></select>
-                        <div class="form-text">Choose where to place your uploaded files.</div>
+                        <div class="form-text">{{ _('Choose where to place your uploaded files.') }}</div>
                     </div>
 
                     <div class="mb-3">
-                        <label for="uploadFilesInput" class="form-label">Files</label>
+                        <label for="uploadFilesInput" class="form-label">{{ _('Files') }}</label>
                         <div class="upload-dropzone" id="uploadDropzone">
                             <div class="upload-dropzone-body">
                                 <i class="bi bi-cloud-arrow-up"></i>
-                                <div class="upload-dropzone-title">Drag & drop files here</div>
-                                <div class="upload-dropzone-subtitle">or click to browse</div>
+                                <div class="upload-dropzone-title">{{ _('Drag & drop files here') }}</div>
+                                <div class="upload-dropzone-subtitle">{{ _('or click to browse') }}</div>
                             </div>
                             <input class="form-control" type="file" id="uploadFilesInput" multiple
                                 accept=".nsp,.nsz,.xci,.xcz">
                         </div>
-                        <div class="form-text">Allowed: NSP, NSZ, XCI, XCZ. Large uploads may take a while.</div>
+                        <div class="form-text">{{ _('Allowed: NSP, NSZ, XCI, XCZ. Large uploads may take a while.') }}</div>
                         <div id="uploadFileMeta" class="upload-file-meta mt-2 d-none">
                             <span id="uploadFileSummary"></span>
-                            <button type="button" class="btn btn-sm btn-outline-secondary" id="uploadClearBtn">Clear list</button>
+                            <button type="button" class="btn btn-sm btn-outline-secondary" id="uploadClearBtn">{{ _('Clear list') }}</button>
                         </div>
                         <div id="uploadFileList" class="upload-file-list mt-2 d-none"></div>
                     </div>
 
                     <div class="d-flex flex-wrap gap-2">
-                        <button type="button" id="uploadSubmitBtn" class="btn btn-primary" onClick="uploadFiles()" disabled>Upload</button>
-                        <button type="button" id="uploadResetBtn" class="btn btn-outline-secondary" onClick="resetUploadForm()">Reset</button>
+                        <button type="button" id="uploadSubmitBtn" class="btn btn-primary" onClick="uploadFiles()" disabled>{{ _('Upload') }}</button>
+                        <button type="button" id="uploadResetBtn" class="btn btn-outline-secondary" onClick="resetUploadForm()">{{ _('Reset') }}</button>
                     </div>
 
                     <div class="mt-3">
-                        <div class="progress d-none" id="uploadProgressWrap" role="progressbar" aria-label="Upload progress">
+                        <div class="progress d-none" id="uploadProgressWrap" role="progressbar" aria-label="{{ _('Upload progress') }}">
                             <div class="progress-bar" id="uploadProgressBar" style="width: 0%">0%</div>
                         </div>
                         <div id="uploadStatus" class="text-muted small mt-2"></div>
@@ -57,12 +57,12 @@
         $.getJSON("/api/manage/libraries", function (result) {
             const select = $('#uploadLibrarySelect');
             if (!result || !result['success']) {
-                select.empty().append('<option value="">No libraries found</option>');
+                select.empty().append('<option value="">' + {{ _('No libraries found')|tojson }} + '</option>');
                 return;
             }
             const libraries = result['libraries'] || [];
             if (!libraries.length) {
-                select.empty().append('<option value="">No libraries found</option>');
+                select.empty().append('<option value="">' + {{ _('No libraries found')|tojson }} + '</option>');
                 return;
             }
             select.empty();
@@ -89,7 +89,9 @@
         });
         list.html(items.join(''));
         const totalBytes = Array.from(files).reduce((sum, file) => sum + file.size, 0);
-        const summary = `${files.length} file${files.length === 1 ? '' : 's'} \u2022 ${formatBytes(totalBytes)}`;
+        const summary = (files.length === 1 ? {{ _('{count} file • {size}')|tojson }} : {{ _('{count} files • {size}')|tojson }})
+            .replace('{count}', files.length)
+            .replace('{size}', formatBytes(totalBytes));
         $('#uploadFileSummary').text(summary);
         $('#uploadFileMeta').removeClass('d-none');
     }
@@ -140,7 +142,7 @@
     function uploadFiles() {
         const files = $('#uploadFilesInput').prop('files') || [];
         if (!files.length) {
-            $('#uploadStatus').text('Select at least one file.');
+            $('#uploadStatus').text({{ _('Select at least one file.')|tojson }});
             return;
         }
         const libraryId = $('#uploadLibrarySelect').val();
@@ -151,7 +153,7 @@
         }
 
         $('#uploadSubmitBtn').prop('disabled', true);
-        $('#uploadStatus').text('Uploading... 0%');
+        $('#uploadStatus').text({{ _('Uploading... {percent}')|tojson }}.replace('{percent}', '0%'));
         $('#uploadProgressWrap').removeClass('d-none');
         $('#uploadProgressBar').css('width', '0%').text('0%');
 
@@ -167,7 +169,7 @@
                 xhr.upload.addEventListener('progress', function (evt) {
                     if (evt.lengthComputable) {
                         const percent = Math.round((evt.loaded / evt.total) * 100);
-                        $('#uploadStatus').text(`Uploading... ${percent}%`);
+                        $('#uploadStatus').text({{ _('Uploading... {percent}')|tojson }}.replace('{percent}', `${percent}%`));
                         $('#uploadProgressBar').css('width', `${percent}%`).text(`${percent}%`);
                     }
                 }, false);
@@ -177,12 +179,12 @@
                 if (result && result['success']) {
                     const uploaded = result['uploaded'] || 0;
                     const skipped = result['skipped'] || 0;
-                    $('#uploadStatus').text(`Uploaded ${uploaded} files. Skipped ${skipped}.`);
+                    $('#uploadStatus').text({{ _('Uploaded {uploaded} files. Skipped {skipped}.')|tojson }}.replace('{uploaded}', uploaded).replace('{skipped}', skipped));
                     $('#uploadFilesInput').val('');
                     renderUploadList([]);
                     updateUploadActions();
                 } else {
-                    const errorText = result?.message || (result?.errors || []).join(' ') || 'Upload failed.';
+                    const errorText = result?.message || (result?.errors || []).join(' ') || {{ _('Upload failed.')|tojson }};
                     $('#uploadStatus').text(errorText);
                 }
             },
@@ -193,7 +195,7 @@
                 const message = responseJson?.message
                     || (responseJson?.errors || []).join(' ')
                     || firstLine
-                    || `Upload failed (HTTP ${xhr?.status || 'unknown'}).`;
+                    || {{ _('Upload failed (HTTP {status}).')|tojson }}.replace('{status}', xhr?.status || {{ _('unknown')|tojson }});
                 $('#uploadStatus').text(message);
             },
             complete: function () {

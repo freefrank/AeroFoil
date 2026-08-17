@@ -138,6 +138,22 @@ Save sync API endpoints:
 # Usage
 Once AeroFoil is running you can access the Shop Web UI by navigating to the `http://<computer/server IP>:8465`.
 
+## Interface language (i18n)
+The Web UI is translated with [Flask-Babel](https://python-babel.github.io/flask-babel/). Currently available languages: English (`en`) and Simplified Chinese (`zh_Hans`).
+
+- The language is negotiated automatically from the browser's `Accept-Language` header, and can be overridden with the globe dropdown in the navbar (stored in a cookie, per browser).
+- This is independent from the `Library Language` setting in `Settings`, which only controls the TitleDB metadata language (game titles/descriptions).
+
+To contribute a new translation:
+```sh
+pip install Flask-Babel
+pybabel extract -F babel.cfg -o messages.pot .          # regenerate the template catalog
+pybabel init -i messages.pot -d app/translations -l <locale>   # create a new language
+# ... fill in app/translations/<locale>/LC_MESSAGES/messages.po ...
+pybabel compile -d app/translations                     # build the .mo files
+```
+Then add the locale to `UI_LANGUAGES` in `app/constants.py`. After changing UI strings in code, run `pybabel update -i messages.pot -d app/translations` to refresh existing catalogs. Compiled `.mo` files are also rebuilt automatically during the Docker image build.
+
 ## User administration
 AeroFoil requires an `admin` user to be created to enable Authentication for your Shop. Go to the `Settings` to create a first user that will have admin rights. Then you can add more users to your shop the same way.
 

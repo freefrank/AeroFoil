@@ -6,19 +6,19 @@
         <div class="col-12 col-lg-7">
             <div class="card">
                 <div class="card-body">
-                    <h3 class="card-title mb-2">Setup required</h3>
+                    <h3 class="card-title mb-2">{{ _('Setup required') }}</h3>
                     <p class="text-muted mb-3">
-                        AeroFoil is not configured yet. For security, creating the first admin account is restricted to private networks.
+                        {{ _('AeroFoil is not configured yet. For security, creating the first admin account is restricted to private networks.') }}
                     </p>
 
                     {% if reason %}
                     <div class="alert alert-warning" role="alert">{{ reason }}</div>
                     {% endif %}
 
-                    <h6 class="mb-2">How to continue</h6>
+                    <h6 class="mb-2">{{ _('How to continue') }}</h6>
                     <ol class="mb-3">
-                        <li>Open this page from the same LAN as the server (private IP range).</li>
-                        <li>If you are using Nginx Proxy Manager / a reverse proxy, configure trusted proxies in <code>app/config/settings.yaml</code>:</li>
+                        <li>{{ _('Open this page from the same LAN as the server (private IP range).') }}</li>
+                        <li>{{ _('If you are using Nginx Proxy Manager / a reverse proxy, configure trusted proxies in <code>app/config/settings.yaml</code>:')|safe }}</li>
                     </ol>
 
                     <pre class="bg-body-tertiary p-3 rounded border"><code>security:
