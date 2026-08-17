@@ -662,11 +662,16 @@ def ensure_user_client_schema():
 
 def init_db(app):
     with app.app_context():
-        # Ensure foreign keys are enforced when the SQLite connection is opened
+        # Configure every SQLite connection for concurrent use: WAL lets readers
+        # proceed while a writer commits, and busy_timeout makes writers queue
+        # instead of failing with "database is locked" after pysqlite's 5s default.
         @event.listens_for(db.engine, "connect")
         def set_sqlite_pragma(dbapi_connection, connection_record):
             cursor = dbapi_connection.cursor()
             cursor.execute("PRAGMA foreign_keys=ON;")
+            cursor.execute("PRAGMA journal_mode=WAL;")
+            cursor.execute("PRAGMA synchronous=NORMAL;")
+            cursor.execute("PRAGMA busy_timeout=30000;")
             cursor.close()
 
         # create or migrate database

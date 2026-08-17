@@ -14,7 +14,7 @@ Conventions:
 
 | PR | Topic | Findings | Status | Commit(s) |
 |----|-------|----------|--------|-----------|
-| PR-1 | SQLite concurrency configuration (WAL, busy_timeout, engine options) | F1 | planned | |
+| PR-1 | SQLite concurrency configuration (WAL, busy_timeout, engine options) | F1 | **done** | see `git log --grep=PR-1` |
 | PR-2 | Move identification/ingest file I/O out of write transactions; per-batch failure isolation | F3 | planned | |
 | PR-3 | Lock convergence: rebuild re-entrancy guard, guarded scan entry, TOCTOU fix | F4 | planned | |
 | PR-4 | Shop sections cache: stop the oversized-payload thrash loop | F12 | planned | |

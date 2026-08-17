@@ -1843,6 +1843,13 @@ def select_ui_locale():
 def create_app():
     app = Flask(__name__)
     app.config["SQLALCHEMY_DATABASE_URI"] = AEROFOIL_DB
+    # The pool must cover waitress workers + scheduler workers + watcher/debounce
+    # threads; the sqlite connect timeout backs up the busy_timeout PRAGMA.
+    app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {
+        "connect_args": {"timeout": 30},
+        "pool_size": 20,
+        "max_overflow": 30,
+    }
     static_max_age = _read_int_env('AEROFOIL_STATIC_MAX_AGE_S', 3600, minimum=0, maximum=31536000)
     static_max_age = _read_int_env('OWNFOIL_STATIC_MAX_AGE_S', static_max_age, minimum=0, maximum=31536000)
     app.config['SEND_FILE_MAX_AGE_DEFAULT'] = int(static_max_age)
