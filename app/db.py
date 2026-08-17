@@ -744,6 +744,22 @@ def ensure_user_client_schema():
         logger.warning("Failed to apply user client schema: %s", e)
 
 
+def _read_pragma_mb_env(name, default_mb, maximum_mb=4096):
+    try:
+        value = int(str(os.environ.get(name) or default_mb).strip())
+    except (TypeError, ValueError):
+        value = default_mb
+    return max(0, min(value, maximum_mb))
+
+
+# Memory-mapped I/O keeps hot database pages in the OS page cache (file-backed
+# and reclaimable, so it is not pinned memory), which serves reads at memory
+# speed while writes stay WAL-durable on disk. Set the env vars to 0 to disable
+# on RAM-constrained hosts.
+DB_MMAP_SIZE_BYTES = _read_pragma_mb_env('AEROFOIL_DB_MMAP_SIZE_MB', 256) * 1024 * 1024
+DB_CACHE_SIZE_KIB = _read_pragma_mb_env('AEROFOIL_DB_CACHE_SIZE_MB', 8, maximum_mb=256) * 1024
+
+
 def init_db(app):
     with app.app_context():
         # Configure every SQLite connection for concurrent use: WAL lets readers
@@ -756,6 +772,12 @@ def init_db(app):
             cursor.execute("PRAGMA journal_mode=WAL;")
             cursor.execute("PRAGMA synchronous=NORMAL;")
             cursor.execute("PRAGMA busy_timeout=30000;")
+            if DB_MMAP_SIZE_BYTES > 0:
+                cursor.execute(f"PRAGMA mmap_size={DB_MMAP_SIZE_BYTES};")
+            if DB_CACHE_SIZE_KIB > 0:
+                # Negative cache_size means KiB rather than pages.
+                cursor.execute(f"PRAGMA cache_size=-{DB_CACHE_SIZE_KIB};")
+            cursor.execute("PRAGMA temp_store=MEMORY;")
             cursor.close()
 
         # create or migrate database

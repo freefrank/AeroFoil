@@ -237,9 +237,19 @@ def _get_local_preferred_english_titles_files(app_settings=None):
             out.append(path)
     return out
 
+# Same knob as the main DB (app/db.py): mmap keeps hot index pages in the OS
+# page cache so the per-title lookups on rebuild/browse paths read at memory
+# speed. File-backed and reclaimable; 0 disables.
+try:
+    _INDEX_MMAP_SIZE_BYTES = max(0, min(int(str(os.environ.get('AEROFOIL_DB_MMAP_SIZE_MB') or 256).strip()), 4096)) * 1024 * 1024
+except (TypeError, ValueError):
+    _INDEX_MMAP_SIZE_BYTES = 256 * 1024 * 1024
+
 def _open_versions_index_db(path):
     conn = sqlite3.connect(path, timeout=30)
     conn.execute("PRAGMA synchronous=NORMAL")
+    if _INDEX_MMAP_SIZE_BYTES > 0:
+        conn.execute(f"PRAGMA mmap_size={_INDEX_MMAP_SIZE_BYTES}")
     return conn
 
 # Read connections to the on-disk index DBs are reused per thread: hot paths
@@ -272,6 +282,8 @@ def _get_read_index_connection(path):
         conn = sqlite3.connect(path, timeout=30)
         conn.execute("PRAGMA synchronous=NORMAL")
         conn.execute("PRAGMA query_only=1")
+        if _INDEX_MMAP_SIZE_BYTES > 0:
+            conn.execute(f"PRAGMA mmap_size={_INDEX_MMAP_SIZE_BYTES}")
         conns[key] = conn
     return conn
 
