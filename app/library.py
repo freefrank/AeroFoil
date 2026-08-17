@@ -477,11 +477,22 @@ def identify_library_files(library):
             # skipped (retried by backoff on the next cycle) instead of
             # aborting the whole identification pass.
             def _apply_identify_results():
+                dirty_pks = set()
                 for file_id, filename, missing, identification, success, file_contents, error in identify_results:
                     file = db.session.get(Files, file_id)
                     if file is None:
                         continue
                     if missing:
+                        # Titles losing this file need their ownership flags
+                        # recomputed by the scoped update_titles pass.
+                        dirty_pks.update(
+                            r.title_id
+                            for r in db.session.query(Apps.title_id)
+                            .join(app_files, app_files.c.app_id == Apps.id)
+                            .filter(app_files.c.file_id == file_id)
+                            .distinct()
+                            .all()
+                        )
                         db.session.delete(file)
                         continue
                     try:
@@ -511,6 +522,7 @@ def identify_library_files(library):
                                 title_id_in_db = title_id_db_cache.get(file_content.get("title_id"))
                                 if title_id_in_db is None:
                                     continue
+                                dirty_pks.add(title_id_in_db)
 
                                 app_id = file_content.get("app_id")
                                 app_version = str(file_content.get("version") or "0")
@@ -571,10 +583,11 @@ def identify_library_files(library):
                         file.identification_attempts = (file.identification_attempts or 0) + 1
                     file.last_attempt = datetime.datetime.now()
                 db.session.commit()
+                return dirty_pks
 
             for attempt in (1, 2):
                 try:
-                    _apply_identify_results()
+                    mark_titles_dirty(_apply_identify_results())
                     break
                 except OperationalError as e:
                     db.session.rollback()
@@ -611,10 +624,20 @@ def identify_library_files(library):
             processed=processed
         )
 
-def add_missing_apps_to_db():
+def add_missing_apps_to_db(title_pks=None):
     phase = 'add_missing_apps_to_db'
+    scoped_pks = None
+    if title_pks is not None:
+        scoped_pks = [int(v) for v in title_pks if v is not None]
+        if not scoped_pks:
+            _diag_phase_start(phase)
+            _diag_phase_end(phase, processed=0, apps_added=0, scoped=True)
+            return
     _diag_phase_start(phase)
-    logger.info('Adding missing apps to database...')
+    if scoped_pks is None:
+        logger.info('Adding missing apps to database...')
+    else:
+        logger.info(f'Adding missing apps to database for {len(scoped_pks)} changed title(s)...')
     apps_added = 0
     processed = 0
     last_title_pk = 0
@@ -622,9 +645,14 @@ def add_missing_apps_to_db():
 
     try:
         while True:
-            title_rows = (
+            title_query = (
                 db.session.query(Titles.id, Titles.title_id)
                 .filter(Titles.id > last_title_pk)
+            )
+            if scoped_pks is not None:
+                title_query = title_query.filter(Titles.id.in_(scoped_pks))
+            title_rows = (
+                title_query
                 .order_by(Titles.id)
                 .limit(_IDENTIFY_QUERY_BATCH_SIZE)
                 .all()
@@ -760,8 +788,11 @@ def process_library_identification(app):
         logger.error(f"Error during library identification process: {e}")
     logger.info(f"Library identification process for all libraries completed.")
 
-def update_titles():
+def update_titles(title_pks=None):
     phase = 'update_titles'
+    scoped_pks = None
+    if title_pks is not None:
+        scoped_pks = [int(v) for v in title_pks if v is not None]
     _diag_phase_start(phase)
     _diag_sample_identity_map(phase)
     # Remove titles that no longer have any owned apps
@@ -769,13 +800,22 @@ def update_titles():
     if titles_removed > 0:
             logger.info(f"Removed {titles_removed} titles with no owned apps.")
 
+    if scoped_pks is not None and not scoped_pks:
+        _diag_phase_end(phase, processed=0, titles_removed=titles_removed, scoped=True)
+        return
+
     last_title_pk = 0
     processed = 0
     try:
         while True:
-            title_batch = (
+            title_query = (
                 Titles.query
                 .filter(Titles.id > last_title_pk)
+            )
+            if scoped_pks is not None:
+                title_query = title_query.filter(Titles.id.in_(scoped_pks))
+            title_batch = (
+                title_query
                 .order_by(Titles.id)
                 .limit(_IDENTIFY_QUERY_BATCH_SIZE)
                 .all()
@@ -1500,6 +1540,9 @@ def _sync_apps_owned_flags(app_ids=None, title_ids=None):
         if not scoped_title_ids:
             return 0
         query = query.filter(Apps.title_id.in_(scoped_title_ids))
+    # Only rewrite rows whose owned value actually changes; SQLite rewrites
+    # every matched row otherwise, dirtying the whole table each sweep.
+    query = query.filter(or_(Apps.owned.is_(None), Apps.owned != has_files_expr))
     return int(query.update({Apps.owned: has_files_expr}, synchronize_session=False) or 0)
 
 def _replace_or_create_converted_file_row(

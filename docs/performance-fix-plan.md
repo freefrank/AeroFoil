@@ -20,7 +20,7 @@ Conventions:
 | PR-4 | Shop sections cache: stop the oversized-payload thrash loop | F12 | **done** | see `git log --grep=PR-4` |
 | PR-5 | File watcher robustness: exception guard, drop O(E²) per-event stability scan | F5 | **done** | see `git log --grep=PR-5` |
 | PR-6 | Identification retry backoff + orphan-trap fix | F2 | **done** | see `git log --grep=PR-6` |
-| PR-7 | Dirty-tracked rebuild: scoped update_titles/add_missing_apps, set-based title cleanup, diff-only owned-flag sync | F6, F7, F8 | planned | |
+| PR-7 | Dirty-tracked rebuild: scoped update_titles/add_missing_apps, set-based title cleanup, diff-only owned-flag sync | F6, F7, F8 | **done** | see `git log --grep=PR-7` |
 | PR-8 | /api/titles name sort without full materialization | F11, F25 | planned | |
 | PR-9 | TitleDB lookup: thread-local connections, identify_appId memoization, real LRU, meta_only probe memo | F7, F22, F29 | planned | |
 | PR-10 | Index completeness (both creation tracks) + access_events retention | F16, F17, F19 | planned | |
@@ -99,7 +99,12 @@ description indexing, dedicated writer thread, shop `all` cap) are **not impleme
 - `remove_titles_without_owned_apps` → one set-based DELETE (was 2 queries per title).
 - `_sync_apps_owned_flags` updates only rows whose `owned` value actually changes (WHERE
   owned != computed), ending the full-table rewrite.
-- Evidence: F6, F7, F8; benchmark: steady-state `update_titles` 20.9s → scoped no-op.
+- Dirty tracking lives in `app/db.py` (`mark_titles_dirty` / `drain_dirty_title_pks`);
+  identification and the batched file-delete path record touched titles, and the rebuild
+  falls back to a full sweep whenever the TitleDB token changed or an uninstrumented path
+  requested it (`mark_all_titles_dirty`).
+- Evidence: F6, F7, F8. Measured on the 20k-file benchmark: `remove_titles_without_owned_apps`
+  8.4s → 0.03s, empty-scope `update_titles` → 6ms, full `update_titles` 20.2s → 0.5s.
 
 ### PR-8 — /api/titles name sort
 - The name-sort path no longer loads full ORM rows and no longer calls `get_game_info` per

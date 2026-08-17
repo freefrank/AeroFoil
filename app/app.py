@@ -463,6 +463,9 @@ library_rebuild_status = {
 library_rebuild_lock = threading.Lock()
 # Serializes actual rebuild work; library_rebuild_lock only guards the status dict.
 library_rebuild_run_lock = threading.Lock()
+# TitleDB token seen by the last rebuild: a change forces a full apps/titles sweep
+# (new TitleDB data can add versions/DLC to any title, not just dirty ones).
+_last_rebuild_titledb_token = None
 shop_sections_cache = {
     'limit': None,
     'timestamp': 0,
@@ -6590,8 +6593,19 @@ def _run_post_library_change_locked():
             invalidate_library_cache_state_token()
             titles.load_titledb()
             process_library_identification(app)
-            add_missing_apps_to_db()
-            update_titles() # Ensure titles are updated after identification
+            global _last_rebuild_titledb_token
+            dirty_pks, full_requested = drain_dirty_title_pks()
+            titledb_token = titles.get_titledb_cache_token()
+            if full_requested or titledb_token != _last_rebuild_titledb_token:
+                sweep_scope = None  # full sweep
+            else:
+                sweep_scope = sorted(dirty_pks)
+            if sweep_scope is None or sweep_scope:
+                add_missing_apps_to_db(title_pks=sweep_scope)
+                update_titles(title_pks=sweep_scope) # Ensure titles are updated after identification
+            else:
+                logger.info('No title changes since last rebuild; skipping apps/titles sweeps.')
+            _last_rebuild_titledb_token = titledb_token
             # Expensive filesystem sweep: run periodically, not on every rebuild.
             _maybe_remove_missing_files_from_db(force=False)
             organize_pending_downloads()

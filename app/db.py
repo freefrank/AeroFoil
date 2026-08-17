@@ -1029,22 +1029,56 @@ def has_owned_apps(title_id):
     owned_apps = Apps.query.filter_by(title_id=title.id, owned=True).first()
     return owned_apps is not None
 
+# --- Dirty-title tracking -----------------------------------------------
+# Mutation paths record which titles they touched so the post-scan rebuild
+# can scope its apps/titles sweeps instead of recomputing every title.
+_dirty_title_pks_lock = threading.Lock()
+_dirty_title_pks = set()
+_dirty_titles_full_sweep = False
+
+def mark_titles_dirty(title_pks):
+    global _dirty_titles_full_sweep
+    pks = {int(pk) for pk in (title_pks or []) if pk is not None}
+    if not pks:
+        return
+    with _dirty_title_pks_lock:
+        _dirty_title_pks.update(pks)
+
+def mark_all_titles_dirty():
+    global _dirty_titles_full_sweep
+    with _dirty_title_pks_lock:
+        _dirty_titles_full_sweep = True
+
+def drain_dirty_title_pks():
+    """Return (title_pks, full_sweep_requested) and reset the accumulator."""
+    global _dirty_titles_full_sweep
+    with _dirty_title_pks_lock:
+        pks = set(_dirty_title_pks)
+        full = _dirty_titles_full_sweep
+        _dirty_title_pks.clear()
+        _dirty_titles_full_sweep = False
+    return pks, full
+
 def remove_titles_without_owned_apps():
     """Remove titles that have no owned apps"""
-    titles_removed = 0
-    titles = get_all_titles()
-    
-    for title in titles:
-        if not has_owned_apps(title.title_id):
-            logger.debug(f"Removing title {title.title_id} - no owned apps remaining")
-            db.session.delete(title)
-            titles_removed += 1
-    
-    return titles_removed
+    # NOT IN over one scan of the owned index; the correlated NOT EXISTS form
+    # made SQLite probe idx_apps_owned per title (O(titles x owned_apps)).
+    # apps.title_id is non-nullable, so NOT IN is NULL-safe here.
+    owned_titles = (
+        db.session.query(Apps.title_id)
+        .filter(Apps.owned.is_(True))
+        .distinct()
+    )
+    result = db.session.execute(
+        Titles.__table__.delete().where(Titles.id.notin_(owned_titles))
+    )
+    return int(result.rowcount or 0)
 
 def delete_files_by_library(library_path):
     success = True
     errors = []
+    # Ownership changes here span an unknown set of titles.
+    mark_all_titles_dirty()
     try:
         # Find all files with the given library
         files_to_delete = Files.query.filter_by(library=library_path).all()
@@ -1102,6 +1136,17 @@ def delete_files_by_filepaths_batch(filepaths, commit=True):
             .all()
         )
     ]
+
+    if affected_app_ids:
+        mark_titles_dirty(
+            row.title_id
+            for row in (
+                db.session.query(Apps.title_id)
+                .filter(Apps.id.in_(affected_app_ids))
+                .distinct()
+                .all()
+            )
+        )
 
     db.session.execute(app_files.delete().where(app_files.c.file_id.in_(file_ids)))
     deleted_count = (
