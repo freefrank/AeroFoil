@@ -1,5 +1,6 @@
 from app.constants import *
 from app.utils import *
+import threading
 import time, os
 from watchdog.observers import Observer
 from watchdog.observers.polling import PollingObserver
@@ -68,6 +69,8 @@ class Handler(FileSystemEventHandler):
         self.directories = []
         self.stability_duration = stability_duration  # Stability duration in seconds
         self.tracked_files = {}  # Tracks files being copied
+        # tracked_files is touched by the observer thread and the debounce runner.
+        self._tracked_lock = threading.Lock()
         self.debounced_check_final = self._debounce(self._check_file_stability, stability_duration)
 
     def add_directory(self, directory):
@@ -91,14 +94,22 @@ class Handler(FileSystemEventHandler):
             file_path = event.dest_path
         else:
             file_path = event.src_path
-        current_size = os.path.getsize(file_path)
-        if file_path not in self.tracked_files:
-            event.size = current_size
-            event.timestamp = time.time()
-            self.tracked_files[file_path] = event
-        else:
-            self.tracked_files[file_path].size = current_size
-            self.tracked_files[file_path].timestamp = time.time()
+        # The file can disappear between event emission and dispatch; an
+        # unhandled exception here would kill the watchdog emitter thread.
+        try:
+            current_size = os.path.getsize(file_path)
+        except OSError:
+            with self._tracked_lock:
+                self.tracked_files.pop(file_path, None)
+            return
+        with self._tracked_lock:
+            if file_path not in self.tracked_files:
+                event.size = current_size
+                event.timestamp = time.time()
+                self.tracked_files[file_path] = event
+            else:
+                self.tracked_files[file_path].size = current_size
+                self.tracked_files[file_path].timestamp = time.time()
 
     def _check_file_stability(self):
         """Check for stable files and invoke the callback."""
@@ -106,15 +117,20 @@ class Handler(FileSystemEventHandler):
         stable_files = []
 
         # Check all tracked files
-        for file_path, file_data in list(self.tracked_files.items()):
-            if not os.path.exists(file_path):
+        with self._tracked_lock:
+            tracked = list(self.tracked_files.items())
+        for file_path, file_data in tracked:
+            try:
+                current_size = os.path.getsize(file_path)
+            except OSError:
                 # If the file no longer exists, stop tracking it
-                del self.tracked_files[file_path]
+                with self._tracked_lock:
+                    self.tracked_files.pop(file_path, None)
                 continue
-            current_size = os.path.getsize(file_path)
             if current_size == file_data.size and (now - file_data.timestamp) >= self.stability_duration:
                 stable_files.append(file_data)
-                del self.tracked_files[file_path]  # Stop tracking stable file
+                with self._tracked_lock:
+                    self.tracked_files.pop(file_path, None)  # Stop tracking stable file
 
         # Trigger the callback for all stable files
         if stable_files:
@@ -145,11 +161,12 @@ class Handler(FileSystemEventHandler):
             self._raw_callback([library_event])
 
         else:
-            # Track file on create or modify
+            # Track file on create or modify; the debounced check walks
+            # tracked_files once things settle. Running the full stability scan
+            # synchronously per event is O(events x tracked) and stalls the
+            # observer thread on mass copies/moves.
             self._track_file(library_event)
             self.debounced_check_final()
-
-        self._check_file_stability()
 
     def on_any_event(self, event):
         for directory in self.directories:
