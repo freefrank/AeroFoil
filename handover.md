@@ -74,3 +74,25 @@
 - `remove_titles_without_owned_apps` 必须用 NOT IN 反连接写法 — 相关子查询形式 SQLite 会选错索引(8.4s vs 0.03s),改动时留意
 - Apps 表的 `title_id` FK 有 `ondelete=CASCADE`,titles 的裸 DELETE 是安全的
 - upstream 的 nsz 依赖是 git pin(`requirements.txt`),某些环境编译不过,测试时可临时剔除(app 会懒加载降级)
+
+## 8. 2026-08-17 本地接手后进展(master @ `cccbcfb`)
+
+本地环境已接管(upstream remote、.venv、306→313 测试基线)。用户本地 Docker 实测驱动了一轮修复,全部已合入 master 并发布:
+
+| commit | 内容 |
+|---|---|
+| `cbf6eac` | 启动/重建后后台预热 metadata+discovery 缓存(首屏不再冷) |
+| `ef8a212` | 前端加载失败重试状态 + 游戏图片懒加载(新翻译 2 条) |
+| `d5a6845` | 删除接口改脏范围同步 sweep + 后台防抖重建;删除 DB 清理批量化 |
+| `d9f6be2` | 主库+TitleDB 索引 mmap(AEROFOIL_DB_MMAP_SIZE_MB,默认 256) |
+| `60a1b41` | watcher 删除事件批量化(单事务,消除与 API 删除的逐文件竞争) |
+| `8688cda` | 本地文件元数据解析结果持久化(data/cache/local_metadata_cache.json) |
+| `4e62887` | **新功能**:备用元数据数据库(titles.metadata_fallbacks,主库缺条目时按序回退,设置页两个下拉;顺带修 prefer_english_metadata 被表单保存重置的 bug)(新翻译 6 条) |
+| `cccbcfb` | update_titledb 加进程锁(修并发下载互写坏 cnmts.json,fresh install 必现) |
+
+已发布镜像 tag:`v2.8.0-dev`(@d5a6845)、`v2.8.1-dev`(@60a1b41)、`v2.8.2-dev`(@8688cda)、`v2.8.3-dev`(@cccbcfb),均更新 `latest`。
+
+待办变化:
+- 上游 issue 第一批**仍未发**(用户要求等其本地测试完成后再发,勿擅自发)
+- 以上修复中 `cccbcfb`(TitleDB 并发)、`60a1b41`(watcher)、`cbf6eac`(冷缓存)是上游 issue/PR 的新候选,可并入 batch 2/3
+- 用户库实测发现:健身环"缺失"是亚版 update 文件(0100F6B011028800)带出的 title 行,非 bug
