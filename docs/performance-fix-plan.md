@@ -15,7 +15,7 @@ Conventions:
 | PR | Topic | Findings | Status | Commit(s) |
 |----|-------|----------|--------|-----------|
 | PR-1 | SQLite concurrency configuration (WAL, busy_timeout, engine options) | F1 | **done** | see `git log --grep=PR-1` |
-| PR-2 | Move identification/ingest file I/O out of write transactions; per-batch failure isolation | F3 | planned | |
+| PR-2 | Move identification/ingest file I/O out of write transactions; per-batch failure isolation | F3 | **done** | see `git log --grep=PR-2` |
 | PR-3 | Lock convergence: rebuild re-entrancy guard, guarded scan entry, TOCTOU fix | F4 | **done** | see `git log --grep=PR-3` |
 | PR-4 | Shop sections cache: stop the oversized-payload thrash loop | F12 | **done** | see `git log --grep=PR-4` |
 | PR-5 | File watcher robustness: exception guard, drop O(E²) per-event stability scan | F5 | **done** | see `git log --grep=PR-5` |
