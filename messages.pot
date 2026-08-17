@@ -1,14 +1,14 @@
-# Translations template for AeroFoil.
+# Translations template for PROJECT.
 # Copyright (C) 2026 ORGANIZATION
-# This file is distributed under the same license as the AeroFoil project.
+# This file is distributed under the same license as the PROJECT project.
 # FIRST AUTHOR <EMAIL@ADDRESS>, 2026.
 #
 #, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: AeroFoil VERSION\n"
+"Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-08-17 18:48+0000\n"
+"POT-Creation-Date: 2026-08-17 15:38-0600\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,288 +17,288 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.18.0\n"
 
-#: app/app.py:1758
+#: app/app.py:1775
 msgid "Title ID is required"
 msgstr ""
 
-#: app/app.py:1761
+#: app/app.py:1778
 #, python-format
 msgid "Title ID must be %(length)s characters"
 msgstr ""
 
-#: app/app.py:1763
+#: app/app.py:1780
 msgid "Title ID must contain only hexadecimal characters"
 msgstr ""
 
-#: app/app.py:1769 app/app.py:1777
+#: app/app.py:1786 app/app.py:1794
 msgid "File size is unknown"
 msgstr ""
 
-#: app/app.py:1771
+#: app/app.py:1788
 #, python-format
 msgid "File size exceeds maximum limit of %(size)sMB"
 msgstr ""
 
-#: app/app.py:1779
+#: app/app.py:1796
 #, python-format
 msgid "File size exceeds maximum limit of %(size)sGB"
 msgstr ""
 
-#: app/app.py:1807
+#: app/app.py:1824
 msgid "Save sync requires username/password authentication."
 msgstr ""
 
-#: app/app.py:1811
+#: app/app.py:1828
 msgid "Invalid save sync credentials."
 msgstr ""
 
-#: app/app.py:1814 app/app.py:2598 app/app.py:3925
+#: app/app.py:1831 app/app.py:2615 app/app.py:3942
 msgid "Account is frozen."
 msgstr ""
 
-#: app/app.py:1819
+#: app/app.py:1836
 #, python-format
 msgid "User \"%(username)s\" does not have access to the shop."
 msgstr ""
 
-#: app/app.py:1822
+#: app/app.py:1839
 msgid "Backup access is required for save sync."
 msgstr ""
 
-#: app/app.py:2293 app/app.py:5941 app/app.py:6076 app/app.py:6174
-#: app/app.py:6264
+#: app/app.py:2310 app/app.py:5958 app/app.py:6093 app/app.py:6191
+#: app/app.py:6281
 msgid "Save sync authorization failed."
 msgstr ""
 
-#: app/app.py:2479
+#: app/app.py:2496
 #, python-format
 msgid "Upload too large. Maximum allowed is %(size)sGB per file."
 msgstr ""
 
-#: app/app.py:3863 app/app.py:4050 app/auth.py:581 app/auth.py:587
+#: app/app.py:3880 app/app.py:4067 app/auth.py:581 app/auth.py:587
 #: app/auth.py:605 app/auth.py:620 app/auth.py:622
 msgid "Forbidden"
 msgstr ""
 
-#: app/app.py:4154
+#: app/app.py:4171
 msgid "An error occurred processing the request"
 msgstr ""
 
-#: app/app.py:4170
+#: app/app.py:4187
 msgid "Invalid request_ids."
 msgstr ""
 
-#: app/app.py:4174
+#: app/app.py:4191
 msgid "Nothing to mark."
 msgstr ""
 
-#: app/app.py:4241
+#: app/app.py:4258
 msgid "Marked seen."
 msgstr ""
 
-#: app/app.py:4254
+#: app/app.py:4271
 msgid "Invalid request_id."
 msgstr ""
 
-#: app/app.py:4259
+#: app/app.py:4276
 msgid "Request not found."
 msgstr ""
 
-#: app/app.py:4377
+#: app/app.py:4394
 msgid "Missing title_id or title_name."
 msgstr ""
 
-#: app/app.py:4383 app/app.py:5173
+#: app/app.py:4400 app/app.py:5190
 msgid "Prowlarr is not configured."
 msgstr ""
 
-#: app/app.py:4617
+#: app/app.py:4634
 msgid "Failed to clear client history."
 msgstr ""
 
-#: app/app.py:4635
+#: app/app.py:4652
 msgid "Failed to clear access history."
 msgstr ""
 
-#: app/app.py:4647
+#: app/app.py:4664
 msgid "Missing IP."
 msgstr ""
 
-#: app/app.py:4719
+#: app/app.py:4736
 msgid ""
 "TitleDB has not been initialized yet. Please wait for the initial update "
 "to complete or trigger it manually."
 msgstr ""
 
-#: app/app.py:4729
+#: app/app.py:4746
 #, python-format
 msgid "The region/language pair %(region)s/%(language)s is not available."
 msgstr ""
 
-#: app/app.py:5039
+#: app/app.py:5056
 #, python-format
 msgid "Missing indexer IDs: %(ids)s"
 msgstr ""
 
-#: app/app.py:5042
+#: app/app.py:5059
 #, python-format
 msgid "Prowlarr OK (%(version)s)"
 msgstr ""
 
-#: app/app.py:5116
+#: app/app.py:5133
 #, python-format
 msgid "Download path not found: %(path)s"
 msgstr ""
 
-#: app/app.py:5118
+#: app/app.py:5135
 #, python-format
 msgid "Download path not writable: %(path)s"
 msgstr ""
 
-#: app/app.py:5135 app/app.py:5149
+#: app/app.py:5152 app/app.py:5166
 msgid "Missing title ID or version."
 msgstr ""
 
-#: app/app.py:5168
+#: app/app.py:5185
 msgid "Missing query."
 msgstr ""
 
-#: app/app.py:5219
+#: app/app.py:5236
 msgid "Missing download URL."
 msgstr ""
 
-#: app/app.py:5413 app/app.py:5496
+#: app/app.py:5430 app/app.py:5513
 msgid "Missing file id."
 msgstr ""
 
-#: app/app.py:5546 app/app.py:5555
+#: app/app.py:5563 app/app.py:5572
 msgid "Job not found."
 msgstr ""
 
-#: app/app.py:5726
+#: app/app.py:5743
 msgid "No file provided"
 msgstr ""
 
-#: app/app.py:5803
+#: app/app.py:5820
 #, python-format
 msgid "Unable to parse upload request: %(error)s"
 msgstr ""
 
-#: app/app.py:5811 app/app.py:5812
+#: app/app.py:5828 app/app.py:5829
 msgid "No files uploaded."
 msgstr ""
 
-#: app/app.py:5823 app/app.py:5824
+#: app/app.py:5840 app/app.py:5841
 msgid "No library path configured."
 msgstr ""
 
-#: app/app.py:5833
+#: app/app.py:5850
 #, python-format
 msgid "Cannot access library path: %(path)s"
 msgstr ""
 
-#: app/app.py:5850
+#: app/app.py:5867
 msgid "A file has an invalid or empty filename."
 msgstr ""
 
-#: app/app.py:5868
+#: app/app.py:5885
 #, python-format
 msgid "%(filename)s: unsupported extension '%(ext)s'."
 msgstr ""
 
-#: app/app.py:5895
+#: app/app.py:5912
 #, python-format
 msgid "Uploaded %(count)s file(s)."
 msgstr ""
 
-#: app/app.py:5897
+#: app/app.py:5914
 #, python-format
 msgid "Skipped %(count)s."
 msgstr ""
 
-#: app/app.py:5902
+#: app/app.py:5919
 msgid "All selected files were skipped."
 msgstr ""
 
-#: app/app.py:5904 app/templates/cheats.html:112 app/templates/upload.html:241
+#: app/app.py:5921 app/templates/cheats.html:112 app/templates/upload.html:241
 msgid "Upload failed."
 msgstr ""
 
-#: app/app.py:6061
+#: app/app.py:6078
 msgid "Failed to list saves."
 msgstr ""
 
-#: app/app.py:6080
+#: app/app.py:6097
 msgid "Invalid title_id for save upload."
 msgstr ""
 
-#: app/app.py:6083 app/app.py:6087
+#: app/app.py:6100 app/app.py:6104
 msgid "No save archive provided."
 msgstr ""
 
-#: app/app.py:6094
+#: app/app.py:6111
 msgid "Save archive is empty."
 msgstr ""
 
-#: app/app.py:6097
+#: app/app.py:6114
 #, python-format
 msgid "Save archive exceeds maximum limit of %(size)sGB."
 msgstr ""
 
-#: app/app.py:6110
+#: app/app.py:6127
 msgid "Uploaded file is not a valid zip archive."
 msgstr ""
 
-#: app/app.py:6120
+#: app/app.py:6137
 msgid "Failed to store save archive."
 msgstr ""
 
-#: app/app.py:6163 app/templates/saves.html:519
+#: app/app.py:6180 app/templates/saves.html:519
 msgid "Save uploaded successfully."
 msgstr ""
 
-#: app/app.py:6188
+#: app/app.py:6205
 msgid "Invalid title_id for save download."
 msgstr ""
 
-#: app/app.py:6210 app/app.py:6222 app/app.py:6284
+#: app/app.py:6227 app/app.py:6239 app/app.py:6301
 msgid "Save archive not found."
 msgstr ""
 
-#: app/app.py:6268
+#: app/app.py:6285
 msgid "Invalid title_id for save delete."
 msgstr ""
 
-#: app/app.py:6274
+#: app/app.py:6291
 msgid "Invalid save_id for save delete."
 msgstr ""
 
-#: app/app.py:6304
+#: app/app.py:6321
 msgid "Save backup deleted successfully."
 msgstr ""
 
-#: app/app.py:7559
+#: app/app.py:7576
 msgid "Cheat access is disabled for this account."
 msgstr ""
 
-#: app/app.py:7586
+#: app/app.py:7603
 msgid "Cheat note must be 1000 characters or less."
 msgstr ""
 
-#: app/app.py:7592
+#: app/app.py:7609
 msgid "Provide a cheat file or paste cheat content."
 msgstr ""
 
-#: app/app.py:7625
+#: app/app.py:7642
 msgid "Configure an HTTP(S) cheat ZIP URL first."
 msgstr ""
 
-#: app/app.py:7631
+#: app/app.py:7648
 #, python-format
 msgid "Cheat sync failed: %(error)s"
 msgstr ""
 
-#: app/app.py:8064
+#: app/app.py:8084
 msgid "Conversion in progress. Try again after conversion finishes."
 msgstr ""
 
@@ -349,7 +349,7 @@ msgstr ""
 msgid "Cannot delete the last admin account."
 msgstr ""
 
-#: app/auth.py:1061 app/templates/index.html:2112 app/templates/index.html:2125
+#: app/auth.py:1061 app/templates/index.html:2136 app/templates/index.html:2149
 #: app/templates/requests.html:487
 msgid "Delete failed."
 msgstr ""
@@ -537,8 +537,8 @@ msgstr ""
 
 #: app/templates/activity.html:714 app/templates/activity.html:941
 #: app/templates/cheats.html:51 app/templates/downloads.html:81
-#: app/templates/index.html:361 app/templates/index.html:627
-#: app/templates/index.html:1157 app/templates/requests.html:61
+#: app/templates/index.html:361 app/templates/index.html:648
+#: app/templates/index.html:1181 app/templates/requests.html:61
 #: app/templates/requests.html:115 app/templates/saves.html:34
 #: app/templates/saves.html:62 app/templates/saves.html:312
 #: app/templates/users.html:300
@@ -629,9 +629,9 @@ msgid "Bytes"
 msgstr ""
 
 #: app/templates/activity.html:962 app/templates/activity.html:1160
-#: app/templates/downloads.html:45 app/templates/index.html:631
-#: app/templates/index.html:1161 app/templates/index.html:2402
-#: app/templates/index.html:2425 app/templates/index.html:2549
+#: app/templates/downloads.html:45 app/templates/index.html:652
+#: app/templates/index.html:1185 app/templates/index.html:2426
+#: app/templates/index.html:2449 app/templates/index.html:2573
 #: app/templates/requests.html:63 app/templates/users.html:303
 msgid "Status"
 msgstr ""
@@ -731,9 +731,9 @@ msgstr ""
 msgid "Theme"
 msgstr ""
 
-#: app/templates/activity.html:1364 app/templates/index.html:630
-#: app/templates/index.html:1160 app/templates/index.html:2401
-#: app/templates/index.html:2548
+#: app/templates/activity.html:1364 app/templates/index.html:651
+#: app/templates/index.html:1184 app/templates/index.html:2425
+#: app/templates/index.html:2572
 msgid "Version"
 msgstr ""
 
@@ -866,7 +866,7 @@ msgstr ""
 msgid "Library: Ready"
 msgstr ""
 
-#: app/templates/cheats.html:6 app/templates/index.html:2500
+#: app/templates/cheats.html:6 app/templates/index.html:2524
 #: app/templates/nav.html:63 app/templates/users.html:79
 #: app/templates/users.html:178 app/templates/users.html:695
 msgid "Cheats"
@@ -915,7 +915,7 @@ msgid "You can enter a title ID directly for a title that is not in the library.
 msgstr ""
 
 #: app/templates/cheats.html:29 app/templates/cheats.html:51
-#: app/templates/index.html:2460
+#: app/templates/index.html:2484
 msgid "Build ID"
 msgstr ""
 
@@ -932,7 +932,7 @@ msgid "Cheat content"
 msgstr ""
 
 #: app/templates/cheats.html:32 app/templates/cheats.html:51
-#: app/templates/index.html:2461 app/templates/saves.html:64
+#: app/templates/index.html:2485 app/templates/saves.html:64
 msgid "Note"
 msgstr ""
 
@@ -981,8 +981,8 @@ msgid "Search by title, title ID, build ID, or note"
 msgstr ""
 
 #: app/templates/cheats.html:51 app/templates/downloads.html:55
-#: app/templates/index.html:369 app/templates/index.html:2403
-#: app/templates/index.html:2462 app/templates/index.html:2550
+#: app/templates/index.html:369 app/templates/index.html:2427
+#: app/templates/index.html:2486 app/templates/index.html:2574
 #: app/templates/requests.html:123 app/templates/saves.html:65
 msgid "Size"
 msgstr ""
@@ -998,8 +998,8 @@ msgstr ""
 msgid "No matching library titles. Enter a title ID manually below."
 msgstr ""
 
-#: app/templates/cheats.html:91 app/templates/index.html:2207
-#: app/templates/index.html:2448 app/templates/index.html:2463
+#: app/templates/cheats.html:91 app/templates/index.html:2231
+#: app/templates/index.html:2472 app/templates/index.html:2487
 #: app/templates/saves.html:379 app/templates/saves.html:423
 msgid "Download"
 msgstr ""
@@ -1125,7 +1125,7 @@ msgstr ""
 msgid "Done"
 msgstr ""
 
-#: app/templates/downloads.html:72 app/templates/index.html:1870
+#: app/templates/downloads.html:72 app/templates/index.html:1894
 #: app/templates/requests.html:213
 msgid "Queue"
 msgstr ""
@@ -1138,9 +1138,9 @@ msgstr ""
 msgid "State"
 msgstr ""
 
-#: app/templates/downloads.html:85 app/templates/index.html:632
-#: app/templates/index.html:1162 app/templates/index.html:2405
-#: app/templates/index.html:2428 app/templates/requests.html:64
+#: app/templates/downloads.html:85 app/templates/index.html:653
+#: app/templates/index.html:1186 app/templates/index.html:2429
+#: app/templates/index.html:2452 app/templates/requests.html:64
 #: app/templates/saves.html:66 app/templates/settings.html:350
 #: app/templates/settings.html:357 app/templates/users.html:122
 msgid "Actions"
@@ -1259,12 +1259,12 @@ msgid "A rotating selection from your library."
 msgstr ""
 
 #: app/templates/index.html:60 app/templates/index.html:62
-#: app/templates/index.html:1579 app/templates/index.html:1580
+#: app/templates/index.html:1603 app/templates/index.html:1604
 msgid "Filters"
 msgstr ""
 
 #: app/templates/index.html:66 app/templates/index.html:410
-#: app/templates/index.html:629 app/templates/index.html:1159
+#: app/templates/index.html:650 app/templates/index.html:1183
 msgid "Type"
 msgstr ""
 
@@ -1279,9 +1279,9 @@ msgid "Base Games"
 msgstr ""
 
 #: app/templates/index.html:78 app/templates/index.html:413
-#: app/templates/index.html:2304 app/templates/index.html:2367
-#: app/templates/index.html:2424 app/templates/index.html:2492
-#: app/templates/index.html:2745 app/templates/index.html:3006
+#: app/templates/index.html:2328 app/templates/index.html:2391
+#: app/templates/index.html:2448 app/templates/index.html:2516
+#: app/templates/index.html:2769 app/templates/index.html:3030
 msgid "DLC"
 msgstr ""
 
@@ -1290,28 +1290,28 @@ msgid "Ownership"
 msgstr ""
 
 #: app/templates/index.html:90 app/templates/index.html:425
-#: app/templates/index.html:819 app/templates/index.html:862
+#: app/templates/index.html:840 app/templates/index.html:883
 msgid "In Library"
 msgstr ""
 
 #: app/templates/index.html:94 app/templates/index.html:426
-#: app/templates/index.html:819 app/templates/index.html:862
-#: app/templates/index.html:2245 app/templates/index.html:2353
+#: app/templates/index.html:840 app/templates/index.html:883
+#: app/templates/index.html:2269 app/templates/index.html:2377
 msgid "Missing"
 msgstr ""
 
 #: app/templates/index.html:98 app/templates/index.html:436
-#: app/templates/index.html:2484
+#: app/templates/index.html:2508
 msgid "Updates"
 msgstr ""
 
 #: app/templates/index.html:106 app/templates/index.html:438
-#: app/templates/index.html:833
+#: app/templates/index.html:854
 msgid "Up to Date"
 msgstr ""
 
 #: app/templates/index.html:110 app/templates/index.html:439
-#: app/templates/index.html:833
+#: app/templates/index.html:854
 msgid "Update Available"
 msgstr ""
 
@@ -1324,7 +1324,7 @@ msgid "Complete"
 msgstr ""
 
 #: app/templates/index.html:126 app/templates/index.html:452
-#: app/templates/index.html:840
+#: app/templates/index.html:861
 msgid "DLC Missing"
 msgstr ""
 
@@ -1360,11 +1360,11 @@ msgstr ""
 msgid "Newest added"
 msgstr ""
 
-#: app/templates/index.html:185 app/templates/index.html:1598
+#: app/templates/index.html:185 app/templates/index.html:1622
 msgid "Genre"
 msgstr ""
 
-#: app/templates/index.html:188 app/templates/index.html:1665
+#: app/templates/index.html:188 app/templates/index.html:1689
 msgid "All genres"
 msgstr ""
 
@@ -1396,7 +1396,7 @@ msgstr ""
 msgid "Content details"
 msgstr ""
 
-#: app/templates/index.html:248 app/templates/index.html:2579
+#: app/templates/index.html:248 app/templates/index.html:2603
 msgid "Expand details card"
 msgstr ""
 
@@ -1411,12 +1411,12 @@ msgstr ""
 msgid "Visible modal sections"
 msgstr ""
 
-#: app/templates/index.html:257 app/templates/index.html:1070
-#: app/templates/index.html:1193
+#: app/templates/index.html:257 app/templates/index.html:1094
+#: app/templates/index.html:1217
 msgid "Details"
 msgstr ""
 
-#: app/templates/index.html:260 app/templates/index.html:2770
+#: app/templates/index.html:260 app/templates/index.html:2794
 msgid "Game info"
 msgstr ""
 
@@ -1479,351 +1479,359 @@ msgstr ""
 msgid "Age"
 msgstr ""
 
-#: app/templates/index.html:628 app/templates/index.html:1158
+#: app/templates/index.html:625
+msgid "Failed to load the game library. The server may still be starting up."
+msgstr ""
+
+#: app/templates/index.html:627
+msgid "Retry"
+msgstr ""
+
+#: app/templates/index.html:649 app/templates/index.html:1182
 msgid "Genres"
 msgstr ""
 
-#: app/templates/index.html:826
+#: app/templates/index.html:847
 msgid "Base Present"
 msgstr ""
 
-#: app/templates/index.html:826
+#: app/templates/index.html:847
 msgid "Base Missing"
 msgstr ""
 
-#: app/templates/index.html:840
+#: app/templates/index.html:861
 msgid "DLC Complete"
 msgstr ""
 
-#: app/templates/index.html:859
+#: app/templates/index.html:880
 #, python-brace-format
 msgid "{name} [{title_id}] Updates"
 msgstr ""
 
-#: app/templates/index.html:875
+#: app/templates/index.html:896
 msgid "Version v0"
 msgstr ""
 
-#: app/templates/index.html:879
+#: app/templates/index.html:900
 #, python-brace-format
 msgid "Version {version}"
 msgstr ""
 
-#: app/templates/index.html:1139
+#: app/templates/index.html:1163
 #, python-brace-format
 msgid "Library size: {size}"
 msgstr ""
 
-#: app/templates/index.html:1141
+#: app/templates/index.html:1165
 msgid "Library size: 0 B"
 msgstr ""
 
-#: app/templates/index.html:1238 app/templates/requests.html:166
+#: app/templates/index.html:1262 app/templates/requests.html:166
 msgid "Torrent"
 msgstr ""
 
-#: app/templates/index.html:1251 app/templates/requests.html:179
+#: app/templates/index.html:1275 app/templates/requests.html:179
 #, python-brace-format
 msgid "Published {date}"
 msgstr ""
 
-#: app/templates/index.html:1308 app/templates/index.html:1332
-#: app/templates/index.html:1854 app/templates/requests.html:423
+#: app/templates/index.html:1332 app/templates/index.html:1356
+#: app/templates/index.html:1878 app/templates/requests.html:423
 msgid "Searching Prowlarr..."
 msgstr ""
 
-#: app/templates/index.html:1316 app/templates/index.html:1341
-#: app/templates/index.html:1860 app/templates/requests.html:430
+#: app/templates/index.html:1340 app/templates/index.html:1365
+#: app/templates/index.html:1884 app/templates/requests.html:430
 msgid "Search failed."
 msgstr ""
 
-#: app/templates/index.html:1321 app/templates/index.html:1865
+#: app/templates/index.html:1345 app/templates/index.html:1889
 #: app/templates/requests.html:435
 msgid "No results found."
 msgstr ""
 
-#: app/templates/index.html:1324 app/templates/index.html:1868
+#: app/templates/index.html:1348 app/templates/index.html:1892
 #: app/templates/requests.html:438
 #, python-brace-format
 msgid "Found {count} results."
 msgstr ""
 
-#: app/templates/index.html:1421
+#: app/templates/index.html:1445
 msgid "Previous"
 msgstr ""
 
-#: app/templates/index.html:1476 app/templates/users.html:565
+#: app/templates/index.html:1500 app/templates/users.html:565
 msgid "Next"
 msgstr ""
 
-#: app/templates/index.html:1580
+#: app/templates/index.html:1604
 #, python-brace-format
 msgid "Filters ({count} active)"
 msgstr ""
 
-#: app/templates/index.html:1598 app/templates/index.html:1613
+#: app/templates/index.html:1622 app/templates/index.html:1637
 #, python-brace-format
 msgid "Genre: {genre}"
 msgstr ""
 
-#: app/templates/index.html:1610
+#: app/templates/index.html:1634
 #, python-brace-format
 msgid "Search: \"{text}\""
 msgstr ""
 
-#: app/templates/index.html:1636 app/templates/manage.html:241
+#: app/templates/index.html:1660 app/templates/manage.html:241
 #: app/templates/users.html:27
 msgid "Clear"
 msgstr ""
 
-#: app/templates/index.html:1892
+#: app/templates/index.html:1916
 msgid "Queuing..."
 msgstr ""
 
-#: app/templates/index.html:1893
+#: app/templates/index.html:1917
 msgid "Queuing download..."
 msgstr ""
 
-#: app/templates/index.html:1914
+#: app/templates/index.html:1938
 msgid "Queued"
 msgstr ""
 
-#: app/templates/index.html:1916
+#: app/templates/index.html:1940
 msgid "Download queued successfully."
 msgstr ""
 
-#: app/templates/index.html:1920 app/templates/index.html:1924
+#: app/templates/index.html:1944 app/templates/index.html:1948
 #: app/templates/requests.html:514
 msgid "Queue failed."
 msgstr ""
 
-#: app/templates/index.html:2101
+#: app/templates/index.html:2125
 msgid "Deleting..."
 msgstr ""
 
-#: app/templates/index.html:2120
+#: app/templates/index.html:2144
 #, python-brace-format
 msgid "{message} Some files failed: {warnings}"
 msgstr ""
 
-#: app/templates/index.html:2139
+#: app/templates/index.html:2163
 msgid "Content not found"
 msgstr ""
 
-#: app/templates/index.html:2152
+#: app/templates/index.html:2176
 #, python-brace-format
 msgid "{app_type} | App ID {app_id} | Title ID {title_id}"
 msgstr ""
 
-#: app/templates/index.html:2162
+#: app/templates/index.html:2186
 #, python-brace-format
 msgid "Genres: {genres}"
 msgstr ""
 
-#: app/templates/index.html:2165
+#: app/templates/index.html:2189
 #, python-brace-format
 msgid "Size: {size}"
 msgstr ""
 
-#: app/templates/index.html:2206
+#: app/templates/index.html:2230
 #, python-brace-format
 msgid "Download {filename}"
 msgstr ""
 
-#: app/templates/index.html:2206
+#: app/templates/index.html:2230
 msgid "library file"
 msgstr ""
 
-#: app/templates/index.html:2231
+#: app/templates/index.html:2255
 msgid "Restore update to completeness checks"
 msgstr ""
 
-#: app/templates/index.html:2231
+#: app/templates/index.html:2255
 msgid "Ignore update for completeness checks"
 msgstr ""
 
-#: app/templates/index.html:2245 app/templates/index.html:2353
-#: app/templates/index.html:2426
+#: app/templates/index.html:2269 app/templates/index.html:2377
+#: app/templates/index.html:2450
 msgid "Owned"
 msgstr ""
 
-#: app/templates/index.html:2245 app/templates/index.html:2353
+#: app/templates/index.html:2269 app/templates/index.html:2377
 msgid "Ignored"
 msgstr ""
 
-#: app/templates/index.html:2247
+#: app/templates/index.html:2271
 msgid "Unknown"
 msgstr ""
 
-#: app/templates/index.html:2263
+#: app/templates/index.html:2287
 msgid "Latest update already installed."
 msgstr ""
 
-#: app/templates/index.html:2269
+#: app/templates/index.html:2293
 msgid "Search updates"
 msgstr ""
 
-#: app/templates/index.html:2279
+#: app/templates/index.html:2303
 msgid "Base game already in library."
 msgstr ""
 
-#: app/templates/index.html:2285
+#: app/templates/index.html:2309
 msgid "Search base game"
 msgstr ""
 
-#: app/templates/index.html:2293 app/templates/index.html:2721
+#: app/templates/index.html:2317 app/templates/index.html:2745
 #: app/templates/saves.html:261
 msgid "this title"
 msgstr ""
 
-#: app/templates/index.html:2294 app/templates/index.html:2726
+#: app/templates/index.html:2318 app/templates/index.html:2750
 msgid "Delete game, updates, and DLC"
 msgstr ""
 
-#: app/templates/index.html:2305
+#: app/templates/index.html:2329
 msgid "Search DLC"
 msgstr ""
 
-#: app/templates/index.html:2312
+#: app/templates/index.html:2336
 msgid "Custom search terms"
 msgstr ""
 
-#: app/templates/index.html:2315
+#: app/templates/index.html:2339
 msgid "Search files"
 msgstr ""
 
-#: app/templates/index.html:2343
+#: app/templates/index.html:2367
 msgid "Library files"
 msgstr ""
 
-#: app/templates/index.html:2373
+#: app/templates/index.html:2397
 msgid "Restore DLC to completeness checks"
 msgstr ""
 
-#: app/templates/index.html:2373
+#: app/templates/index.html:2397
 msgid "Ignore DLC for completeness checks"
 msgstr ""
 
-#: app/templates/index.html:2404 app/templates/index.html:2551
+#: app/templates/index.html:2428 app/templates/index.html:2575
 msgid "Release date"
 msgstr ""
 
-#: app/templates/index.html:2415
+#: app/templates/index.html:2439
 msgid "No update version data available."
 msgstr ""
 
-#: app/templates/index.html:2427
+#: app/templates/index.html:2451
 msgid "Latest"
 msgstr ""
 
-#: app/templates/index.html:2438
+#: app/templates/index.html:2462
 msgid "No DLC entries available."
 msgstr ""
 
-#: app/templates/index.html:2471
+#: app/templates/index.html:2495
 msgid "No cheats are available for this title."
 msgstr ""
 
-#: app/templates/index.html:2559
+#: app/templates/index.html:2583
 msgid "Loading content details..."
 msgstr ""
 
-#: app/templates/index.html:2573
+#: app/templates/index.html:2597
 msgid "Contract details card"
 msgstr ""
 
-#: app/templates/index.html:2701
+#: app/templates/index.html:2725
 msgid "Loading game info..."
 msgstr ""
 
-#: app/templates/index.html:2710
+#: app/templates/index.html:2734
 msgid "Game info unavailable"
 msgstr ""
 
-#: app/templates/index.html:2727
+#: app/templates/index.html:2751
 #, python-brace-format
 msgid "Delete the base game and all owned updates and DLC for {name}?"
 msgstr ""
 
-#: app/templates/index.html:2731
+#: app/templates/index.html:2755
 msgid "Deleted base game content."
 msgstr ""
 
-#: app/templates/index.html:2741
+#: app/templates/index.html:2765
 msgid "this entry"
 msgstr ""
 
-#: app/templates/index.html:2745
+#: app/templates/index.html:2769
 msgid "update"
-msgstr ""
-
-#: app/templates/index.html:2747
-#, python-brace-format
-msgid "Delete {label}"
-msgstr ""
-
-#: app/templates/index.html:2748
-#, python-brace-format
-msgid "Delete {label} v{version} for {name}?"
-msgstr ""
-
-#: app/templates/index.html:2752
-#, python-brace-format
-msgid "Deleted {label} v{version}."
 msgstr ""
 
 #: app/templates/index.html:2771
 #, python-brace-format
+msgid "Delete {label}"
+msgstr ""
+
+#: app/templates/index.html:2772
+#, python-brace-format
+msgid "Delete {label} v{version} for {name}?"
+msgstr ""
+
+#: app/templates/index.html:2776
+#, python-brace-format
+msgid "Deleted {label} v{version}."
+msgstr ""
+
+#: app/templates/index.html:2795
+#, python-brace-format
 msgid "Title ID {title_id}"
 msgstr ""
 
-#: app/templates/index.html:2781 app/templates/index.html:2805
-#: app/templates/index.html:2818 app/templates/index.html:2833
+#: app/templates/index.html:2805 app/templates/index.html:2829
+#: app/templates/index.html:2842 app/templates/index.html:2857
 msgid "No description available in TitleDB for this title."
 msgstr ""
 
-#: app/templates/index.html:2799
+#: app/templates/index.html:2823
 msgid "Loading TitleDB info..."
 msgstr ""
 
-#: app/templates/index.html:2860
+#: app/templates/index.html:2884
 msgid "Saving..."
 msgstr ""
 
-#: app/templates/index.html:2878 app/templates/index.html:2902
+#: app/templates/index.html:2902 app/templates/index.html:2926
 msgid "Failed to save metadata."
 msgstr ""
 
-#: app/templates/index.html:2892
+#: app/templates/index.html:2916
 msgid "Saved."
 msgstr ""
 
-#: app/templates/index.html:2898
+#: app/templates/index.html:2922
 msgid "Saved, but refresh failed."
 msgstr ""
 
-#: app/templates/index.html:2942 app/templates/index.html:2991
+#: app/templates/index.html:2966 app/templates/index.html:3015
 msgid "Queue update"
 msgstr ""
 
-#: app/templates/index.html:2965
+#: app/templates/index.html:2989
 msgid "Queue download"
 msgstr ""
 
-#: app/templates/index.html:3012
+#: app/templates/index.html:3036
 #, python-brace-format
 msgid "Searching Prowlarr for {label}..."
 msgstr ""
 
-#: app/templates/index.html:3016
+#: app/templates/index.html:3040
 msgid "Queue DLC"
 msgstr ""
 
-#: app/templates/index.html:3045 app/templates/index.html:3058
+#: app/templates/index.html:3069 app/templates/index.html:3082
 msgid "Unable to update ignored content."
 msgstr ""
 
-#: app/templates/index.html:3056
+#: app/templates/index.html:3080
 msgid "Saved, but refreshing title details failed."
 msgstr ""
 
