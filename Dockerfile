@@ -19,6 +19,9 @@ COPY requirements.txt /tmp/
 
 RUN pip install --no-cache-dir --requirement /tmp/requirements.txt && rm /tmp/requirements.txt
 
+# Compile i18n message catalogs (checked-in .mo files are refreshed at build time)
+RUN if [ -d /app/translations ]; then pybabel compile -d /app/translations; fi
+
 # Normalize CRLF to LF and ensure entrypoint is executable across platforms
 RUN sed -i 's/\r$//' /app/run.sh && chmod +x /app/run.sh
 

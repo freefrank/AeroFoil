@@ -8,20 +8,20 @@
             <div class="settings-container container mt-3">
                 <div class="d-flex flex-column flex-lg-row justify-content-between gap-2 align-items-lg-center mb-2">
                     <div>
-                        <h2 class="pb-2">Save Data Backups</h2>
-                        <p class="text-muted mb-0">Saved archives available for your account.</p>
+                        <h2 class="pb-2">{{ _('Save Data Backups') }}</h2>
+                        <p class="text-muted mb-0">{{ _('Saved archives available for your account.') }}</p>
                     </div>
                     <div class="d-flex align-items-center gap-2">
-                        <div class="btn-group btn-group-sm" role="group" aria-label="Saves view mode">
+                        <div class="btn-group btn-group-sm" role="group" aria-label="{{ _('Saves view mode') }}">
                             <button type="button" id="viewListBtn" class="btn btn-outline-secondary active">
-                                <i class="bi bi-list-ul"></i> List
+                                <i class="bi bi-list-ul"></i> {{ _('List') }}
                             </button>
                             <button type="button" id="viewIconsBtn" class="btn btn-outline-secondary">
-                                <i class="bi bi-grid-3x3-gap"></i> Icons
+                                <i class="bi bi-grid-3x3-gap"></i> {{ _('Icons') }}
                             </button>
                         </div>
                         <button type="button" id="refreshSavesBtn" class="btn btn-outline-primary btn-sm">
-                            <i class="bi bi-arrow-clockwise"></i> Refresh
+                            <i class="bi bi-arrow-clockwise"></i> {{ _('Refresh') }}
                         </button>
                     </div>
                 </div>
@@ -35,22 +35,22 @@
                                 <table class="table table-dark table-sm align-middle mb-0">
                                     <thead>
                                         <tr>
-                                            <th>Title</th>
-                                            <th>Saved</th>
-                                            <th>Note</th>
-                                            <th>Size</th>
-                                            <th class="text-end">Actions</th>
+                                            <th>{{ _('Title') }}</th>
+                                            <th>{{ _('Saved') }}</th>
+                                            <th>{{ _('Note') }}</th>
+                                            <th>{{ _('Size') }}</th>
+                                            <th class="text-end">{{ _('Actions') }}</th>
                                         </tr>
                                     </thead>
                                     <tbody id="savesTableBody">
-                                        <tr><td colspan="5" class="text-muted">Loading...</td></tr>
+                                        <tr><td colspan="5" class="text-muted">{{ _('Loading...') }}</td></tr>
                                     </tbody>
                                 </table>
                             </div>
                         </div>
                         <div id="savesIconsView" class="d-none">
                             <div id="savesIconGrid" class="row row-cols-2 row-cols-sm-3 row-cols-md-4 row-cols-xl-6 g-3">
-                                <div class="col-12 text-muted">Loading...</div>
+                                <div class="col-12 text-muted">{{ _('Loading...') }}</div>
                             </div>
                         </div>
                         <div class="small text-muted mt-2" id="savesStatus"></div>
@@ -129,7 +129,7 @@
             || item['titleName']
             || item['name']
             || titleId
-            || 'Unknown title'
+            || {{ _('Unknown title')|tojson }}
         ).toString();
     }
 
@@ -200,20 +200,20 @@
 
     function deleteSaveBackup(deleteUrl, titleName, createdAt, note, buttonEl) {
         if (!deleteUrl) {
-            showSavesAlert('Delete URL is missing for this backup.', 'warning');
+            showSavesAlert({{ _('Delete URL is missing for this backup.')|tojson }}, 'warning');
             return;
         }
-        const labelTitle = (titleName || 'this title').toString();
+        const labelTitle = (titleName || {{ _('this title')|tojson }}).toString();
         const labelDate = (createdAt || '').toString();
         const labelNote = (note || '').toString();
-        let confirmText = `Delete this save backup for ${labelTitle}?`;
+        let confirmText = {{ _('Delete this save backup for {title}?')|tojson }}.replace('{title}', labelTitle);
         if (labelDate) {
-            confirmText += `\nSaved: ${labelDate}`;
+            confirmText += '\n' + {{ _('Saved: {date}')|tojson }}.replace('{date}', labelDate);
         }
         if (labelNote) {
-            confirmText += `\nNote: ${labelNote}`;
+            confirmText += '\n' + {{ _('Note: {note}')|tojson }}.replace('{note}', labelNote);
         }
-        confirmText += '\n\nThis cannot be undone.';
+        confirmText += '\n\n' + {{ _('This cannot be undone.')|tojson }};
         if (!window.confirm(confirmText)) {
             return;
         }
@@ -228,14 +228,14 @@
             dataType: 'json',
         }).done(function (result) {
             if (!result || result['success'] === false) {
-                const message = (result && result['message']) ? result['message'] : 'Failed to delete save backup.';
+                const message = (result && result['message']) ? result['message'] : {{ _('Failed to delete save backup.')|tojson }};
                 showSavesAlert(message, 'danger');
                 return;
             }
-            showSavesAlert('Save backup deleted.', 'success');
+            showSavesAlert({{ _('Save backup deleted.')|tojson }}, 'success');
             loadSaves();
         }).fail(function (xhr) {
-            let message = 'Failed to delete save backup.';
+            let message = {{ _('Failed to delete save backup.')|tojson }};
             try {
                 if (xhr && xhr.responseJSON && xhr.responseJSON.message) {
                     message = xhr.responseJSON.message;
@@ -254,7 +254,7 @@
     function buildIconImage(className, titleName, iconUrl, fallbackIconUrl) {
         const iconSrc = escapeHtml(iconUrl || '/static/placeholder-icon.svg');
         const fallbackSrc = escapeHtml(fallbackIconUrl || '/static/placeholder-icon.svg');
-        const alt = escapeHtml(`${titleName || 'Title'} icon`);
+        const alt = escapeHtml({{ _('{title} icon')|tojson }}.replace('{title}', titleName || {{ _('Title')|tojson }}));
         return `<img src="${iconSrc}" data-fallback-src="${fallbackSrc}" data-fallback-used="0" onerror="onSaveIconError(this)" alt="${alt}" class="${className}">`;
     }
 
@@ -289,7 +289,7 @@
         body.empty();
 
         if (!items.length) {
-            body.html('<tr><td colspan="5" class="text-muted">No save archives found for this account.</td></tr>');
+            body.html('<tr><td colspan="5" class="text-muted">' + {{ _('No save archives found for this account.')|tojson }} + '</td></tr>');
             return;
         }
 
@@ -320,8 +320,8 @@
                     <td class="small">${escapeHtml(sizeText)}</td>
                     <td class="text-end">
                         <div class="btn-group btn-group-sm" role="group">
-                            ${downloadUrl ? `<a class="btn btn-outline-light btn-sm" href="${escapeHtml(downloadUrl)}"><i class="bi bi-download"></i> Download</a>` : ''}
-                            ${deleteUrl ? `<button type="button" class="btn btn-outline-danger btn-sm delete-save-btn" data-delete-url="${escapeHtml(deleteUrl)}" data-title-name="${escapeHtml(titleName)}" data-created-at="${escapeHtml(createdAt)}" data-save-note="${escapeHtml(note || '')}"><i class="bi bi-trash"></i> Delete</button>` : ''}
+                            ${downloadUrl ? `<a class="btn btn-outline-light btn-sm" href="${escapeHtml(downloadUrl)}"><i class="bi bi-download"></i> ${ {{ _('Download')|tojson }} }</a>` : ''}
+                            ${deleteUrl ? `<button type="button" class="btn btn-outline-danger btn-sm delete-save-btn" data-delete-url="${escapeHtml(deleteUrl)}" data-title-name="${escapeHtml(titleName)}" data-created-at="${escapeHtml(createdAt)}" data-save-note="${escapeHtml(note || '')}"><i class="bi bi-trash"></i> ${ {{ _('Delete')|tojson }} }</button>` : ''}
                         </div>
                     </td>
                 </tr>
@@ -335,7 +335,7 @@
         grid.empty();
 
         if (!items.length) {
-            grid.html('<div class="col-12 text-muted">No save archives found for this account.</div>');
+            grid.html('<div class="col-12 text-muted">' + {{ _('No save archives found for this account.')|tojson }} + '</div>');
             return;
         }
 
@@ -363,8 +363,8 @@
                         </div>
                         <div class="card-footer p-2 text-end border-secondary">
                             <div class="btn-group btn-group-sm" role="group">
-                                ${downloadUrl ? `<a class="btn btn-outline-light btn-sm" href="${escapeHtml(downloadUrl)}"><i class="bi bi-download"></i> Download</a>` : ''}
-                                ${deleteUrl ? `<button type="button" class="btn btn-outline-danger btn-sm delete-save-btn" data-delete-url="${escapeHtml(deleteUrl)}" data-title-name="${escapeHtml(titleName)}" data-created-at="${escapeHtml(createdAt)}" data-save-note="${escapeHtml(note || '')}"><i class="bi bi-trash"></i> Delete</button>` : ''}
+                                ${downloadUrl ? `<a class="btn btn-outline-light btn-sm" href="${escapeHtml(downloadUrl)}"><i class="bi bi-download"></i> ${ {{ _('Download')|tojson }} }</a>` : ''}
+                                ${deleteUrl ? `<button type="button" class="btn btn-outline-danger btn-sm delete-save-btn" data-delete-url="${escapeHtml(deleteUrl)}" data-title-name="${escapeHtml(titleName)}" data-created-at="${escapeHtml(createdAt)}" data-save-note="${escapeHtml(note || '')}"><i class="bi bi-trash"></i> ${ {{ _('Delete')|tojson }} }</button>` : ''}
                             </div>
                         </div>
                     </div>
@@ -377,11 +377,11 @@
     function renderSaves(items) {
         renderSavesList(items);
         renderSavesIcons(items);
-        $('#savesStatus').text(`${items.length} save version${items.length === 1 ? '' : 's'}`);
+        $('#savesStatus').text((items.length === 1 ? {{ _('{count} save version')|tojson }} : {{ _('{count} save versions')|tojson }}).replace('{count}', items.length));
     }
 
     function renderSavesError(message) {
-        const safeMessage = escapeHtml(message || 'Failed to load saves.');
+        const safeMessage = escapeHtml(message || {{ _('Failed to load saves.')|tojson }});
         $('#savesTableBody').html(`<tr><td colspan="5" class="text-danger">${safeMessage}</td></tr>`);
         $('#savesIconGrid').html(`<div class="col-12 text-danger">${safeMessage}</div>`);
         $('#savesStatus').text('');
@@ -389,22 +389,22 @@
 
     function loadSaves() {
         $('#refreshSavesBtn').prop('disabled', true);
-        $('#savesTableBody').html('<tr><td colspan="5" class="text-muted">Loading...</td></tr>');
-        $('#savesIconGrid').html('<div class="col-12 text-muted">Loading...</div>');
+        $('#savesTableBody').html('<tr><td colspan="5" class="text-muted">' + {{ _('Loading...')|tojson }} + '</td></tr>');
+        $('#savesIconGrid').html('<div class="col-12 text-muted">' + {{ _('Loading...')|tojson }} + '</div>');
 
         $.getJSON('/api/saves/list', function (result) {
             if (!result || result['success'] === false) {
-                const message = (result && result['message']) ? result['message'] : 'Failed to load saves.';
+                const message = (result && result['message']) ? result['message'] : {{ _('Failed to load saves.')|tojson }};
                 showSavesAlert(message, 'danger');
-                renderSavesError('Failed to load saves.');
+                renderSavesError({{ _('Failed to load saves.')|tojson }});
                 return;
             }
 
             const saves = Array.isArray(result['saves']) ? result['saves'] : [];
-            showSavesAlert('Saves list loaded.', 'success');
+            showSavesAlert({{ _('Saves list loaded.')|tojson }}, 'success');
             renderSaves(saves);
         }).fail(function (xhr) {
-            let message = 'Failed to load saves.';
+            let message = {{ _('Failed to load saves.')|tojson }};
             try {
                 if (xhr && xhr.responseJSON && xhr.responseJSON.message) {
                     message = xhr.responseJSON.message;
@@ -413,7 +413,7 @@
                 // Ignore parse errors and keep default message.
             }
             showSavesAlert(message, 'danger');
-            renderSavesError('Failed to load saves.');
+            renderSavesError({{ _('Failed to load saves.')|tojson }});
         }).always(function () {
             $('#refreshSavesBtn').prop('disabled', false);
         });

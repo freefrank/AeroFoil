@@ -261,10 +261,10 @@
         <div class="col-md-3 col-xl-2" id="settingsSidebar">
             <div class="d-flex align-items-center justify-content-between p-3 border-bottom">
                 <div>
-                    <h5 class="mb-0">Settings</h5>
-                    <div class="text-muted small">System configuration</div>
+                    <h5 class="mb-0">{{ _('Settings') }}</h5>
+                    <div class="text-muted small">{{ _('System configuration') }}</div>
                 </div>
-                <button class="btn btn-sm d-md-none" type="button" id="sidebarToggle" aria-label="Toggle sidebar">
+                <button class="btn btn-sm d-md-none" type="button" id="sidebarToggle" aria-label="{{ _('Toggle sidebar') }}">
                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 16 16">
                         <path fill-rule="evenodd" d="M2.5 12a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5zm0-4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5zm0-4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5z"/>
                     </svg>
@@ -276,8 +276,8 @@
                         <path d="M1 2.828c.885-.37 2.154-.769 3.388-.893 1.33-.134 2.458.063 3.112.752v9.746c-.935-.53-2.12-.603-3.213-.493-1.18.12-2.37.461-3.287.811V2.828zm7.5-.141c.654-.689 1.782-.886 3.112-.752 1.234.124 2.503.523 3.388.893v9.923c-.918-.35-2.107-.692-3.287-.81-1.094-.111-2.278-.039-3.213.492V2.687zM8 1.783C7.015.936 5.587.81 4.287.94c-1.514.153-3.042.672-3.994 1.105A.5.5 0 0 0 0 2.5v11a.5.5 0 0 0 .707.455c.882-.4 2.303-.881 3.68-1.02 1.409-.142 2.59.087 3.223.877a.5.5 0 0 0 .78 0c.633-.79 1.814-1.019 3.222-.877 1.378.139 2.8.62 3.681 1.02A.5.5 0 0 0 16 13.5v-11a.5.5 0 0 0-.293-.455c-.952-.433-2.48-.952-3.994-1.105C10.413.81 8.985.936 8 1.783z"/>
                     </svg>
                     <span class="settings-nav-copy">
-                        <span class="settings-nav-title">Library</span>
-                        <span class="settings-nav-subtitle">Paths, naming, maintenance, metadata</span>
+                        <span class="settings-nav-title">{{ _('Library') }}</span>
+                        <span class="settings-nav-subtitle">{{ _('Paths, naming, maintenance, metadata') }}</span>
                     </span>
                 </a>
                 <a class="nav-link" href="#" data-section="shop">
@@ -285,8 +285,8 @@
                         <path d="M8 1a2.5 2.5 0 0 1 2.5 2.5V4h-5v-.5A2.5 2.5 0 0 1 8 1zm3.5 3v-.5a3.5 3.5 0 1 0-7 0V4H1v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V4h-3.5zM2 5h12v9a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V5z"/>
                     </svg>
                     <span class="settings-nav-copy">
-                        <span class="settings-nav-title">Shop</span>
-                        <span class="settings-nav-subtitle">Access, security, branding, client delivery</span>
+                        <span class="settings-nav-title">{{ _('Shop') }}</span>
+                        <span class="settings-nav-subtitle">{{ _('Access, security, branding, client delivery') }}</span>
                     </span>
                 </a>
                 <a class="nav-link" href="#" data-section="downloads">
@@ -295,8 +295,8 @@
                         <path d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708l3 3z"/>
                     </svg>
                     <span class="settings-nav-copy">
-                        <span class="settings-nav-title">Downloads</span>
-                        <span class="settings-nav-subtitle">Automation, providers, torrent and usenet clients</span>
+                        <span class="settings-nav-title">{{ _('Downloads') }}</span>
+                        <span class="settings-nav-subtitle">{{ _('Automation, providers, torrent and usenet clients') }}</span>
                     </span>
                 </a>
             </nav>
@@ -308,17 +308,17 @@
                 <div class="settings-page-header">
                     <div class="d-flex flex-wrap align-items-start justify-content-between gap-3">
                         <div>
-                            <h2 class="mb-2">Settings</h2>
-                            <div class="settings-page-subtitle">Configure AeroFoil library behavior, shop access, and download automation from a single workspace.</div>
+                            <h2 class="mb-2">{{ _('Settings') }}</h2>
+                            <div class="settings-page-subtitle">{{ _('Configure AeroFoil library behavior, shop access, and download automation from a single workspace.') }}</div>
                         </div>
                         <div class="settings-page-meta">
-                            <button class="btn btn-outline-secondary d-md-none" type="button" id="sidebarToggleMobile" aria-label="Toggle sidebar">
+                            <button class="btn btn-outline-secondary d-md-none" type="button" id="sidebarToggleMobile" aria-label="{{ _('Toggle sidebar') }}">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 16 16" style="vertical-align: -0.125em; margin-right: 0.4rem;">
                                     <path fill-rule="evenodd" d="M2.5 12a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5zm0-4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5zm0-4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5z"/>
                                 </svg>
-                                Sections
+                                {{ _('Sections') }}
                             </button>
-                            <span class="badge text-bg-secondary">Version {{ app_version }}</span>
+                            <span class="badge text-bg-secondary">{{ _('Version %(version)s', version=app_version) }}</span>
                         </div>
                     </div>
                 </div>
@@ -329,50 +329,50 @@
                 <div class="settings-section-header">
                     <div class="d-flex flex-wrap align-items-start justify-content-between gap-3">
                         <div>
-                            <h3 class="mb-1">Library</h3>
-                            <div class="settings-section-subtitle">Paths, naming, maintenance schedules, and title identification preferences.</div>
+                            <h3 class="mb-1">{{ _('Library') }}</h3>
+                            <div class="settings-section-subtitle">{{ _('Paths, naming, maintenance schedules, and title identification preferences.') }}</div>
                         </div>
                     </div>
                 </div>
                 <div class="settings-panel activity-section aerofoil-card">
                     <div class="card-body">
                         <div class="settings-panel-header">
-                            <h5 class="card-title">Library Paths</h5>
-                            <div class="text-muted small">Choose the directories AeroFoil scans and manages.</div>
+                            <h5 class="card-title">{{ _('Library Paths') }}</h5>
+                            <div class="text-muted small">{{ _('Choose the directories AeroFoil scans and manages.') }}</div>
                         </div>
 
-                        <div class="fw-semibold mb-2">Configured paths</div>
-                        <div id="libraryPathHelp" class="form-text mb-2">Path of directory containing your games.</div>
+                        <div class="fw-semibold mb-2">{{ _('Configured paths') }}</div>
+                        <div id="libraryPathHelp" class="form-text mb-2">{{ _('Path of directory containing your games.') }}</div>
                         <table class="table table-hover caption-top mb-0" id="pathsTable">
                             <thead>
                                 <tr>
-                                    <th scope="col">Path</th>
-                                    <th scope="col">Actions</th>
+                                    <th scope="col">{{ _('Path') }}</th>
+                                    <th scope="col">{{ _('Actions') }}</th>
                                 </tr>
                             </thead>
                             <tbody>
                             </tbody>
                         </table>
                         <hr class="my-3">
-                        <div class="fw-semibold mb-2">Actions</div>
+                        <div class="fw-semibold mb-2">{{ _('Actions') }}</div>
                         <div class="settings-panel-actions">
                             <button class="btn btn-primary" type="button" data-bs-toggle="collapse"
                                 data-bs-target="#collapseNewPath" aria-expanded="false" aria-controls="collapseNewPath">
-                                Add library path
+                                {{ _('Add library path') }}
                             </button>
-                            <button type="button" class="btn btn-outline-primary scanBtn" onClick='scanLibrary()'>Scan library</button>
+                            <button type="button" class="btn btn-outline-primary scanBtn" onClick='scanLibrary()'>{{ _('Scan library') }}</button>
                         </div>
 
                         <div class="collapse mt-3" id="collapseNewPath">
                             <div class="border rounded p-3">
-                                <label class="form-label">Add a new directory</label>
+                                <label class="form-label">{{ _('Add a new directory') }}</label>
                                 <div class="row g-3 align-items-end">
                                     <div class="col-lg-8">
-                                        <input type="text" class="form-control" id="libraryPathInput" placeholder="Path">
+                                        <input type="text" class="form-control" id="libraryPathInput" placeholder="{{ _('Path') }}">
                                     </div>
                                     <div class="col-auto">
                                         <button type="button" id="submitNewLibraryPathBtn" class="btn btn-primary"
-                                            onClick='submitNewLibraryPath()'>Submit</button>
+                                            onClick='submitNewLibraryPath()'>{{ _('Submit') }}</button>
                                     </div>
                                 </div>
                             </div>
@@ -385,54 +385,54 @@
                         <div class="settings-panel-header">
                             <div class="d-flex flex-wrap align-items-start justify-content-between gap-3">
                                 <div>
-                                    <h5 class="card-title">Maintenance</h5>
-                                    <div class="text-muted small">Control automatic organization, cleanup, and conversion staging.</div>
+                                    <h5 class="card-title">{{ _('Maintenance') }}</h5>
+                                    <div class="text-muted small">{{ _('Control automatic organization, cleanup, and conversion staging.') }}</div>
                                 </div>
                                 <div class="form-check form-switch mb-0 mt-1">
                                     <input class="form-check-input" type="checkbox" id="libraryAutoMaintenanceCheck" onChange="submitLibrarySettings()">
-                                    <label class="form-check-label" for="libraryAutoMaintenanceCheck">Auto-maintain library</label>
+                                    <label class="form-check-label" for="libraryAutoMaintenanceCheck">{{ _('Auto-maintain library') }}</label>
                                 </div>
                             </div>
                         </div>
 
-                        <div class="form-text mb-3">Runs library organization and removes empty folders on a schedule.</div>
+                        <div class="form-text mb-3">{{ _('Runs library organization and removes empty folders on a schedule.') }}</div>
 
                         <div class="row g-3 mb-3">
                             <div class="col-lg-7">
                                 <div class="border rounded p-3 h-100">
-                                    <div class="fw-semibold mb-2">Schedule</div>
+                                    <div class="fw-semibold mb-2">{{ _('Schedule') }}</div>
                                     <div class="row g-3 align-items-end">
                                         <div class="col-sm-7">
-                                            <label for="libraryMaintenanceIntervalInput" class="form-label">Maintenance interval (minutes)</label>
+                                            <label for="libraryMaintenanceIntervalInput" class="form-label">{{ _('Maintenance interval (minutes)') }}</label>
                                             <input type="number" min="30" class="form-control" id="libraryMaintenanceIntervalInput" onChange="submitLibrarySettings()">
-                                            <div class="form-text">Minimum 30 minutes. Values below 30 are clamped.</div>
+                                            <div class="form-text">{{ _('Minimum 30 minutes. Values below 30 are clamped.') }}</div>
                                         </div>
                                         <div class="col-sm-5">
-                                            <div class="form-text">Last maintenance run</div>
-                                            <div id="libraryMaintenanceLastRun" class="small text-muted">Never</div>
+                                            <div class="form-text">{{ _('Last maintenance run') }}</div>
+                                            <div id="libraryMaintenanceLastRun" class="small text-muted">{{ _('Never') }}</div>
                                         </div>
                                     </div>
                                 </div>
                             </div>
                             <div class="col-lg-5">
                                 <div class="border rounded p-3 h-100">
-                                    <div class="fw-semibold mb-2">Cleanup</div>
+                                    <div class="fw-semibold mb-2">{{ _('Cleanup') }}</div>
                                     <div class="form-check form-switch mb-2">
                                         <input class="form-check-input" type="checkbox" id="libraryMaintenanceDeleteUpdatesCheck" onChange="submitLibrarySettings()">
-                                        <label class="form-check-label" for="libraryMaintenanceDeleteUpdatesCheck">Delete older updates during maintenance</label>
+                                        <label class="form-check-label" for="libraryMaintenanceDeleteUpdatesCheck">{{ _('Delete older updates during maintenance') }}</label>
                                     </div>
-                                    <div class="form-text mb-0">Keeps the latest owned update per title when maintenance runs.</div>
+                                    <div class="form-text mb-0">{{ _('Keeps the latest owned update per title when maintenance runs.') }}</div>
                                 </div>
                             </div>
                         </div>
 
                         <div class="border rounded p-3" id="libraryConversionStagingStatusCard">
                             <div class="d-flex align-items-center justify-content-between mb-1">
-                                <div class="fw-semibold">Conversion staging</div>
-                                <span class="badge text-bg-secondary" id="libraryConversionStagingStatusBadge">Disabled</span>
+                                <div class="fw-semibold">{{ _('Conversion staging') }}</div>
+                                <span class="badge text-bg-secondary" id="libraryConversionStagingStatusBadge">{{ _('Disabled') }}</span>
                             </div>
-                            <div class="small" id="libraryConversionStagingPathLabel">Not enabled</div>
-                            <div class="form-text mb-0" id="libraryConversionStagingHint">Set <code>AEROFOIL_CONVERSION_STAGING_ENABLED=true</code> to enable.</div>
+                            <div class="small" id="libraryConversionStagingPathLabel">{{ _('Not enabled') }}</div>
+                            <div class="form-text mb-0" id="libraryConversionStagingHint">{{ _('Set <code>AEROFOIL_CONVERSION_STAGING_ENABLED=true</code> to enable.')|safe }}</div>
                         </div>
                     </div>
                 </div>
@@ -440,41 +440,41 @@
                 <div class="settings-panel activity-section aerofoil-card">
                     <div class="card-body">
                         <div class="settings-panel-header">
-                            <h5 class="card-title">Organization Naming</h5>
-                            <div class="text-muted small">Choose how identified content is organized into folders and filenames.</div>
+                            <h5 class="card-title">{{ _('Organization Naming') }}</h5>
+                            <div class="text-muted small">{{ _('Choose how identified content is organized into folders and filenames.') }}</div>
                         </div>
 
                         <div class="border rounded p-3 mb-3">
-                            <div class="fw-semibold mb-2">Template selection</div>
+                            <div class="fw-semibold mb-2">{{ _('Template selection') }}</div>
                             <div class="d-flex flex-wrap gap-2 align-items-end">
                                 <div class="flex-grow-1" style="min-width: 220px;">
-                                    <label for="libraryNamingTemplateSelect" class="form-label mb-1">Organization naming template</label>
+                                    <label for="libraryNamingTemplateSelect" class="form-label mb-1">{{ _('Organization naming template') }}</label>
                                     <select id="libraryNamingTemplateSelect" class="form-select" onchange="onLibraryNamingTemplateChange()"></select>
                                 </div>
                                 <div>
-                                    <button type="button" class="btn btn-outline-primary" onclick="addLibraryNamingTemplate()">Add template</button>
+                                    <button type="button" class="btn btn-outline-primary" onclick="addLibraryNamingTemplate()">{{ _('Add template') }}</button>
                                 </div>
                                 <div>
-                                    <button type="button" class="btn btn-outline-danger" onclick="deleteLibraryNamingTemplate()">Delete template</button>
+                                    <button type="button" class="btn btn-outline-danger" onclick="deleteLibraryNamingTemplate()">{{ _('Delete template') }}</button>
                                 </div>
                             </div>
                         </div>
 
                         <div class="border rounded p-3 mb-3">
-                            <div class="fw-semibold mb-2">Presets and tokens</div>
+                            <div class="fw-semibold mb-2">{{ _('Presets and tokens') }}</div>
                             <div class="form-text mb-3">
-                                Tokens: <code>{title}</code>, <code>{title_id}</code>, <code>{app_id}</code>, <code>{version}</code>, <code>{version_txt}</code>, <code>{dlc_name}</code>, <code>{ext}</code> (<code>{version_txt}</code> applies to filename templates only)
+                                {{ _('Tokens: <code>{title}</code>, <code>{title_id}</code>, <code>{app_id}</code>, <code>{version}</code>, <code>{version_txt}</code>, <code>{dlc_name}</code>, <code>{ext}</code> (<code>{version_txt}</code> applies to filename templates only)')|safe }}
                             </div>
                             <div class="d-flex flex-wrap gap-2">
-                                <button type="button" class="btn btn-sm btn-outline-secondary" onclick="applyLibraryNamingPreset('default')">Use Default Preset</button>
-                                <button type="button" class="btn btn-sm btn-outline-secondary" onclick="applyLibraryNamingPreset('flat')">Use Flat Preset</button>
-                                <button type="button" class="btn btn-sm btn-outline-secondary" onclick="applyLibraryNamingPreset('scene')">Use Scene Preset</button>
+                                <button type="button" class="btn btn-sm btn-outline-secondary" onclick="applyLibraryNamingPreset('default')">{{ _('Use Default Preset') }}</button>
+                                <button type="button" class="btn btn-sm btn-outline-secondary" onclick="applyLibraryNamingPreset('flat')">{{ _('Use Flat Preset') }}</button>
+                                <button type="button" class="btn btn-sm btn-outline-secondary" onclick="applyLibraryNamingPreset('scene')">{{ _('Use Scene Preset') }}</button>
                             </div>
                         </div>
 
                         <div class="border rounded p-3">
                             <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-3">
-                                <div class="fw-semibold">Template fields</div>
+                                <div class="fw-semibold">{{ _('Template fields') }}</div>
                                 <button
                                     class="btn btn-sm btn-success"
                                     type="button"
@@ -482,42 +482,42 @@
                                     data-bs-target="#collapseLibraryTemplateFields"
                                     aria-expanded="false"
                                     aria-controls="collapseLibraryTemplateFields">
-                                    Show template fields
+                                    {{ _('Show template fields') }}
                                 </button>
                             </div>
 
                             <div class="collapse" id="collapseLibraryTemplateFields">
                                 <div class="row g-3">
                                     <div class="col-md-6">
-                                        <label for="libraryTemplateBaseFolderInput" class="form-label">Base folder template</label>
+                                        <label for="libraryTemplateBaseFolderInput" class="form-label">{{ _('Base folder template') }}</label>
                                         <input id="libraryTemplateBaseFolderInput" class="form-control" type="text">
                                     </div>
                                     <div class="col-md-6">
-                                        <label for="libraryTemplateBaseFilenameInput" class="form-label">Base filename template</label>
+                                        <label for="libraryTemplateBaseFilenameInput" class="form-label">{{ _('Base filename template') }}</label>
                                         <input id="libraryTemplateBaseFilenameInput" class="form-control" type="text">
                                     </div>
                                     <div class="col-md-6">
-                                        <label for="libraryTemplateUpdateFolderInput" class="form-label">Update folder template</label>
+                                        <label for="libraryTemplateUpdateFolderInput" class="form-label">{{ _('Update folder template') }}</label>
                                         <input id="libraryTemplateUpdateFolderInput" class="form-control" type="text">
                                     </div>
                                     <div class="col-md-6">
-                                        <label for="libraryTemplateUpdateFilenameInput" class="form-label">Update filename template</label>
+                                        <label for="libraryTemplateUpdateFilenameInput" class="form-label">{{ _('Update filename template') }}</label>
                                         <input id="libraryTemplateUpdateFilenameInput" class="form-control" type="text">
                                     </div>
                                     <div class="col-md-6">
-                                        <label for="libraryTemplateDlcFolderInput" class="form-label">DLC folder template</label>
+                                        <label for="libraryTemplateDlcFolderInput" class="form-label">{{ _('DLC folder template') }}</label>
                                         <input id="libraryTemplateDlcFolderInput" class="form-control" type="text">
                                     </div>
                                     <div class="col-md-6">
-                                        <label for="libraryTemplateDlcFilenameInput" class="form-label">DLC filename template</label>
+                                        <label for="libraryTemplateDlcFilenameInput" class="form-label">{{ _('DLC filename template') }}</label>
                                         <input id="libraryTemplateDlcFilenameInput" class="form-control" type="text">
                                     </div>
                                     <div class="col-md-6">
-                                        <label for="libraryTemplateOtherFolderInput" class="form-label">Other folder template</label>
+                                        <label for="libraryTemplateOtherFolderInput" class="form-label">{{ _('Other folder template') }}</label>
                                         <input id="libraryTemplateOtherFolderInput" class="form-control" type="text">
                                     </div>
                                     <div class="col-md-6">
-                                        <label for="libraryTemplateOtherFilenameInput" class="form-label">Other filename template</label>
+                                        <label for="libraryTemplateOtherFilenameInput" class="form-label">{{ _('Other filename template') }}</label>
                                         <input id="libraryTemplateOtherFilenameInput" class="form-control" type="text">
                                     </div>
                                 </div>
@@ -529,67 +529,64 @@
                 <div class="settings-panel activity-section aerofoil-card">
                     <div class="card-body">
                         <div class="settings-panel-header">
-                            <h5 class="card-title">Title Identification</h5>
-                            <div class="text-muted small">Metadata language, title resolution, and media cache controls.</div>
+                            <h5 class="card-title">{{ _('Title Identification') }}</h5>
+                            <div class="text-muted small">{{ _('Metadata language, title resolution, and media cache controls.') }}</div>
                         </div>
 
                         <div class="border rounded p-3 mb-3">
-                            <div class="fw-semibold mb-2">Metadata locale</div>
+                            <div class="fw-semibold mb-2">{{ _('Metadata locale') }}</div>
                             <div class="row g-3">
                                 <div class="col-md-6">
-                                    <label for="selectRegion" class="form-label">Library Region:</label>
-                                    <select id="selectRegion" class="form-select" aria-label="Select library region">
+                                    <label for="selectRegion" class="form-label">{{ _('Library Region:') }}</label>
+                                    <select id="selectRegion" class="form-select" aria-label="{{ _('Select library region') }}">
                                     </select>
                                 </div>
                                 <div class="col-md-6">
-                                    <label for="selectLanguage" class="form-label">Library Language:</label>
-                                    <select id="selectLanguage" class="form-select" aria-label="Select library language">
+                                    <label for="selectLanguage" class="form-label">{{ _('Library Language:') }}</label>
+                                    <select id="selectLanguage" class="form-select" aria-label="{{ _('Select library language') }}">
                                     </select>
                                 </div>
-                                <div id="selectRegionLanguageHelp" class="form-text">Region and Language used to get games
-                                    informations.</div>
+                                <div id="selectRegionLanguageHelp" class="form-text">{{ _('Region and Language used to get games informations.') }}</div>
                             </div>
                         </div>
 
                         <div class="border rounded p-3 mb-3">
-                            <div class="fw-semibold mb-2">Identification tools</div>
+                            <div class="fw-semibold mb-2">{{ _('Identification tools') }}</div>
                             <div>
-                                <label for="consoleKeysInput" class="form-label">Console keys:</label>
+                                <label for="consoleKeysInput" class="form-label">{{ _('Console keys:') }}</label>
                                 <div class="d-flex flex-wrap align-items-end gap-2">
                                     <div style="width: 100%; max-width: 420px;">
                                         <input class="form-control" type="file"
                                             accept=".keys,.txt" id="consoleKeysInput">
                                     </div>
                                     <button type="button" id="uploadConsoleKeysBtn" class="btn btn-outline-primary" onClick='uploadConsoleKeys()'>
-                                        Upload / Replace keys
+                                        {{ _('Upload / Replace keys') }}
                                     </button>
                                     <button type="button" id="deleteConsoleKeysBtn" class="btn btn-outline-danger" onClick='deleteConsoleKeys()' {% if valid_keys != true %}disabled{% endif %}>
-                                        Delete keys
+                                        {{ _('Delete keys') }}
                                     </button>
                                     <span id="consoleKeysActionStatus" class="btn btn-sm btn-outline-secondary disabled" role="status" aria-live="polite"></span>
                                 </div>
-                                <div id="consoleKeysHelp" class="form-text">Console keys are required to decrypt any console
-                                    content, including
-                                    backups. AeroFoil uses this to identify files, regardless of the filename.
+                                <div id="consoleKeysHelp" class="form-text">{{ _('Console keys are required to decrypt any console content, including backups. AeroFoil uses this to identify files, regardless of the filename.') }}
                                 </div>
                             </div>
                         </div>
 
                         <div class="border rounded p-3">
-                            <div class="fw-semibold mb-2">Media cache</div>
+                            <div class="fw-semibold mb-2">{{ _('Media cache') }}</div>
                             <div class="d-flex flex-wrap align-items-center gap-3 mb-3">
                                 <button type="button" id="refreshMediaCacheBtn" class="btn btn-outline-secondary"
-                                    onClick='refreshMediaCache()'>Refresh icons and banners</button>
+                                    onClick='refreshMediaCache()'>{{ _('Refresh icons and banners') }}</button>
                                 <button type="button" id="prefetchIconsBtn" class="btn btn-outline-secondary"
-                                    onClick='prefetchAllIcons()'>Prefetch all icons</button>
+                                    onClick='prefetchAllIcons()'>{{ _('Prefetch all icons') }}</button>
                                 <button type="button" id="prefetchBannersBtn" class="btn btn-outline-secondary"
-                                    onClick='prefetchAllBanners()'>Prefetch all banners</button>
+                                    onClick='prefetchAllBanners()'>{{ _('Prefetch all banners') }}</button>
                                 <span id="refreshMediaCacheStatus" class="text-muted small"></span>
                             </div>
 
                             <div>
                                 <button type="button" id="submitTitlesSettingsBtn" class="btn btn-primary"
-                                    onClick='submitTitlesSettings()'>Save title settings</button>
+                                    onClick='submitTitlesSettings()'>{{ _('Save title settings') }}</button>
                             </div>
                         </div>
                     </div>
@@ -601,16 +598,16 @@
                     <div class="modal-dialog modal-dialog-centered">
                         <div class="modal-content">
                             <div class="modal-header">
-                                <h1 class="modal-title fs-5" id="deletePathModalLabel">Delete library path</h1>
+                                <h1 class="modal-title fs-5" id="deletePathModalLabel">{{ _('Delete library path') }}</h1>
                                 <button type="button" class="btn-close" data-bs-dismiss="modal"
-                                    aria-label="Close"></button>
+                                    aria-label="{{ _('Close') }}"></button>
                             </div>
                             <div class="modal-body">
                                 ...
                             </div>
                             <div class="modal-footer">
-                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                                <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Delete</button>
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ _('Cancel') }}</button>
+                                <button type="button" class="btn btn-danger" data-bs-dismiss="modal">{{ _('Delete') }}</button>
                             </div>
                         </div>
                     </div>
@@ -621,14 +618,14 @@
                     <div class="modal-dialog modal-dialog-centered">
                         <div class="modal-content">
                             <div class="modal-header">
-                                <h1 class="modal-title fs-5" id="settingsNoticeModalLabel">Settings notice</h1>
+                                <h1 class="modal-title fs-5" id="settingsNoticeModalLabel">{{ _('Settings notice') }}</h1>
                                 <button type="button" class="btn-close" data-bs-dismiss="modal"
-                                    aria-label="Close"></button>
+                                    aria-label="{{ _('Close') }}"></button>
                             </div>
                             <div class="modal-body" id="settingsNoticeModalBody"></div>
                             <div class="modal-footer">
-                                <button type="button" class="btn btn-outline-secondary d-none" id="settingsNoticeDismissForeverBtn">Do not show again</button>
-                                <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Close</button>
+                                <button type="button" class="btn btn-outline-secondary d-none" id="settingsNoticeDismissForeverBtn">{{ _('Do not show again') }}</button>
+                                <button type="button" class="btn btn-primary" data-bs-dismiss="modal">{{ _('Close') }}</button>
                             </div>
                         </div>
                     </div>
@@ -642,35 +639,32 @@
                 <div class="settings-section-header">
                     <div class="d-flex flex-wrap align-items-start justify-content-between gap-3">
                         <div>
-                            <h3 class="mb-1">Shop</h3>
-                            <div class="settings-section-subtitle">Connectivity, access rules, security controls, and client-facing branding.</div>
+                            <h3 class="mb-1">{{ _('Shop') }}</h3>
+                            <div class="settings-section-subtitle">{{ _('Connectivity, access rules, security controls, and client-facing branding.') }}</div>
                         </div>
                     </div>
                 </div>
                 <div class="settings-panel activity-section aerofoil-card">
                     <div class="card-body">
                         <div class="settings-panel-header">
-                            <h5 class="card-title">Connectivity</h5>
-                            <div class="text-muted small">Core values used for shop routing and Tinfoil host verification.</div>
+                            <h5 class="card-title">{{ _('Connectivity') }}</h5>
+                            <div class="text-muted small">{{ _('Core values used for shop routing and Tinfoil host verification.') }}</div>
                         </div>
 
                         <div class="row g-3">
                             <div class="col-lg-7">
-                                <label for="shopHostInput" class="form-label">Shop URL:</label>
+                                <label for="shopHostInput" class="form-label">{{ _('Shop URL:') }}</label>
                                 <input class="form-control" id="shopHostInput" aria-describedby="shopHostHelp"
                                     placeholder="shop.domain.tld">
-                                <div id="shopHostHelp" class="form-text">Configure your shop URL to enable host verification.<br>
-                                    Host verification from Tinfoil requests will be enforced if the shop is accessed securely (with
-                                    <code>https</code>), make sure your reverse proxy <strong>does NOT</strong> allow insecure
-                                    connections (or upgrades them to use SSL) and correctly sets the <code>X-Forwarded-Proto</code>
-                                    header.
+                                <div id="shopHostHelp" class="form-text">{{ _('Configure your shop URL to enable host verification.') }}<br>
+                                    {{ _('Host verification from Tinfoil requests will be enforced if the shop is accessed securely (with <code>https</code>), make sure your reverse proxy <strong>does NOT</strong> allow insecure connections (or upgrades them to use SSL) and correctly sets the <code>X-Forwarded-Proto</code> header.')|safe }}
                                 </div>
                             </div>
                             <div class="col-lg-5">
-                                <label for="shopHauthInput" class="form-label">Shop Hauth:</label>
+                                <label for="shopHauthInput" class="form-label">{{ _('Shop Hauth:') }}</label>
                                 <input class="form-control" id="shopHauthInput" aria-describedby="shopHauthHelp"
-                                    placeholder="Hauth value">
-                                <div id="shopHauthHelp" class="form-text">Override the host signature (Hauth) used for Tinfoil verification.</div>
+                                    placeholder="{{ _('Hauth value') }}">
+                                <div id="shopHauthHelp" class="form-text">{{ _('Override the host signature (Hauth) used for Tinfoil verification.') }}</div>
                             </div>
                         </div>
                     </div>
@@ -679,44 +673,42 @@
                 <div class="settings-panel activity-section aerofoil-card">
                     <div class="card-body">
                         <div class="settings-panel-header">
-                            <h5 class="card-title">Access And Delivery</h5>
-                            <div class="text-muted small">How clients reach the shop and how the content is served.</div>
+                            <h5 class="card-title">{{ _('Access And Delivery') }}</h5>
+                            <div class="text-muted small">{{ _('How clients reach the shop and how the content is served.') }}</div>
                         </div>
 
                         <div class="settings-option-stack">
                             <div class="form-check">
                                 <input type="checkbox" class="form-check-input" id="publicShopCheck"
                                     aria-describedby="publicShopCheckHelp">
-                                <label class="form-check-label" for="publicShopCheck">Public shop</label>
-                                <div id="publicShopCheckHelp" class="form-text">If enabled, Shop access from Tinfoil does not
-                                    require authentication.
+                                <label class="form-check-label" for="publicShopCheck">{{ _('Public shop') }}</label>
+                                <div id="publicShopCheckHelp" class="form-text">{{ _('If enabled, Shop access from Tinfoil does not require authentication.') }}
                                 </div>
                             </div>
                             <div class="form-check">
                                 <input type="checkbox" class="form-check-input" id="externalTinfoilOnlyCheck"
                                     aria-describedby="externalTinfoilOnlyCheckHelp">
-                                <label class="form-check-label" for="externalTinfoilOnlyCheck">External access: Tinfoil/CyberFoil only</label>
-                                <div id="externalTinfoilOnlyCheckHelp" class="form-text">If enabled, requests from external/public IP addresses are allowed only for Tinfoil/CyberFoil shop clients (detected by the Tinfoil header set and/or matching <code>User-Agent</code>). Private/local network access is unchanged.</div>
+                                <label class="form-check-label" for="externalTinfoilOnlyCheck">{{ _('External access: Tinfoil/CyberFoil only') }}</label>
+                                <div id="externalTinfoilOnlyCheckHelp" class="form-text">{{ _('If enabled, requests from external/public IP addresses are allowed only for Tinfoil/CyberFoil shop clients (detected by the Tinfoil header set and/or matching <code>User-Agent</code>). Private/local network access is unchanged.')|safe }}</div>
                             </div>
                             <div class="form-check">
                                 <input type="checkbox" class="form-check-input" id="encryptShopCheck"
                                     aria-describedby="encryptShopCheckHelp">
-                                <label class="form-check-label" for="encryptShopCheck">Encrypt shop</label>
-                                <div id="encryptShopCheckHelp" class="form-text">Serve encrypted and compressed shop, so that only Tinfoil clients
-                                    can access the content. <strong>Strongly suggested to enable it for security</strong>.</div>
+                                <label class="form-check-label" for="encryptShopCheck">{{ _('Encrypt shop') }}</label>
+                                <div id="encryptShopCheckHelp" class="form-text">{{ _('Serve encrypted and compressed shop, so that only Tinfoil clients can access the content. <strong>Strongly suggested to enable it for security</strong>.')|safe }}</div>
                             </div>
                             <div class="form-check">
                                 <input type="checkbox" class="form-check-input" id="tinfoilOnlyModeCheck"
                                     aria-describedby="tinfoilOnlyModeCheckHelp">
-                                <label class="form-check-label" for="tinfoilOnlyModeCheck">Tinfoil Only mode</label>
-                                <div id="tinfoilOnlyModeCheckHelp" class="form-text">Only serve the Tinfoil shop payload from the shop root instead of the web library view. This automatically enables shop encryption.</div>
+                                <label class="form-check-label" for="tinfoilOnlyModeCheck">{{ _('Tinfoil Only mode') }}</label>
+                                <div id="tinfoilOnlyModeCheckHelp" class="form-text">{{ _('Only serve the Tinfoil shop payload from the shop root instead of the web library view. This automatically enables shop encryption.') }}</div>
                             </div>
                             <div class="form-check">
                                 <input type="checkbox" class="form-check-input" id="fastTransferModeCheck"
                                     aria-describedby="fastTransferModeCheckHelp">
-                                <label class="form-check-label" for="fastTransferModeCheck">Fast transfer mode</label>
+                                <label class="form-check-label" for="fastTransferModeCheck">{{ _('Fast transfer mode') }}</label>
                                 <div id="fastTransferModeCheckHelp" class="form-text">
-                                    Prioritize throughput by skipping per-chunk transfer tracking. Activity live byte counters and exact transfer byte accounting may be less precise.
+                                    {{ _('Prioritize throughput by skipping per-chunk transfer tracking. Activity live byte counters and exact transfer byte accounting may be less precise.') }}
                                 </div>
                             </div>
                         </div>
@@ -726,61 +718,61 @@
                 <div class="settings-panel activity-section aerofoil-card">
                     <div class="card-body">
                         <div class="settings-panel-header">
-                            <h5 class="card-title">Login Protection</h5>
-                            <div class="text-muted small">Authentication controls for the web UI and remote shop access.</div>
+                            <h5 class="card-title">{{ _('Login Protection') }}</h5>
+                            <div class="text-muted small">{{ _('Authentication controls for the web UI and remote shop access.') }}</div>
                         </div>
                         <div class="form-check form-switch mb-3">
                             <input type="checkbox" class="form-check-input" id="authIpLockoutEnabledCheck">
-                            <label class="form-check-label" for="authIpLockoutEnabledCheck">Enable failed-login IP lockout</label>
+                            <label class="form-check-label" for="authIpLockoutEnabledCheck">{{ _('Enable failed-login IP lockout') }}</label>
                         </div>
                         <div class="row g-3 mb-3">
                             <div class="col-md-4">
-                                <label for="authIpLockoutThresholdInput" class="form-label">Failed attempts</label>
+                                <label for="authIpLockoutThresholdInput" class="form-label">{{ _('Failed attempts') }}</label>
                                 <input type="number" min="1" max="1000" class="form-control" id="authIpLockoutThresholdInput">
                             </div>
                             <div class="col-md-4">
-                                <label for="authIpLockoutWindowInput" class="form-label">Window (seconds)</label>
+                                <label for="authIpLockoutWindowInput" class="form-label">{{ _('Window (seconds)') }}</label>
                                 <input type="number" min="10" max="86400" class="form-control" id="authIpLockoutWindowInput">
                             </div>
                             <div class="col-md-4">
-                                <label for="authIpLockoutDurationInput" class="form-label">Lockout (seconds)</label>
+                                <label for="authIpLockoutDurationInput" class="form-label">{{ _('Lockout (seconds)') }}</label>
                                 <input type="number" min="10" max="604800" class="form-control" id="authIpLockoutDurationInput">
                             </div>
                         </div>
                         <div>
-                            <label for="authPermanentIpBlacklistEntryInput" class="form-label">Permanent IP blacklist</label>
+                            <label for="authPermanentIpBlacklistEntryInput" class="form-label">{{ _('Permanent IP blacklist') }}</label>
                             <div class="input-group input-group-sm mb-2">
                                 <input type="text" class="form-control font-monospace" id="authPermanentIpBlacklistEntryInput"
                                     autocomplete="off">
-                                <button type="button" class="btn btn-outline-secondary" id="addPermanentIpBlacklistEntryBtn">Add</button>
-                                <button type="button" class="btn btn-outline-secondary" id="clearPermanentIpBlacklistBtn">Clear all</button>
+                                <button type="button" class="btn btn-outline-secondary" id="addPermanentIpBlacklistEntryBtn">{{ _('Add') }}</button>
+                                <button type="button" class="btn btn-outline-secondary" id="clearPermanentIpBlacklistBtn">{{ _('Clear all') }}</button>
                             </div>
                             <div id="authPermanentIpBlacklistError" class="form-text text-danger d-none"></div>
                             <div id="authPermanentIpBlacklistList" class="d-flex flex-wrap gap-2 mb-2"></div>
                             <textarea class="form-control font-monospace" id="authPermanentIpBlacklistBulkInput" rows="3"></textarea>
                             <div class="mt-2 d-flex gap-2">
-                                <button type="button" class="btn btn-outline-secondary btn-sm" id="addPermanentIpBlacklistBulkBtn">Add all from text</button>
+                                <button type="button" class="btn btn-outline-secondary btn-sm" id="addPermanentIpBlacklistBulkBtn">{{ _('Add all from text') }}</button>
                             </div>
                             <textarea class="d-none" id="authPermanentIpBlacklistInput" aria-hidden="true"></textarea>
-                            <div class="form-text">One IP or CIDR per line. Blacklisted clients cannot authenticate.</div>
+                            <div class="form-text">{{ _('One IP or CIDR per line. Blacklisted clients cannot authenticate.') }}</div>
                         </div>
                         <div class="mt-3" id="authBlockedCountrySection">
-                            <label for="authBlockedCountryCodeInput" class="form-label">Blocked countries</label>
+                            <label for="authBlockedCountryCodeInput" class="form-label">{{ _('Blocked countries') }}</label>
                             <div class="input-group input-group-sm mb-2">
                                 <input type="text" class="form-control font-monospace text-uppercase" id="authBlockedCountryCodeInput"
                                     maxlength="2" autocomplete="off">
-                                <button type="button" class="btn btn-outline-secondary" id="addBlockedCountryCodeBtn">Add</button>
+                                <button type="button" class="btn btn-outline-secondary" id="addBlockedCountryCodeBtn">{{ _('Add') }}</button>
                             </div>
                             <div id="authBlockedCountryCodesList" class="d-flex flex-wrap gap-2 mb-2"></div>
                             <textarea class="d-none" id="authBlockedCountryCodesInput" aria-hidden="true"></textarea>
                             <div id="authBlockedCountryDisabledHint" class="form-text d-none"></div>
                         </div>
                         <div class="mt-3" id="authAllowedCountrySection">
-                            <label for="authAllowedCountryCodeInput" class="form-label">Allowed countries (whitelist)</label>
+                            <label for="authAllowedCountryCodeInput" class="form-label">{{ _('Allowed countries (whitelist)') }}</label>
                             <div class="input-group input-group-sm mb-2">
                                 <input type="text" class="form-control font-monospace text-uppercase" id="authAllowedCountryCodeInput"
                                     maxlength="2" autocomplete="off">
-                                <button type="button" class="btn btn-outline-secondary" id="addAllowedCountryCodeBtn">Add</button>
+                                <button type="button" class="btn btn-outline-secondary" id="addAllowedCountryCodeBtn">{{ _('Add') }}</button>
                             </div>
                             <div id="authAllowedCountryCodesList" class="d-flex flex-wrap gap-2 mb-2"></div>
                             <textarea class="d-none" id="authAllowedCountryCodesInput" aria-hidden="true"></textarea>
@@ -792,26 +784,26 @@
                 <div class="settings-panel activity-section aerofoil-card">
                     <div class="card-body">
                         <div class="settings-panel-header">
-                            <h5 class="card-title">Keys And Branding</h5>
-                            <div class="text-muted small">Encryption material and the message shown to clients after loading the shop.</div>
+                            <h5 class="card-title">{{ _('Keys And Branding') }}</h5>
+                            <div class="text-muted small">{{ _('Encryption material and the message shown to clients after loading the shop.') }}</div>
                         </div>
 
                         <div class="mb-3">
                             <div class="d-flex justify-content-between align-items-center mb-2">
-                                <label for="shopPublicKeyInput" class="form-label mb-0">Public Key:</label>
+                                <label for="shopPublicKeyInput" class="form-label mb-0">{{ _('Public Key:') }}</label>
                                 <div class="btn-group" role="group">
                                     <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-toggle="collapse" data-bs-target="#shopPublicKeyCollapse" aria-expanded="false" aria-controls="shopPublicKeyCollapse">
                                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16" style="vertical-align: -0.125em;">
                                             <path fill-rule="evenodd" d="M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z"/>
                                         </svg>
-                                        Show
+                                        {{ _('Show') }}
                                     </button>
                                     <button type="button" class="btn btn-sm btn-outline-secondary" id="copyPublicKeyBtn" onclick="copyPublicKey()">
                                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16" style="vertical-align: -0.125em;">
                                             <path d="M4 1.5H3a2 2 0 0 0-2 2V14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V3.5a2 2 0 0 0-2-2h-1v1h1a1 1 0 0 1 1 1V14a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V3.5a1 1 0 0 1 1-1h1v-1z"/>
                                             <path d="M9.5 1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-3a.5.5 0 0 1-.5-.5v-1a.5.5 0 0 1 .5-.5h3zm-3-1A1.5 1.5 0 0 0 5 1.5v1A1.5 1.5 0 0 0 6.5 4h3A1.5 1.5 0 0 0 11 2.5v-1A1.5 1.5 0 0 0 9.5 0h-3z"/>
                                         </svg>
-                                        Copy
+                                        {{ _('Copy') }}
                                     </button>
                                 </div>
                             </div>
@@ -819,20 +811,18 @@
                                 <textarea class="form-control font-monospace" id="shopPublicKeyInput" rows="7"
                                     aria-describedby="shopPublicKeyHelp" placeholder="-----BEGIN PUBLIC KEY-----"></textarea>
                             </div>
-                            <div id="shopPublicKeyHelp" class="form-text">Public key used to encrypt the shop payload for Tinfoil clients.
-                                Changing this will break encrypted shop access unless clients have the matching private key.</div>
+                            <div id="shopPublicKeyHelp" class="form-text">{{ _('Public key used to encrypt the shop payload for Tinfoil clients. Changing this will break encrypted shop access unless clients have the matching private key.') }}</div>
                         </div>
 
                         <div class="mb-3">
-                            <label for="motdTextArea" class="form-label">Message of the day:</label>
+                            <label for="motdTextArea" class="form-label">{{ _('Message of the day:') }}</label>
                             <textarea class="form-control" id="motdTextArea" rows="3"></textarea>
-                            <div id="motdTextAreaHelp" class="form-text">Message presented when opening Tinfoil after
-                                successfully loading your shop.</div>
+                            <div id="motdTextAreaHelp" class="form-text">{{ _('Message presented when opening Tinfoil after successfully loading your shop.') }}</div>
                         </div>
 
                         <div>
                             <button type="button" id="submitShopSettingsBtn" class="btn btn-primary"
-                                onClick='submitShopSettings()'>Save shop settings</button>
+                                onClick='submitShopSettings()'>{{ _('Save shop settings') }}</button>
                         </div>
                     </div>
                 </div>
@@ -843,12 +833,12 @@
                 <div class="settings-section-header">
                     <div class="d-flex flex-wrap align-items-start justify-content-between gap-3">
                         <div>
-                            <h3 class="mb-1">Downloads</h3>
-                            <div class="settings-section-subtitle">Automation cadence, search tuning, and torrent or usenet client integration.</div>
+                            <h3 class="mb-1">{{ _('Downloads') }}</h3>
+                            <div class="settings-section-subtitle">{{ _('Automation cadence, search tuning, and torrent or usenet client integration.') }}</div>
                         </div>
                         <div class="form-check form-switch mt-1">
                             <input type="checkbox" class="form-check-input" id="downloadsEnabledCheck">
-                            <label class="form-check-label" for="downloadsEnabledCheck">Enable automatic downloads</label>
+                            <label class="form-check-label" for="downloadsEnabledCheck">{{ _('Enable automatic downloads') }}</label>
                         </div>
                     </div>
                 </div>
@@ -858,16 +848,16 @@
                 <!-- Tab navigation -->
                 <ul class="nav nav-tabs settings-downloads-tabs" id="downloadsTabs" role="tablist">
                     <li class="nav-item" role="presentation">
-                        <button class="nav-link active" id="general-tab" data-bs-toggle="tab" data-bs-target="#general" type="button" role="tab" aria-controls="general" aria-selected="true">General</button>
+                        <button class="nav-link active" id="general-tab" data-bs-toggle="tab" data-bs-target="#general" type="button" role="tab" aria-controls="general" aria-selected="true">{{ _('General') }}</button>
                     </li>
                     <li class="nav-item" role="presentation">
                         <button class="nav-link" id="prowlarr-tab" data-bs-toggle="tab" data-bs-target="#prowlarr" type="button" role="tab" aria-controls="prowlarr" aria-selected="false">Prowlarr</button>
                     </li>
                     <li class="nav-item" role="presentation">
-                        <button class="nav-link" id="torrent-tab" data-bs-toggle="tab" data-bs-target="#torrent" type="button" role="tab" aria-controls="torrent" aria-selected="false">Torrent Client</button>
+                        <button class="nav-link" id="torrent-tab" data-bs-toggle="tab" data-bs-target="#torrent" type="button" role="tab" aria-controls="torrent" aria-selected="false">{{ _('Torrent Client') }}</button>
                     </li>
                     <li class="nav-item" role="presentation">
-                        <button class="nav-link" id="usenet-tab" data-bs-toggle="tab" data-bs-target="#usenet" type="button" role="tab" aria-controls="usenet" aria-selected="false">Usenet Client</button>
+                        <button class="nav-link" id="usenet-tab" data-bs-toggle="tab" data-bs-target="#usenet" type="button" role="tab" aria-controls="usenet" aria-selected="false">{{ _('Usenet Client') }}</button>
                     </li>
                 </ul>
 
@@ -877,40 +867,40 @@
                     <div class="tab-pane fade show active" id="general" role="tabpanel" aria-labelledby="general-tab">
                         <div class="row g-3 mb-3">
                             <div class="col-md-4">
-                                <label for="downloadsIntervalInput" class="form-label">Search interval (minutes)</label>
+                                <label for="downloadsIntervalInput" class="form-label">{{ _('Search interval (minutes)') }}</label>
                                 <input type="number" min="5" class="form-control" id="downloadsIntervalInput">
                             </div>
                             <div class="col-md-4">
-                                <label for="downloadsCategoryInput" class="form-label">Category/tag</label>
+                                <label for="downloadsCategoryInput" class="form-label">{{ _('Category/tag') }}</label>
                                 <input type="text" class="form-control" id="downloadsCategoryInput" placeholder="aerofoil">
-                                <div class="form-text">Used for torrent categories/tags and the SABnzbd category.</div>
+                                <div class="form-text">{{ _('Used for torrent categories/tags and the SABnzbd category.') }}</div>
                             </div>
                         </div>
                         <div class="row g-3 mb-3">
                             <div class="col-md-6">
-                                <label for="downloadsRequiredTermsInput" class="form-label">Required terms (comma separated)</label>
+                                <label for="downloadsRequiredTermsInput" class="form-label">{{ _('Required terms (comma separated)') }}</label>
                                 <input type="text" class="form-control" id="downloadsRequiredTermsInput">
                             </div>
                             <div class="col-md-6">
-                                <label for="downloadsBlacklistTermsInput" class="form-label">Blacklist terms (comma separated)</label>
+                                <label for="downloadsBlacklistTermsInput" class="form-label">{{ _('Blacklist terms (comma separated)') }}</label>
                                 <input type="text" class="form-control" id="downloadsBlacklistTermsInput">
                             </div>
                         </div>
                         <div class="row g-3">
                             <div class="col-md-6">
-                                <label for="downloadsSearchPrefixInput" class="form-label">Search prefix</label>
+                                <label for="downloadsSearchPrefixInput" class="form-label">{{ _('Search prefix') }}</label>
                                 <input type="text" class="form-control" id="downloadsSearchPrefixInput">
                             </div>
                             <div class="col-md-6">
-                                <label for="downloadsSearchSuffixInput" class="form-label">Search suffix</label>
+                                <label for="downloadsSearchSuffixInput" class="form-label">{{ _('Search suffix') }}</label>
                                 <input type="text" class="form-control" id="downloadsSearchSuffixInput">
                             </div>
                         </div>
                         <div class="row g-3 mt-1">
                             <div class="col-12">
-                                <label for="downloadsSearchCharReplacementsInput" class="form-label">Search character replacements</label>
+                                <label for="downloadsSearchCharReplacementsInput" class="form-label">{{ _('Search character replacements') }}</label>
                                 <textarea class="form-control" id="downloadsSearchCharReplacementsInput" rows="4" placeholder="™=&gt;&#10;®=&gt;&#10;’=&gt;'"></textarea>
-                                <div class="form-text">One rule per line in the form <code>from=&gt;to</code>. Leave <code>to</code> empty to remove the character.</div>
+                                <div class="form-text">{{ _('One rule per line in the form <code>from=&gt;to</code>. Leave <code>to</code> empty to remove the character.')|safe }}</div>
                             </div>
                         </div>
                     </div>
@@ -919,36 +909,36 @@
                     <div class="tab-pane fade" id="prowlarr" role="tabpanel" aria-labelledby="prowlarr-tab">
                         <div class="row g-3 mb-3">
                             <div class="col-md-6">
-                                <label for="prowlarrUrlInput" class="form-label">Prowlarr URL</label>
+                                <label for="prowlarrUrlInput" class="form-label">{{ _('Prowlarr URL') }}</label>
                                 <input type="text" class="form-control" id="prowlarrUrlInput" placeholder="http://localhost:9696">
                             </div>
                             <div class="col-md-6">
-                                <label for="prowlarrApiKeyInput" class="form-label">API Key</label>
+                                <label for="prowlarrApiKeyInput" class="form-label">{{ _('API Key') }}</label>
                                 <input type="password" class="form-control" id="prowlarrApiKeyInput">
                             </div>
                         </div>
                         <div class="mb-3">
-                            <label for="prowlarrTimeoutInput" class="form-label">Prowlarr timeout (seconds)</label>
+                            <label for="prowlarrTimeoutInput" class="form-label">{{ _('Prowlarr timeout (seconds)') }}</label>
                             <input type="number" min="5" max="180" class="form-control" id="prowlarrTimeoutInput" value="15">
-                            <div class="form-text">Increase this if searches sometimes time out. Range: 5-180 seconds.</div>
+                            <div class="form-text">{{ _('Increase this if searches sometimes time out. Range: 5-180 seconds.') }}</div>
                         </div>
                         <div class="mb-3">
-                            <label for="prowlarrSearchLimitInput" class="form-label">Search limit</label>
+                            <label for="prowlarrSearchLimitInput" class="form-label">{{ _('Search limit') }}</label>
                             <input type="number" min="1" max="500" class="form-control" id="prowlarrSearchLimitInput" value="100">
-                            <div class="form-text">Maximum number of results AeroFoil requests from Prowlarr. Range: 1-500.</div>
+                            <div class="form-text">{{ _('Maximum number of results AeroFoil requests from Prowlarr. Range: 1-500.') }}</div>
                         </div>
                         <div class="mb-3">
-                            <label for="prowlarrIndexerIdsInput" class="form-label">Indexer IDs (comma separated)</label>
+                            <label for="prowlarrIndexerIdsInput" class="form-label">{{ _('Indexer IDs (comma separated)') }}</label>
                             <input type="text" class="form-control" id="prowlarrIndexerIdsInput" placeholder="1,2,3">
                         </div>
                         <div class="mb-3">
-                            <label for="prowlarrCategoriesInput" class="form-label">Categories (comma separated)</label>
+                            <label for="prowlarrCategoriesInput" class="form-label">{{ _('Categories (comma separated)') }}</label>
                             <input type="text" class="form-control" id="prowlarrCategoriesInput" placeholder="5000,5070">
-                            <div class="form-text">Use numeric category IDs from Prowlarr.</div>
+                            <div class="form-text">{{ _('Use numeric category IDs from Prowlarr.') }}</div>
                         </div>
                         <div class="d-flex align-items-center gap-3">
                             <button type="button" id="testProwlarrBtn" class="btn btn-outline-secondary"
-                                onClick='testProwlarrSettings()'>Test Prowlarr</button>
+                                onClick='testProwlarrSettings()'>{{ _('Test Prowlarr') }}</button>
                             <span id="prowlarrTestResult" class="text-muted small"></span>
                         </div>
                     </div>
@@ -957,7 +947,7 @@
                     <div class="tab-pane fade" id="torrent" role="tabpanel" aria-labelledby="torrent-tab">
                         <div class="row g-3 mb-3">
                             <div class="col-md-4">
-                                <label for="torrentClientTypeSelect" class="form-label">Client</label>
+                                <label for="torrentClientTypeSelect" class="form-label">{{ _('Client') }}</label>
                                 <select class="form-select" id="torrentClientTypeSelect">
                                     <option value="qbittorrent">qBittorrent</option>
                                     <option value="transmission">Transmission</option>
@@ -965,31 +955,31 @@
                                 </select>
                             </div>
                             <div class="col-md-8">
-                                <label for="torrentClientUrlInput" class="form-label">Client URL</label>
+                                <label for="torrentClientUrlInput" class="form-label">{{ _('Client URL') }}</label>
                                 <input type="text" class="form-control" id="torrentClientUrlInput" placeholder="http://localhost:8080">
                             </div>
                         </div>
                         <div class="row g-3 mb-3">
                             <div class="col-md-6">
-                                <label for="torrentClientUserInput" class="form-label">Username</label>
+                                <label for="torrentClientUserInput" class="form-label">{{ _('Username') }}</label>
                                 <input type="text" class="form-control" id="torrentClientUserInput">
                             </div>
                             <div class="col-md-6">
-                                <label for="torrentClientPasswordInput" class="form-label">Password</label>
+                                <label for="torrentClientPasswordInput" class="form-label">{{ _('Password') }}</label>
                                 <input type="password" class="form-control" id="torrentClientPasswordInput">
                             </div>
                         </div>
                         <div class="mb-3">
-                            <label for="torrentClientPathInput" class="form-label">Download path (optional)</label>
+                            <label for="torrentClientPathInput" class="form-label">{{ _('Download path (optional)') }}</label>
                             <input type="text" class="form-control" id="torrentClientPathInput" placeholder="D:\\Downloads\\Switch">
                         </div>
                         <div class="mb-3">
-                            <label for="torrentClientMinSeedersInput" class="form-label">Minimum seeders</label>
+                            <label for="torrentClientMinSeedersInput" class="form-label">{{ _('Minimum seeders') }}</label>
                             <input type="number" min="0" class="form-control" id="torrentClientMinSeedersInput">
                         </div>
                         <div class="d-flex align-items-center gap-3">
                             <button type="button" id="testTorrentClientBtn" class="btn btn-outline-secondary"
-                                onClick='testTorrentClientSettings()'>Test torrent client</button>
+                                onClick='testTorrentClientSettings()'>{{ _('Test torrent client') }}</button>
                             <span id="torrentClientTestResult" class="text-muted small"></span>
                         </div>
                     </div>
@@ -997,29 +987,29 @@
                     <div class="tab-pane fade" id="usenet" role="tabpanel" aria-labelledby="usenet-tab">
                         <div class="row g-3 mb-3">
                             <div class="col-md-4">
-                                <label for="usenetClientTypeSelect" class="form-label">Client</label>
+                                <label for="usenetClientTypeSelect" class="form-label">{{ _('Client') }}</label>
                                 <select class="form-select" id="usenetClientTypeSelect">
                                     <option value="sabnzbd">SABnzbd</option>
                                 </select>
                             </div>
                             <div class="col-md-8">
-                                <label for="usenetClientUrlInput" class="form-label">Client URL</label>
+                                <label for="usenetClientUrlInput" class="form-label">{{ _('Client URL') }}</label>
                                 <input type="text" class="form-control" id="usenetClientUrlInput" placeholder="http://localhost:8085">
                             </div>
                         </div>
                         <div class="row g-3 mb-3">
                             <div class="col-md-6">
-                                <label for="usenetClientApiKeyInput" class="form-label">API Key</label>
+                                <label for="usenetClientApiKeyInput" class="form-label">{{ _('API Key') }}</label>
                                 <input type="password" class="form-control" id="usenetClientApiKeyInput">
                             </div>
                             <div class="col-md-6">
-                                <label for="usenetClientMinAgeInput" class="form-label">Minimum age (minutes)</label>
+                                <label for="usenetClientMinAgeInput" class="form-label">{{ _('Minimum age (minutes)') }}</label>
                                 <input type="number" min="0" class="form-control" id="usenetClientMinAgeInput">
                             </div>
                         </div>
                         <div class="d-flex align-items-center gap-3">
                             <button type="button" id="testUsenetClientBtn" class="btn btn-outline-secondary"
-                                onClick='testUsenetClientSettings()'>Test usenet client</button>
+                                onClick='testUsenetClientSettings()'>{{ _('Test usenet client') }}</button>
                             <span id="usenetClientTestResult" class="text-muted small"></span>
                         </div>
                     </div>
@@ -1028,7 +1018,7 @@
                 <!-- Submit button -->
                 <div class="mt-3">
                     <button type="button" id="submitDownloadSettingsBtn" class="btn btn-primary"
-                        onClick='submitDownloadSettings()'>Save Settings</button>
+                        onClick='submitDownloadSettings()'>{{ _('Save Settings') }}</button>
                 </div>
                 </div>
                 </div>
@@ -1139,39 +1129,39 @@
 
     const SETTINGS_NOTICE_CONTENT = {
         missingAdminAccount: {
-            title: 'Missing admin account',
+            title: {{ _('Missing admin account')|tojson }},
             variant: 'danger',
             bodyHtml: `
-                <p>AeroFoil requires an admin account to enable authentication.</p>
-                <p><strong>Until an account with admin rights is created, authentication is disabled and anyone can access and change your shop configuration.</strong></p>
-                <p class="mb-0">Add an admin account from the Users page.</p>
+                <p>${ {{ _('AeroFoil requires an admin account to enable authentication.')|tojson }} }</p>
+                <p><strong>${ {{ _('Until an account with admin rights is created, authentication is disabled and anyone can access and change your shop configuration.')|tojson }} }</strong></p>
+                <p class="mb-0">${ {{ _('Add an admin account from the Users page.')|tojson }} }</p>
             `
         },
         missingConsoleKeys: {
-            title: 'Missing console keys',
+            title: {{ _('Missing console keys')|tojson }},
             variant: 'warning',
             bodyHtml: `
-                <p>Console keys are required to decrypt console content, including backups. AeroFoil uses them to identify files regardless of filename.</p>
-                <p><strong>Titles will be missed or misidentified if you do not load your keys.</strong></p>
-                <p>See <a target="_blank" rel="noopener noreferrer" href="https://gitlab.com/easyhacking/switch/-/wikis/home/getting-started/dump-keys">this guide</a> to extract keys from your console, then upload them in Settings -> Library -> Title Identification.</p>
-                <p class="mb-0">If keys are missing, files must follow the format <code>Title Name [TITLEID][vVERSION]</code> or they will not be recognized.</p>
+                <p>${ {{ _('Console keys are required to decrypt console content, including backups. AeroFoil uses them to identify files regardless of filename.')|tojson }} }</p>
+                <p><strong>${ {{ _('Titles will be missed or misidentified if you do not load your keys.')|tojson }} }</strong></p>
+                <p>${ {{ _('See <a target="_blank" rel="noopener noreferrer" href="https://gitlab.com/easyhacking/switch/-/wikis/home/getting-started/dump-keys">this guide</a> to extract keys from your console, then upload them in Settings -> Library -> Title Identification.')|tojson }} }</p>
+                <p class="mb-0">${ {{ _('If keys are missing, files must follow the format <code>Title Name [TITLEID][vVERSION]</code> or they will not be recognized.')|tojson }} }</p>
             `
         },
         missingShopHost: {
-            title: 'Missing shop Host',
+            title: {{ _('Missing shop Host')|tojson }},
             variant: 'warning',
             bodyHtml: `
-                <p>Host verification from outside the local network is disabled while the shop <code>Host</code> value is empty.</p>
-                <p class="mb-0">Set it in Settings -> Shop -> Connectivity to prevent someone else stealing from your shop.</p>
+                <p>${ {{ _('Host verification from outside the local network is disabled while the shop <code>Host</code> value is empty.')|tojson }} }</p>
+                <p class="mb-0">${ {{ _('Set it in Settings -> Shop -> Connectivity to prevent someone else stealing from your shop.')|tojson }} }</p>
             `
         },
         missingShopHauth: {
-            title: 'Missing shop Hauth',
+            title: {{ _('Missing shop Hauth')|tojson }},
             variant: 'warning',
             suppressible: true,
             bodyHtml: `
-                <p><a target="_blank" rel="noopener noreferrer" href="https://blawar.github.io/tinfoil/network/#host-signature">Host signature</a> verification from outside the local network is disabled while the shop <code>Hauth</code> value is missing.</p>
-                <p class="mb-0">Connect to the shop from Tinfoil with an admin account to set it.</p>
+                <p>${ {{ _('<a target="_blank" rel="noopener noreferrer" href="https://blawar.github.io/tinfoil/network/#host-signature">Host signature</a> verification from outside the local network is disabled while the shop <code>Hauth</code> value is missing.')|tojson }} }</p>
+                <p class="mb-0">${ {{ _('Connect to the shop from Tinfoil with an admin account to set it.')|tojson }} }</p>
             `
         }
     };
@@ -1423,12 +1413,12 @@
 
     function addLibraryNamingTemplate() {
         saveActiveLibraryTemplateInputs();
-        const name = (window.prompt('New template name:') || '').trim();
+        const name = (window.prompt({{ _('New template name:')|tojson }}) || '').trim();
         if (!name) {
             return;
         }
         if (libraryNamingTemplatesState.templates[name]) {
-            alert('Template already exists.');
+            alert({{ _('Template already exists.')|tojson }});
             return;
         }
         const source = libraryNamingTemplatesState.templates[libraryNamingTemplatesState.active] || DEFAULT_LIBRARY_NAMING_TEMPLATE;
@@ -1442,7 +1432,7 @@
         saveActiveLibraryTemplateInputs();
         const names = Object.keys(libraryNamingTemplatesState.templates);
         if (names.length <= 1) {
-            alert('At least one naming template is required.');
+            alert({{ _('At least one naming template is required.')|tojson }});
             return;
         }
         const active = libraryNamingTemplatesState.active;
@@ -1549,7 +1539,7 @@
             deleteBtn.attr('onClick', 'deleteLibraryPath("' + path + '");');
 
             // modalTitle.textContent = `New message to ${recipient}`
-            modalBody.text("Delete path " + path + " ?")
+            modalBody.text({{ _('Delete path {path} ?')|tojson }}.replace('{path}', path))
         })
     }
 
@@ -1635,11 +1625,11 @@
         if (loaded) {
             clearSettingsNotice('missingConsoleKeys');
             $('#deleteConsoleKeysBtn').prop('disabled', false);
-            statusEl.removeClass('btn-outline-secondary btn-danger').addClass('btn-success').text('Keys loaded');
+            statusEl.removeClass('btn-outline-secondary btn-danger').addClass('btn-success').text({{ _('Keys loaded')|tojson }});
         } else {
             $('#deleteConsoleKeysBtn').prop('disabled', true);
             queueSettingsNotice('missingConsoleKeys');
-            statusEl.removeClass('btn-outline-secondary btn-success').addClass('btn-danger').text('No keys loaded');
+            statusEl.removeClass('btn-outline-secondary btn-success').addClass('btn-danger').text({{ _('No keys loaded')|tojson }});
         }
     }
 
@@ -1647,11 +1637,11 @@
         const file = $('#consoleKeysInput').prop('files')[0];
         const statusEl = $('#consoleKeysActionStatus');
         if (file === undefined) {
-            statusEl.removeClass('btn-success btn-outline-secondary').addClass('btn-danger').text('Select a keys file first.');
+            statusEl.removeClass('btn-success btn-outline-secondary').addClass('btn-danger').text({{ _('Select a keys file first.')|tojson }});
             return;
         }
 
-        statusEl.removeClass('btn-success btn-danger').addClass('btn-outline-secondary').text('Uploading keys...');
+        statusEl.removeClass('btn-success btn-danger').addClass('btn-outline-secondary').text({{ _('Uploading keys...')|tojson }});
         $('#uploadConsoleKeysBtn').prop('disabled', true);
         $('#deleteConsoleKeysBtn').prop('disabled', true);
         const formData = new FormData();
@@ -1666,15 +1656,15 @@
             success: function (result) {
                 if (result['success']) {
                     setConsoleKeysLoadedState(true);
-                    statusEl.text('Keys uploaded successfully.');
+                    statusEl.text({{ _('Keys uploaded successfully.')|tojson }});
                     $('#consoleKeysInput').val('');
                 } else {
                     const errors = result['errors'] || [];
-                    statusEl.removeClass('btn-success btn-outline-secondary').addClass('btn-danger').text('Keys upload failed: ' + errors.join(', '));
+                    statusEl.removeClass('btn-success btn-outline-secondary').addClass('btn-danger').text({{ _('Keys upload failed: {errors}')|tojson }}.replace('{errors}', errors.join(', ')));
                 }
             },
             error: function () {
-                statusEl.removeClass('btn-success btn-outline-secondary').addClass('btn-danger').text('Keys upload failed.');
+                statusEl.removeClass('btn-success btn-outline-secondary').addClass('btn-danger').text({{ _('Keys upload failed.')|tojson }});
             },
             complete: function () {
                 $('#uploadConsoleKeysBtn').prop('disabled', false);
@@ -1685,10 +1675,10 @@
 
     function deleteConsoleKeys() {
         const statusEl = $('#consoleKeysActionStatus');
-        if (!confirm('Delete current keys.txt?')) {
+        if (!confirm({{ _('Delete current keys.txt?')|tojson }})) {
             return;
         }
-        statusEl.removeClass('btn-success btn-danger').addClass('btn-outline-secondary').text('Deleting keys...');
+        statusEl.removeClass('btn-success btn-danger').addClass('btn-outline-secondary').text({{ _('Deleting keys...')|tojson }});
         $('#uploadConsoleKeysBtn').prop('disabled', true);
         $('#deleteConsoleKeysBtn').prop('disabled', true);
         $.ajax({
@@ -1698,11 +1688,11 @@
                 if (result && result['success']) {
                     setConsoleKeysLoadedState(false);
                 } else {
-                    statusEl.removeClass('btn-success btn-outline-secondary').addClass('btn-danger').text('Failed to delete keys.');
+                    statusEl.removeClass('btn-success btn-outline-secondary').addClass('btn-danger').text({{ _('Failed to delete keys.')|tojson }});
                 }
             },
             error: function () {
-                statusEl.removeClass('btn-success btn-outline-secondary').addClass('btn-danger').text('Failed to delete keys.');
+                statusEl.removeClass('btn-success btn-outline-secondary').addClass('btn-danger').text({{ _('Failed to delete keys.')|tojson }});
             },
             complete: function () {
                 $('#uploadConsoleKeysBtn').prop('disabled', false);
@@ -1713,7 +1703,7 @@
 
     function refreshMediaCache() {
         const statusEl = $('#refreshMediaCacheStatus');
-        statusEl.text('Refreshing cache...');
+        statusEl.text({{ _('Refreshing cache...')|tojson }});
         $('#refreshMediaCacheBtn').prop('disabled', true);
         $('#prefetchIconsBtn').prop('disabled', true);
         $('#prefetchBannersBtn').prop('disabled', true);
@@ -1726,13 +1716,13 @@
                 if (result && result['success']) {
                     const icons = result['removed_icons'] ?? 0;
                     const banners = result['removed_banners'] ?? 0;
-                    statusEl.text(`Cleared ${icons} icons and ${banners} banners.`);
+                    statusEl.text({{ _('Cleared {icons} icons and {banners} banners.')|tojson }}.replace('{icons}', icons).replace('{banners}', banners));
                 } else {
-                    statusEl.text('Refresh failed.');
+                    statusEl.text({{ _('Refresh failed.')|tojson }});
                 }
             },
             error: function () {
-                statusEl.text('Refresh failed.');
+                statusEl.text({{ _('Refresh failed.')|tojson }});
             },
             complete: function () {
                 $('#refreshMediaCacheBtn').prop('disabled', false);
@@ -1744,7 +1734,7 @@
 
     function prefetchAllIcons() {
         const statusEl = $('#refreshMediaCacheStatus');
-        statusEl.text('Prefetching icons...');
+        statusEl.text({{ _('Prefetching icons...')|tojson }});
         $('#prefetchIconsBtn').prop('disabled', true);
         $('#refreshMediaCacheBtn').prop('disabled', true);
         $('#prefetchBannersBtn').prop('disabled', true);
@@ -1759,17 +1749,17 @@
                     const missing = result['missing'] ?? 0;
                     const failed = result['failed'] ?? 0;
                     const failures = result['failures'] || [];
-                    statusEl.text(`Prefetched ${fetched} icons. Skipped ${skipped}, missing ${missing}, failed ${failed}.`);
+                    statusEl.text({{ _('Prefetched {fetched} icons. Skipped {skipped}, missing {missing}, failed {failed}.')|tojson }}.replace('{fetched}', fetched).replace('{skipped}', skipped).replace('{missing}', missing).replace('{failed}', failed));
                     if (failures.length) {
                         console.warn('Icon prefetch failures:', failures);
-                        statusEl.text(`${statusEl.text()} See console for sample errors.`);
+                        statusEl.text(`${statusEl.text()} ${ {{ _('See console for sample errors.')|tojson }} }`);
                     }
                 } else {
-                    statusEl.text('Prefetch failed.');
+                    statusEl.text({{ _('Prefetch failed.')|tojson }});
                 }
             },
             error: function () {
-                statusEl.text('Prefetch failed.');
+                statusEl.text({{ _('Prefetch failed.')|tojson }});
             },
             complete: function () {
                 $('#prefetchIconsBtn').prop('disabled', false);
@@ -1781,7 +1771,7 @@
 
     function prefetchAllBanners() {
         const statusEl = $('#refreshMediaCacheStatus');
-        statusEl.text('Prefetching banners...');
+        statusEl.text({{ _('Prefetching banners...')|tojson }});
         $('#prefetchBannersBtn').prop('disabled', true);
         $('#refreshMediaCacheBtn').prop('disabled', true);
         $('#prefetchIconsBtn').prop('disabled', true);
@@ -1796,17 +1786,17 @@
                     const missing = result['missing'] ?? 0;
                     const failed = result['failed'] ?? 0;
                     const failures = result['failures'] || [];
-                    statusEl.text(`Prefetched ${fetched} banners. Skipped ${skipped}, missing ${missing}, failed ${failed}.`);
+                    statusEl.text({{ _('Prefetched {fetched} banners. Skipped {skipped}, missing {missing}, failed {failed}.')|tojson }}.replace('{fetched}', fetched).replace('{skipped}', skipped).replace('{missing}', missing).replace('{failed}', failed));
                     if (failures.length) {
                         console.warn('Banner prefetch failures:', failures);
-                        statusEl.text(`${statusEl.text()} See console for sample errors.`);
+                        statusEl.text(`${statusEl.text()} ${ {{ _('See console for sample errors.')|tojson }} }`);
                     }
                 } else {
-                    statusEl.text('Prefetch failed.');
+                    statusEl.text({{ _('Prefetch failed.')|tojson }});
                 }
             },
             error: function () {
-                statusEl.text('Prefetch failed.');
+                statusEl.text({{ _('Prefetch failed.')|tojson }});
             },
             complete: function () {
                 $('#prefetchBannersBtn').prop('disabled', false);
@@ -1952,7 +1942,7 @@
     function normalizeIpEntryToken(value) {
         const raw = String(value || '').trim();
         if (!raw) {
-            return { ok: false, token: '', error: 'Enter an IP or CIDR value.' };
+            return { ok: false, token: '', error: {{ _('Enter an IP or CIDR value.')|tojson }} };
         }
         const slash = raw.indexOf('/');
         let address = raw;
@@ -1961,19 +1951,19 @@
             address = raw.slice(0, slash).trim();
             const prefixRaw = raw.slice(slash + 1).trim();
             if (!/^\d+$/.test(prefixRaw)) {
-                return { ok: false, token: '', error: `Invalid CIDR prefix in "${raw}".` };
+                return { ok: false, token: '', error: {{ _('Invalid CIDR prefix in "{raw}".')|tojson }}.replace('{raw}', raw) };
             }
             prefix = Number(prefixRaw);
         }
         const normalizedV4 = normalizeIpv4Address(address);
         const isV6 = !normalizedV4 && isValidIpv6Address(address);
         if (!normalizedV4 && !isV6) {
-            return { ok: false, token: '', error: `Invalid IP format: "${raw}".` };
+            return { ok: false, token: '', error: {{ _('Invalid IP format: "{raw}".')|tojson }}.replace('{raw}', raw) };
         }
         if (prefix !== null) {
             const maxPrefix = normalizedV4 ? 32 : 128;
             if (!Number.isInteger(prefix) || prefix < 0 || prefix > maxPrefix) {
-                return { ok: false, token: '', error: `Invalid CIDR range in "${raw}".` };
+                return { ok: false, token: '', error: {{ _('Invalid CIDR range in "{raw}".')|tojson }}.replace('{raw}', raw) };
             }
         }
         const normalizedAddress = normalizedV4 || String(address || '').trim().toLowerCase();
@@ -1994,7 +1984,7 @@
         const container = $('#authPermanentIpBlacklistList');
         container.empty();
         if (!Array.isArray(permanentIpBlacklistState) || !permanentIpBlacklistState.length) {
-            container.append('<span class="text-muted small">No permanent IP blocks configured.</span>');
+            container.append('<span class="text-muted small">' + {{ _('No permanent IP blocks configured.')|tojson }} + '</span>');
             setInputVal('authPermanentIpBlacklistInput', '');
             return;
         }
@@ -2002,7 +1992,7 @@
             const chip = $(`
                 <span class="badge text-bg-danger d-inline-flex align-items-center gap-2">
                     <span class="font-monospace">${token}</span>
-                    <button type="button" class="btn-close btn-close-white btn-sm" aria-label="Remove ${token}"></button>
+                    <button type="button" class="btn-close btn-close-white btn-sm" aria-label="${ {{ _('Remove {value}')|tojson }}.replace('{value}', token) }"></button>
                 </span>
             `);
             chip.find('button').on('click', function () {
@@ -2042,7 +2032,7 @@
         }
         const exists = permanentIpBlacklistState.some(item => item.toLowerCase() === normalized.token.toLowerCase());
         if (exists) {
-            setPermanentIpBlacklistError('Entry already exists.');
+            setPermanentIpBlacklistError({{ _('Entry already exists.')|tojson }});
             return false;
         }
         permanentIpBlacklistState.push(normalized.token);
@@ -2141,7 +2131,7 @@
             '#addBlockedCountryCodeBtn',
             '#authBlockedCountryDisabledHint',
             disableBlocked,
-            'Blocked list is disabled while whitelist has entries.'
+            {{ _('Blocked list is disabled while whitelist has entries.')|tojson }}
         );
         setCountryListUiState(
             '#authAllowedCountrySection',
@@ -2149,7 +2139,7 @@
             '#addAllowedCountryCodeBtn',
             '#authAllowedCountryDisabledHint',
             disableAllowed,
-            'Whitelist is disabled while blocked list has entries.'
+            {{ _('Whitelist is disabled while blocked list has entries.')|tojson }}
         );
     }
 
@@ -2157,7 +2147,7 @@
         const container = $('#authBlockedCountryCodesList');
         container.empty();
         if (!Array.isArray(blockedCountryCodesState) || !blockedCountryCodesState.length) {
-            container.append('<span class="text-muted small">No blocked countries configured.</span>');
+            container.append('<span class="text-muted small">' + {{ _('No blocked countries configured.')|tojson }} + '</span>');
             syncCountryListMode();
             return;
         }
@@ -2168,7 +2158,7 @@
                 <span class="badge text-bg-secondary d-inline-flex align-items-center gap-2">
                     <img src="https://cdn.jsdelivr.net/npm/flag-icons@7.2.3/flags/4x3/${lower}.svg" alt="" class="settings-flag-icon" loading="lazy" />
                     <span class="font-monospace">${code}</span>
-                    <button type="button" class="btn-close btn-close-white btn-sm" aria-label="Remove ${code}"></button>
+                    <button type="button" class="btn-close btn-close-white btn-sm" aria-label="${ {{ _('Remove {value}')|tojson }}.replace('{value}', code) }"></button>
                 </span>
             `);
             chip.find('button').on('click', function () {
@@ -2212,7 +2202,7 @@
         const container = $('#authAllowedCountryCodesList');
         container.empty();
         if (!Array.isArray(allowedCountryCodesState) || !allowedCountryCodesState.length) {
-            container.append('<span class="text-muted small">No whitelist countries configured.</span>');
+            container.append('<span class="text-muted small">' + {{ _('No whitelist countries configured.')|tojson }} + '</span>');
             syncCountryListMode();
             return;
         }
@@ -2223,7 +2213,7 @@
                 <span class="badge text-bg-success d-inline-flex align-items-center gap-2">
                     <img src="https://cdn.jsdelivr.net/npm/flag-icons@7.2.3/flags/4x3/${lower}.svg" alt="" class="settings-flag-icon" loading="lazy" />
                     <span class="font-monospace">${code}</span>
-                    <button type="button" class="btn-close btn-close-white btn-sm" aria-label="Remove ${code}"></button>
+                    <button type="button" class="btn-close btn-close-white btn-sm" aria-label="${ {{ _('Remove {value}')|tojson }}.replace('{value}', code) }"></button>
                 </span>
             `);
             chip.find('button').on('click', function () {
@@ -2344,7 +2334,7 @@
         const isDeluge = clientType === "deluge";
         usernameInput.prop("disabled", isDeluge);
         if (isDeluge) {
-            usernameInput.attr("placeholder", "Not required for Deluge");
+            usernameInput.attr("placeholder", {{ _('Not required for Deluge')|tojson }});
         } else {
             usernameInput.attr("placeholder", "");
         }
@@ -2355,14 +2345,14 @@
         const publicKey = publicKeyInput.value;
         
         if (!publicKey) {
-            alert('No public key to copy.');
+            alert({{ _('No public key to copy.')|tojson }});
             return;
         }
         
         navigator.clipboard.writeText(publicKey).then(function() {
             const btn = document.getElementById('copyPublicKeyBtn');
             const originalText = btn.innerHTML;
-            btn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16" style="vertical-align: -0.125em;"><path d="M13.854 3.646a.5.5 0 0 1 0 .708l-7 7a.5.5 0 0 1-.708 0l-3.5-3.5a.5.5 0 1 1 .708-.708L6.5 10.293l6.646-6.647a.5.5 0 0 1 .708 0z"/></svg> Copied';
+            btn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16" style="vertical-align: -0.125em;"><path d="M13.854 3.646a.5.5 0 0 1 0 .708l-7 7a.5.5 0 0 1-.708 0l-3.5-3.5a.5.5 0 1 1 .708-.708L6.5 10.293l6.646-6.647a.5.5 0 0 1 .708 0z"/></svg> ' + {{ _('Copied')|tojson }};
             btn.classList.add('btn-success');
             btn.classList.remove('btn-outline-secondary');
             setTimeout(function() {
@@ -2372,7 +2362,7 @@
             }, 2000);
         }).catch(function(err) {
             console.error('Failed to copy: ', err);
-            alert('Failed to copy to clipboard.');
+            alert({{ _('Failed to copy to clipboard.')|tojson }});
         });
     }
 
@@ -2392,7 +2382,7 @@
         prowlarrSearchLimit = Math.max(1, Math.min(500, prowlarrSearchLimit));
         setInputVal("prowlarrSearchLimitInput", prowlarrSearchLimit);
         if (categoriesParsed.invalid.length) {
-            alert('Prowlarr categories must be numeric IDs only. Invalid values: ' + categoriesParsed.invalid.join(', '));
+            alert({{ _('Prowlarr categories must be numeric IDs only. Invalid values: {values}')|tojson }}.replace('{values}', categoriesParsed.invalid.join(', ')));
             $('#submitDownloadSettingsBtn').prop('disabled', false);
             return;
         }
@@ -2490,21 +2480,21 @@
 
         if (rawPath) {
             card.removeClass('bg-body-tertiary text-muted');
-            badge.removeClass('text-bg-secondary').addClass('text-bg-success').text('Enabled');
+            badge.removeClass('text-bg-secondary').addClass('text-bg-success').text({{ _('Enabled')|tojson }});
             pathLabel.text(rawPath).removeClass('text-muted');
-            hint.html('Temporary conversion output is staged here before files are finalized into library paths.');
+            hint.html({{ _('Temporary conversion output is staged here before files are finalized into library paths.')|tojson }});
             return;
         }
 
         card.addClass('bg-body-tertiary text-muted');
-        badge.removeClass('text-bg-success').addClass('text-bg-secondary').text('Disabled');
-        pathLabel.text('Not enabled').addClass('text-muted');
-        hint.html('Set <code>AEROFOIL_CONVERSION_STAGING_ENABLED=true</code> and keep a mount for <code>/app/conversion-tmp</code> to enable SSD-backed staging.');
+        badge.removeClass('text-bg-success').addClass('text-bg-secondary').text({{ _('Disabled')|tojson }});
+        pathLabel.text({{ _('Not enabled')|tojson }}).addClass('text-muted');
+        hint.html({{ _('Set <code>AEROFOIL_CONVERSION_STAGING_ENABLED=true</code> and keep a mount for <code>/app/conversion-tmp</code> to enable SSD-backed staging.')|tojson }});
     }
 	
     function testProwlarrSettings() {
         $('#testProwlarrBtn').prop('disabled', true);
-        $('#prowlarrTestResult').text('Testing...').removeClass('text-danger text-success').addClass('text-muted');
+        $('#prowlarrTestResult').text({{ _('Testing...')|tojson }}).removeClass('text-danger text-success').addClass('text-muted');
         let prowlarrTimeout = parseInt(getInputVal("prowlarrTimeoutInput"), 10);
         if (isNaN(prowlarrTimeout)) {
             prowlarrTimeout = 15;
@@ -2532,7 +2522,7 @@
             success: function (result) {
                 const ok = result['success'];
                 const warning = result['warning'];
-                let text = result['message'] || (ok ? 'Prowlarr OK' : 'Prowlarr test failed');
+                let text = result['message'] || (ok ? {{ _('Prowlarr OK')|tojson }} : {{ _('Prowlarr test failed')|tojson }});
                 if (warning) {
                     text = `${text} (${warning})`;
                 }
@@ -2549,7 +2539,7 @@
 
     function testTorrentClientSettings() {
         $('#testTorrentClientBtn').prop('disabled', true);
-        $('#torrentClientTestResult').text('Testing...').removeClass('text-danger text-success').addClass('text-muted');
+        $('#torrentClientTestResult').text({{ _('Testing...')|tojson }}).removeClass('text-danger text-success').addClass('text-muted');
         data = {
             type: getInputVal("torrentClientTypeSelect"),
             url: getInputVal("torrentClientUrlInput"),
@@ -2565,7 +2555,7 @@
             success: function (result) {
                 const ok = result['success'];
                 const warning = result['warning'];
-                let text = result['message'] || (ok ? 'Torrent client OK' : 'Torrent client test failed');
+                let text = result['message'] || (ok ? {{ _('Torrent client OK')|tojson }} : {{ _('Torrent client test failed')|tojson }});
                 if (warning) {
                     text = `${text} (${warning})`;
                 }
@@ -2582,7 +2572,7 @@
 
     function testUsenetClientSettings() {
         $('#testUsenetClientBtn').prop('disabled', true);
-        $('#usenetClientTestResult').text('Testing...').removeClass('text-danger text-success').addClass('text-muted');
+        $('#usenetClientTestResult').text({{ _('Testing...')|tojson }}).removeClass('text-danger text-success').addClass('text-muted');
         data = {
             type: getInputVal("usenetClientTypeSelect"),
             url: getInputVal("usenetClientUrlInput"),
@@ -2596,7 +2586,7 @@
             success: function (result) {
                 const ok = result['success'];
                 const warning = result['warning'];
-                let text = result['message'] || (ok ? 'Usenet client OK' : 'Usenet client test failed');
+                let text = result['message'] || (ok ? {{ _('Usenet client OK')|tojson }} : {{ _('Usenet client test failed')|tojson }});
                 if (warning) {
                     text = `${text} (${warning})`;
                 }
@@ -2696,11 +2686,11 @@
         // Update collapse button text when toggled
         $('#shopPublicKeyCollapse').on('show.bs.collapse', function () {
             const btn = $(this).closest('.mb-3').find('[data-bs-toggle="collapse"]');
-            btn.html('<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16" style="vertical-align: -0.125em;"><path fill-rule="evenodd" d="M7.646 4.646a.5.5 0 0 1 .708 0l6 6a.5.5 0 0 1-.708.708L8 5.707l-5.646 5.647a.5.5 0 0 1-.708-.708l6-6z"/></svg> Hide');
+            btn.html('<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16" style="vertical-align: -0.125em;"><path fill-rule="evenodd" d="M7.646 4.646a.5.5 0 0 1 .708 0l6 6a.5.5 0 0 1-.708.708L8 5.707l-5.646 5.647a.5.5 0 0 1-.708-.708l6-6z"/></svg> ' + {{ _('Hide')|tojson }});
         });
         $('#shopPublicKeyCollapse').on('hide.bs.collapse', function () {
             const btn = $(this).closest('.mb-3').find('[data-bs-toggle="collapse"]');
-            btn.html('<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16" style="vertical-align: -0.125em;"><path fill-rule="evenodd" d="M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z"/></svg> Show');
+            btn.html('<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16" style="vertical-align: -0.125em;"><path fill-rule="evenodd" d="M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z"/></svg> ' + {{ _('Show')|tojson }});
         });
         $('#addPermanentIpBlacklistEntryBtn').on('click', function () {
             addPermanentIpBlacklistEntryFromInput();
@@ -2772,7 +2762,7 @@
                     $('#libraryMaintenanceLastRun').text(maintenanceLastRun);
                 }
             } else {
-                $('#libraryMaintenanceLastRun').text('Never');
+                $('#libraryMaintenanceLastRun').text({{ _('Never')|tojson }});
             }
             // Titles settings
             titlesSettings = result['titles'];

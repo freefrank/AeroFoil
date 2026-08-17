@@ -30,7 +30,7 @@
                                 sizes="(max-width: 576px) 90vw, 520px"
                                 width="1211"
                                 height="328"
-                                alt="AeroFoil banner"
+                                alt="{{ _('AeroFoil banner') }}"
                                 loading="eager"
                                 decoding="sync"
                                 fetchpriority="high"
@@ -38,25 +38,25 @@
                                 style="max-height: 140px; object-fit: cover;">
                         </picture>
                     </div>
-                    <h5 class="card-title">Login</h5>
+                    <h5 class="card-title">{{ _('Login') }}</h5>
 
 
                     <form method="POST" action="/login">
                         <div class="mb-3">
-                            <label for="exampleInputEmail1" class="form-label">Username</label>
-                            <input class="form-control" name="user" id="exampleInputEmail1" placeholder="User"
+                            <label for="exampleInputEmail1" class="form-label">{{ _('Username') }}</label>
+                            <input class="form-control" name="user" id="exampleInputEmail1" placeholder="{{ _('User') }}"
                                 aria-describedby="emailHelp">
                         </div>
                         <div class="mb-3">
-                            <label for="exampleInputPassword1" class="form-label">Password</label>
+                            <label for="exampleInputPassword1" class="form-label">{{ _('Password') }}</label>
                             <input type="password" name="password" class="form-control" id="exampleInputPassword1">
                         </div>
                         <div class="mb-3 form-check">
                             <input type="checkbox" name="remember" class="form-check-input" id="exampleCheck1">
-                            <label class="form-check-label" for="exampleCheck1">Remember me</label>
+                            <label class="form-check-label" for="exampleCheck1">{{ _('Remember me') }}</label>
                         </div>
                         <input type="hidden" name="next" value="{{ request.args.get('next', '') }}" />
-                        <button type="submit" class="btn btn-primary">Login</button>
+                        <button type="submit" class="btn btn-primary">{{ _('Login') }}</button>
                     </form>
                 </div>
             </div>

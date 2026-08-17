@@ -7,6 +7,7 @@ if PROJECT_DIR not in sys.path:
     sys.path.insert(0, PROJECT_DIR)
 
 from flask import Flask, render_template, request, redirect, url_for, jsonify, send_from_directory, Response, has_app_context, has_request_context, g
+from flask_babel import Babel, get_locale as babel_get_locale, gettext as _
 from flask_login import LoginManager, current_user
 from werkzeug.utils import secure_filename
 from werkzeug.security import check_password_hash
@@ -1358,28 +1359,28 @@ SAVE_ID_RE = re.compile(r'^[A-Za-z0-9._-]+$')
 def validate_title_id(title_id):
     """Validate title_id format (should be 16 hex characters)."""
     if not title_id:
-        return False, "Title ID is required"
+        return False, _('Title ID is required')
     title_id = title_id.strip().upper()
     if len(title_id) != MAX_TITLE_ID_LENGTH:
-        return False, f"Title ID must be {MAX_TITLE_ID_LENGTH} characters"
+        return False, _('Title ID must be %(length)s characters', length=MAX_TITLE_ID_LENGTH)
     if not all(c in '0123456789ABCDEF' for c in title_id):
-        return False, "Title ID must contain only hexadecimal characters"
+        return False, _('Title ID must contain only hexadecimal characters')
     return True, title_id
 
 def validate_file_size(file_size):
     """Validate file size against maximum upload limit (for keys.txt files)."""
     if file_size is None:
-        return False, "File size is unknown"
+        return False, _('File size is unknown')
     if file_size > MAX_UPLOAD_SIZE:
-        return False, f"File size exceeds maximum limit of {MAX_UPLOAD_SIZE // (1024*1024)}MB"
+        return False, _('File size exceeds maximum limit of %(size)sMB', size=MAX_UPLOAD_SIZE // (1024*1024))
     return True, None
 
 def validate_library_file_size(file_size):
     """Validate file size against maximum library upload limit (for game files)."""
     if file_size is None:
-        return False, "File size is unknown"
+        return False, _('File size is unknown')
     if file_size > MAX_LIBRARY_UPLOAD_SIZE:
-        return False, f"File size exceeds maximum limit of {MAX_LIBRARY_UPLOAD_SIZE // (1024*1024*1024)}GB"
+        return False, _('File size exceeds maximum limit of %(size)sGB', size=MAX_LIBRARY_UPLOAD_SIZE // (1024*1024*1024))
     return True, None
 
 
@@ -1407,22 +1408,22 @@ def _resolve_save_sync_user():
     if user is None:
         auth = request.authorization
         if not auth or not auth.username or not auth.password:
-            return None, 'Save sync requires username/password authentication.', 401
+            return None, _('Save sync requires username/password authentication.'), 401
 
         user = User.query.filter_by(user=auth.username).first()
         if user is None or not check_password_hash(user.password, auth.password):
-            return None, 'Invalid save sync credentials.', 401
+            return None, _('Invalid save sync credentials.'), 401
 
     if bool(getattr(user, 'frozen', False)):
-        message = (getattr(user, 'frozen_message', None) or '').strip() or 'Account is frozen.'
+        message = (getattr(user, 'frozen_message', None) or '').strip() or _('Account is frozen.')
         return None, message, 403
 
     if not user.has_shop_access():
         username = str(getattr(user, 'user', '') or '').strip() or 'unknown'
-        return None, f'User "{username}" does not have access to the shop.', 403
+        return None, _('User "%(username)s" does not have access to the shop.', username=username), 403
 
     if not bool(getattr(user, 'backup_access', False)):
-        return None, 'Backup access is required for save sync.', 403
+        return None, _('Backup access is required for save sync.'), 403
 
     return user, None, None
 
@@ -1724,7 +1725,7 @@ def save_sync_access(f):
     def _save_sync_access(*args, **kwargs):
         user, error, status = _resolve_save_sync_user()
         if user is None:
-            return api_error(error or 'Save sync authorization failed.', status or 403)
+            return api_error(error or _('Save sync authorization failed.'), status or 403)
         g.save_sync_user = user
         return f(*args, **kwargs)
     return _save_sync_access
@@ -1829,6 +1830,16 @@ def on_library_change(events):
     if has_changes:
         post_library_change()
 
+def select_ui_locale():
+    cookie_lang = request.cookies.get(UI_LANGUAGE_COOKIE)
+    if cookie_lang in UI_LANGUAGES:
+        return cookie_lang
+    accepted = request.accept_languages.best_match(['en', 'zh', 'zh-CN', 'zh-SG', 'zh-Hans', 'zh-TW', 'zh-HK', 'zh-Hant'])
+    if accepted and accepted.lower().startswith('zh'):
+        return 'zh_Hans'
+    return UI_DEFAULT_LANGUAGE
+
+
 def create_app():
     app = Flask(__name__)
     app.config["SQLALCHEMY_DATABASE_URI"] = AEROFOIL_DB
@@ -1843,6 +1854,21 @@ def create_app():
     app.config['SECRET_KEY'] = secret_key
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
+    app.config.setdefault('BABEL_DEFAULT_LOCALE', UI_DEFAULT_LANGUAGE)
+    Babel(app, locale_selector=select_ui_locale)
+
+    @app.context_processor
+    def inject_ui_language():
+        try:
+            locale_code = str(babel_get_locale() or UI_DEFAULT_LANGUAGE)
+        except Exception:
+            locale_code = UI_DEFAULT_LANGUAGE
+        return {
+            'ui_language': locale_code,
+            'ui_languages': UI_LANGUAGES,
+            'ui_language_tag': locale_code.replace('_', '-'),
+        }
+
     db.init_app(app)
     migrate.init_app(app, db)
     login_manager.init_app(app)
@@ -1856,10 +1882,29 @@ def create_app():
 app = create_app()
 
 
+@app.route('/ui/language/<lang>')
+def switch_ui_language(lang):
+    lang = str(lang or '').strip()
+    next_url = request.args.get('next') or request.referrer or '/'
+    # Only allow same-site relative redirects.
+    if not next_url.startswith('/') or next_url.startswith('//'):
+        next_url = '/'
+    if lang not in UI_LANGUAGES:
+        return redirect(next_url)
+    resp = redirect(next_url)
+    resp.set_cookie(
+        UI_LANGUAGE_COOKIE,
+        lang,
+        max_age=UI_LANGUAGE_COOKIE_MAX_AGE,
+        samesite='Lax',
+    )
+    return resp
+
+
 @app.errorhandler(RequestEntityTooLarge)
 def handle_request_entity_too_large(_error):
     return api_error(
-        f"Upload too large. Maximum allowed is {MAX_LIBRARY_UPLOAD_SIZE // (1024 * 1024 * 1024)}GB per file.",
+        _('Upload too large. Maximum allowed is %(size)sGB per file.', size=MAX_LIBRARY_UPLOAD_SIZE // (1024 * 1024 * 1024)),
         413
     )
 
@@ -1978,7 +2023,7 @@ def _block_frozen_web_ui():
         if path in ('/login', '/logout'):
             return None
 
-        message = (getattr(current_user, 'frozen_message', None) or '').strip() or 'Account is frozen.'
+        message = (getattr(current_user, 'frozen_message', None) or '').strip() or _('Account is frozen.')
         if path.startswith('/api/'):
             return jsonify({'success': False, 'error': message}), 403
         return render_template('frozen.html', title='Library', message=message)
@@ -3053,7 +3098,7 @@ def index():
     if bool(app_settings.get('shop', {}).get('external_tinfoil_only', False)):
         remote = _effective_remote_addr()
         if remote and not _is_private_ip(remote) and not is_allowed_external_client:
-            return 'Forbidden', 403
+            return _('Forbidden'), 403
 
     @tinfoil_access
     def access_tinfoil_shop():
@@ -3095,7 +3140,7 @@ def index():
             frozen_user = User.query.filter_by(user=username).first() if username else None
 
         if frozen_user is not None and bool(getattr(frozen_user, 'frozen', False)):
-            message = (getattr(frozen_user, 'frozen_message', None) or '').strip() or 'Account is frozen.'
+            message = (getattr(frozen_user, 'frozen_message', None) or '').strip() or _('Account is frozen.')
             return render_template('frozen.html', title='Library', message=message)
     except Exception:
         pass
@@ -3211,7 +3256,7 @@ def list_requests_api():
     include_all = request.args.get('all', '0') == '1'
     if include_all:
         if not current_user.is_admin:
-            return jsonify({'success': False, 'message': 'Forbidden'}), 403
+            return jsonify({'success': False, 'message': _('Forbidden')}), 403
 
     items = list_requests(user_id=current_user.id, include_all=include_all, limit=500)
 
@@ -3292,7 +3337,7 @@ def admin_unseen_requests_count_api():
         return jsonify({'success': True, 'count': int(count)})
     except Exception as e:
         logger.error(f"Error in title request endpoint: {e}")
-        return api_error('An error occurred processing the request', 500)
+        return api_error(_('An error occurred processing the request'), 500)
 
 
 @app.post('/api/requests/mark-seen')
@@ -3308,11 +3353,11 @@ def admin_mark_requests_seen_api():
     try:
         ids = [int(x) for x in (ids or [])]
     except Exception:
-        return api_error('Invalid request_ids.', 400)
+        return api_error(_('Invalid request_ids.'), 400)
 
     ids = list(dict.fromkeys([x for x in ids if x > 0]))
     if not ids and not mark_all_open:
-        return jsonify({'success': True, 'message': 'Nothing to mark.', 'marked': 0})
+        return jsonify({'success': True, 'message': _('Nothing to mark.'), 'marked': 0})
 
     now = None
     try:
@@ -3379,7 +3424,7 @@ def admin_mark_requests_seen_api():
                 except Exception:
                     marked = len(to_insert)
         db.session.commit()
-        return jsonify({'success': True, 'message': 'Marked seen.', 'marked': int(marked)})
+        return jsonify({'success': True, 'message': _('Marked seen.'), 'marked': int(marked)})
     except Exception as e:
         db.session.rollback()
         return api_error(str(e), 500)
@@ -3392,12 +3437,12 @@ def admin_delete_request_api():
     try:
         req_id = int(data.get('request_id'))
     except Exception:
-        return api_error('Invalid request_id.', 400)
+        return api_error(_('Invalid request_id.'), 400)
 
     try:
         req = TitleRequests.query.filter_by(id=req_id).first()
         if req is None:
-            return api_error('Request not found.', 404)
+            return api_error(_('Request not found.'), 404)
 
         # Clean up per-admin view markers for this request.
         try:
@@ -3491,13 +3536,13 @@ def request_prowlarr_search_api():
     title_id = (request.args.get('title_id') or '').strip().upper()
     title_name = (request.args.get('title_name') or '').strip()
     if not title_id and not title_name:
-        return api_error('Missing title_id or title_name.', 400)
+        return api_error(_('Missing title_id or title_name.'), 400)
 
     settings = load_settings()
     downloads = settings.get('downloads', {})
     prowlarr_cfg = downloads.get('prowlarr', {})
     if not prowlarr_cfg.get('url') or not prowlarr_cfg.get('api_key'):
-        return jsonify({'success': False, 'message': 'Prowlarr is not configured.', 'results': []})
+        return jsonify({'success': False, 'message': _('Prowlarr is not configured.'), 'results': []})
 
     # Prefer TitleDB name if we can resolve it.
     resolved_name = title_name
@@ -3731,7 +3776,7 @@ def admin_clients_history_clear_api():
     try:
         ok = delete_access_events(kinds=['client_seen'])
         if not ok:
-            return jsonify({'success': False, 'error': 'Failed to clear client history.'}), 500
+            return jsonify({'success': False, 'error': _('Failed to clear client history.')}), 500
         return jsonify({'success': True})
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)}), 500
@@ -3749,7 +3794,7 @@ def admin_access_history_clear_api():
             ok = delete_access_events_excluding(kinds=['client_seen'])
 
         if not ok:
-            return jsonify({'success': False, 'error': 'Failed to clear access history.'}), 500
+            return jsonify({'success': False, 'error': _('Failed to clear access history.')}), 500
         return jsonify({'success': True})
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)}), 500
@@ -3761,7 +3806,7 @@ def admin_blacklist_ip_api():
     data = request.json or {}
     ip_value = str(data.get('ip') or '').strip()
     if not ip_value:
-        return jsonify({'success': False, 'error': 'Missing IP.'}), 400
+        return jsonify({'success': False, 'error': _('Missing IP.')}), 400
     try:
         settings = load_settings(force_reload=True)
         security = settings.get('security') or {}
@@ -3816,7 +3861,7 @@ def set_titles_settings_api():
             'success': False,
             'errors': [{
                     'path': 'titles',
-                    'error': "TitleDB has not been initialized yet. Please wait for the initial update to complete or trigger it manually."
+                    'error': _('TitleDB has not been initialized yet. Please wait for the initial update to complete or trigger it manually.')
                 }]
         }
         return jsonify(resp)
@@ -3826,7 +3871,7 @@ def set_titles_settings_api():
             'success': False,
             'errors': [{
                     'path': 'titles',
-                    'error': f"The region/language pair {region}/{language} is not available."
+                    'error': _('The region/language pair %(region)s/%(language)s is not available.', region=region, language=language)
                 }]
         }
         return jsonify(resp)
@@ -4135,10 +4180,10 @@ def test_downloads_prowlarr_api():
             available_ids = {item.get('id') for item in (indexers or [])}
             missing = [idx for idx in indexer_ids if idx not in available_ids]
             if missing:
-                warning = f"Missing indexer IDs: {', '.join(str(x) for x in missing)}"
+                warning = _('Missing indexer IDs: %(ids)s', ids=', '.join(str(x) for x in missing))
         return jsonify({
             'success': True,
-            'message': f"Prowlarr OK ({status.get('version', 'unknown')})",
+            'message': _('Prowlarr OK (%(version)s)', version=status.get('version', 'unknown')),
             'warning': warning
         })
     except Exception as e:
@@ -4159,9 +4204,9 @@ def test_downloads_client_api():
     warning = None
     if ok and download_path:
         if not os.path.isdir(download_path):
-            warning = f"Download path not found: {download_path}"
+            warning = _('Download path not found: %(path)s', path=download_path)
         elif not os.access(download_path, os.W_OK):
-            warning = f"Download path not writable: {download_path}"
+            warning = _('Download path not writable: %(path)s', path=download_path)
     return jsonify({'success': ok, 'message': message, 'warning': warning})
 
 @app.post('/api/downloads/manual')
@@ -4171,7 +4216,7 @@ def manual_download_update():
     title_id = data.get('title_id')
     version = data.get('version')
     if not title_id or version is None:
-        return jsonify({'success': False, 'message': 'Missing title ID or version.'})
+        return jsonify({'success': False, 'message': _('Missing title ID or version.')})
     try:
         ok, message = manual_search_update(title_id=title_id, version=version)
         return jsonify({'success': ok, 'message': message})
@@ -4185,7 +4230,7 @@ def manual_search_update_options():
     title_id = data.get('title_id')
     version = data.get('version')
     if not title_id or version is None:
-        return jsonify({'success': False, 'message': 'Missing title ID or version.', 'results': []})
+        return jsonify({'success': False, 'message': _('Missing title ID or version.'), 'results': []})
     try:
         ok, message, results = search_update_options(title_id=title_id, version=version)
         return jsonify({'success': ok, 'message': message, 'results': results})
@@ -4204,12 +4249,12 @@ def downloads_search():
             if normalized:
                 extra_blacklist_terms.append(normalized)
     if not query:
-        return jsonify({'success': False, 'message': 'Missing query.'})
+        return jsonify({'success': False, 'message': _('Missing query.')})
     settings = load_settings()
     downloads = settings.get('downloads', {})
     prowlarr_cfg = downloads.get('prowlarr', {})
     if not prowlarr_cfg.get('url') or not prowlarr_cfg.get('api_key'):
-        return jsonify({'success': False, 'message': 'Prowlarr is not configured.'})
+        return jsonify({'success': False, 'message': _('Prowlarr is not configured.')})
     try:
         try:
             timeout_seconds = int(prowlarr_cfg.get('timeout_seconds') or 15)
@@ -4254,7 +4299,7 @@ def downloads_queue():
     update_only = bool(data.get('update_only', False))
     expected_version = data.get('expected_version')
     if not download_url:
-        return jsonify({'success': False, 'message': 'Missing download URL.'})
+        return jsonify({'success': False, 'message': _('Missing download URL.')})
     url_digest = hashlib.sha256(download_url.encode('utf-8', errors='ignore')).hexdigest()[:12]
     logger.debug(
         'Queue download request: url_len=%s url_sha12=%s is_magnet=%s title_id=%s update_only=%s',
@@ -4428,7 +4473,7 @@ def manage_convert_single():
     threads = data.get('threads')
     command = data.get('command')
     if not file_id:
-        return jsonify({'success': False, 'errors': ['Missing file id.'], 'converted': 0, 'skipped': 0, 'details': []})
+        return jsonify({'success': False, 'errors': [_('Missing file id.')], 'converted': 0, 'skipped': 0, 'details': []})
     results = convert_single_to_nsz(
         file_id=int(file_id),
         command_template=command,
@@ -4511,7 +4556,7 @@ def manage_convert_single_job():
     timeout_seconds = data.get('timeout_seconds')
     command = data.get('command')
     if not file_id:
-        return jsonify({'success': False, 'errors': ['Missing file id.']})
+        return jsonify({'success': False, 'errors': [_('Missing file id.')]})
 
     job_id = _create_job('convert-single', total=1)
 
@@ -4561,7 +4606,7 @@ def manage_convert_job_status(job_id):
     with conversion_jobs_lock:
         job = conversion_jobs.get(job_id)
         if not job:
-            return jsonify({'success': False, 'error': 'Job not found.'}), 404
+            return jsonify({'success': False, 'error': _('Job not found.')}), 404
         return jsonify({'success': True, 'job': job})
 
 @app.post('/api/manage/convert-job/<job_id>/cancel')
@@ -4570,7 +4615,7 @@ def manage_convert_job_cancel(job_id):
     with conversion_jobs_lock:
         job = conversion_jobs.get(job_id)
         if not job:
-            return jsonify({'success': False, 'error': 'Job not found.'}), 404
+            return jsonify({'success': False, 'error': _('Job not found.')}), 404
         job['cancelled'] = True
         job['status'] = 'cancelled'
         job['updated_at'] = time.time()
@@ -4741,7 +4786,7 @@ def upload_file():
     success = False
 
     if 'file' not in request.files:
-        return api_error('No file provided', 400)
+        return api_error(_('No file provided'), 400)
     
     file = request.files['file']
     
@@ -4812,14 +4857,14 @@ def upload_library_files():
         parsed_message = str(e).strip() or e.__class__.__name__
         return jsonify({
             'success': False,
-            'message': f'Unable to parse upload request: {parsed_message}',
+            'message': _('Unable to parse upload request: %(error)s', error=parsed_message),
             'uploaded': 0,
             'skipped': 0,
             'errors': [parsed_message]
         }), 400
 
     if not files:
-        return jsonify({'success': False, 'message': 'No files uploaded.', 'uploaded': 0, 'skipped': 0, 'errors': []}), 400
+        return jsonify({'success': False, 'message': _('No files uploaded.'), 'uploaded': 0, 'skipped': 0, 'errors': []}), 400
 
     library_id = request.form.get('library_id')
     library_path = None
@@ -4830,7 +4875,7 @@ def upload_library_files():
         library_path = library_paths[0] if library_paths else None
 
     if not library_path:
-        return jsonify({'success': False, 'message': 'No library path configured.', 'uploaded': 0, 'skipped': 0, 'errors': []}), 400
+        return jsonify({'success': False, 'message': _('No library path configured.'), 'uploaded': 0, 'skipped': 0, 'errors': []}), 400
 
     try:
         os.makedirs(library_path, exist_ok=True)
@@ -4838,7 +4883,7 @@ def upload_library_files():
         logger.error("Unable to create/access library path %s: %s", library_path, e)
         return jsonify({
             'success': False,
-            'message': f'Cannot access library path: {library_path}',
+            'message': _('Cannot access library path: %(path)s', path=library_path),
             'uploaded': 0,
             'skipped': len(files),
             'errors': [str(e)]
@@ -4853,7 +4898,7 @@ def upload_library_files():
     for file in files:
         filename = secure_filename(file.filename or '')
         if not filename:
-            errors.append("A file has an invalid or empty filename.")
+            errors.append(_('A file has an invalid or empty filename.'))
             skipped += 1
             continue
         
@@ -4869,7 +4914,7 @@ def upload_library_files():
         
         ext = filename.rsplit('.', 1)[-1].lower() if '.' in filename else ''
         if ext not in allowed_exts:
-            errors.append(f"{filename}: unsupported extension '{ext or 'none'}'.")
+            errors.append(_("%(filename)s: unsupported extension '%(ext)s'.", filename=filename, ext=ext or 'none'))
             skipped += 1
             continue
         dest_path = _ensure_unique_path(os.path.join(library_path, filename))
@@ -4889,16 +4934,16 @@ def upload_library_files():
     success = uploaded > 0
     message = None
     if success:
-        message = f"Uploaded {uploaded} file(s)."
+        message = _('Uploaded %(count)s file(s).', count=uploaded)
         if skipped:
-            message += f" Skipped {skipped}."
+            message += ' ' + _('Skipped %(count)s.', count=skipped)
     else:
         if errors:
             message = errors[0]
         elif skipped:
-            message = "All selected files were skipped."
+            message = _('All selected files were skipped.')
         else:
-            message = "Upload failed."
+            message = _('Upload failed.')
 
     return jsonify({
         'success': success,
@@ -4914,7 +4959,7 @@ def upload_library_files():
 def list_saves_api():
     user = getattr(g, 'save_sync_user', None)
     if user is None:
-        return api_error('Save sync authorization failed.', 403)
+        return api_error(_('Save sync authorization failed.'), 403)
 
     saves = []
     titledb_loaded = False
@@ -4983,7 +5028,7 @@ def list_saves_api():
             })
     except Exception as e:
         logger.error('Failed to list saves for user %s: %s', getattr(user, 'user', '?'), e)
-        return api_error('Failed to list saves.', 500)
+        return api_error(_('Failed to list saves.'), 500)
     finally:
         try:
             titles.release_titledb()
@@ -4998,28 +5043,28 @@ def list_saves_api():
 def upload_save_api(title_id):
     user = getattr(g, 'save_sync_user', None)
     if user is None:
-        return api_error('Save sync authorization failed.', 403)
+        return api_error(_('Save sync authorization failed.'), 403)
 
     normalized_title_id = _save_sync_resolve_title_id(title_id)
     if not normalized_title_id:
-        return api_error('Invalid title_id for save upload.', 400)
+        return api_error(_('Invalid title_id for save upload.'), 400)
 
     if 'file' not in request.files:
-        return api_error('No save archive provided.', 400)
+        return api_error(_('No save archive provided.'), 400)
 
     uploaded_file = request.files.get('file')
     if uploaded_file is None or not uploaded_file.filename:
-        return api_error('No save archive provided.', 400)
+        return api_error(_('No save archive provided.'), 400)
 
     uploaded_file.seek(0, os.SEEK_END)
     file_size = uploaded_file.tell()
     uploaded_file.seek(0)
 
     if file_size is None or file_size <= 0:
-        return api_error('Save archive is empty.', 400)
+        return api_error(_('Save archive is empty.'), 400)
     if file_size > MAX_SAVE_UPLOAD_SIZE:
         limit_gb = MAX_SAVE_UPLOAD_SIZE // (1024 * 1024 * 1024)
-        return api_error(f'Save archive exceeds maximum limit of {limit_gb}GB.', 400)
+        return api_error(_('Save archive exceeds maximum limit of %(size)sGB.', size=limit_gb), 400)
 
     note = _save_sync_resolve_note()
     save_id = _save_sync_generate_save_id(note)
@@ -5032,7 +5077,7 @@ def upload_save_api(title_id):
         uploaded_file.save(temp_path)
         if not zipfile.is_zipfile(temp_path):
             os.remove(temp_path)
-            return api_error('Uploaded file is not a valid zip archive.', 400)
+            return api_error(_('Uploaded file is not a valid zip archive.'), 400)
 
         os.replace(temp_path, archive_path)
     except Exception as e:
@@ -5042,7 +5087,7 @@ def upload_save_api(title_id):
         except Exception:
             pass
         logger.error('Failed to save uploaded archive for user %s title %s: %s', getattr(user, 'user', '?'), normalized_title_id, e)
-        return api_error('Failed to store save archive.', 500)
+        return api_error(_('Failed to store save archive.'), 500)
 
     created_ts = int(time.time())
     created_at = _save_sync_format_created_at(created_ts)
@@ -5075,7 +5120,7 @@ def upload_save_api(title_id):
         'downloadUrl': f'/api/saves/download/{normalized_title_id}/{save_id}.zip',
         'delete_url': f'/api/saves/delete/{normalized_title_id}/{save_id}',
         'deleteUrl': f'/api/saves/delete/{normalized_title_id}/{save_id}',
-    }, message='Save uploaded successfully.')
+    }, message=_('Save uploaded successfully.'))
 
 
 @app.get('/api/saves/download/<title_id>/<save_id>')
@@ -5086,21 +5131,21 @@ def upload_save_api(title_id):
 def download_save_api(title_id, save_id=None):
     user = getattr(g, 'save_sync_user', None)
     if user is None:
-        return api_error('Save sync authorization failed.', 403)
+        return api_error(_('Save sync authorization failed.'), 403)
 
     normalized_title_id = _normalize_save_title_id(title_id)
     if not normalized_title_id:
-        return api_error('Invalid title_id for save download.', 400)
+        return api_error(_('Invalid title_id for save download.'), 400)
 
     selected_archive, resolve_error = _save_sync_resolve_download_archive(user, normalized_title_id, save_id=save_id)
     if selected_archive is None:
         if resolve_error and str(resolve_error).lower().startswith('invalid'):
             return api_error(resolve_error, 400)
-        return api_error(resolve_error or 'Save archive not found.', 404)
+        return api_error(resolve_error or _('Save archive not found.'), 404)
 
     archive_path = str(selected_archive.get('archive_path') or '')
     if not os.path.isfile(archive_path):
-        return api_error('Save archive not found.', 404)
+        return api_error(_('Save archive not found.'), 404)
 
     selected_save_id = str(selected_archive.get('save_id') or '').strip()
     if selected_save_id and selected_save_id != 'legacy':
@@ -5125,17 +5170,17 @@ def download_save_api(title_id, save_id=None):
 def delete_save_api(title_id, save_id=None):
     user = getattr(g, 'save_sync_user', None)
     if user is None:
-        return api_error('Save sync authorization failed.', 403)
+        return api_error(_('Save sync authorization failed.'), 403)
 
     normalized_title_id = _normalize_save_title_id(title_id)
     if not normalized_title_id:
-        return api_error('Invalid title_id for save delete.', 400)
+        return api_error(_('Invalid title_id for save delete.'), 400)
 
     selected_save_id = None
     if save_id is not None:
         selected_save_id = _normalize_save_id(save_id)
         if not selected_save_id:
-            return api_error('Invalid save_id for save delete.', 400)
+            return api_error(_('Invalid save_id for save delete.'), 400)
 
     deleted_info, delete_error = _save_sync_delete_archive(user, normalized_title_id, save_id=selected_save_id)
     if deleted_info is None:
@@ -5145,7 +5190,7 @@ def delete_save_api(title_id, save_id=None):
             status = 400
         elif error_text and 'failed to delete' in error_text.lower():
             status = 500
-        return api_error(delete_error or 'Save archive not found.', status)
+        return api_error(delete_error or _('Save archive not found.'), status)
 
     deleted_save_id = str(deleted_info.get('save_id') or '')
     is_legacy = bool(deleted_info.get('legacy'))
@@ -5156,7 +5201,7 @@ def delete_save_api(title_id, save_id=None):
         'saveId': deleted_save_id,
         'legacy': is_legacy,
         'deleted': True,
-    }, message='Save backup deleted successfully.')
+    }, message=_('Save backup deleted successfully.'))
 
 
 @app.route('/api/titles', methods=['GET'])
@@ -6555,7 +6600,7 @@ def scan_library_api():
 
     if _is_conversion_running():
         logger.info('Skipping scan_library_api call: conversion job is running.')
-        return jsonify({'success': False, 'errors': ['Conversion in progress. Try again after conversion finishes.']})
+        return jsonify({'success': False, 'errors': [_('Conversion in progress. Try again after conversion finishes.')]})
 
     global scan_in_progress
     with scan_lock:

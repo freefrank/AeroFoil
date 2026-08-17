@@ -41,6 +41,15 @@ GEOLITE_DB_URL = 'https://github.com/P3TERX/GeoLite.mmdb/releases/latest/downloa
 
 APP_VERSION = os.environ.get('AEROFOIL_VERSION') or os.environ.get('OWNFOIL_VERSION') or os.environ.get('APP_VERSION') or 'dev'
 
+# UI (interface) languages, distinct from the TitleDB metadata language setting.
+UI_LANGUAGES = {
+    'en': 'English',
+    'zh_Hans': '简体中文',
+}
+UI_DEFAULT_LANGUAGE = 'en'
+UI_LANGUAGE_COOKIE = 'aerofoil_lang'
+UI_LANGUAGE_COOKIE_MAX_AGE = 365 * 24 * 3600
+
 AEROFOIL_DB = 'sqlite:///' + DB_FILE
 # Backward-compatible alias for older imports.
 OWNFOIL_DB = AEROFOIL_DB

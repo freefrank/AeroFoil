@@ -1,4 +1,5 @@
 from flask import Blueprint, render_template, redirect, url_for, request, jsonify
+from flask_babel import gettext as _
 from flask_login import login_user, login_required, logout_user, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
 from functools import wraps
@@ -577,23 +578,23 @@ def access_required(access: str):
 
                 if _setup_complete(_app_settings):
                     # Safety latch: don't ever re-enter setup mode automatically.
-                    return 'Forbidden', 403
+                    return _('Forbidden'), 403
 
                 setup_allow = (access == 'admin' and request.path in ('/users', '/api/user/signup'))
                 if _bootstrap_private_only(_app_settings) and not _bootstrap_request_allowed(_app_settings):
                     # Show a friendly page to non-private clients during setup.
                     if request.path.startswith('/api/'):
-                        return jsonify({'success': False, 'error': 'Forbidden'}), 403
-                    reason = 'Access denied from this network during initial setup.'
+                        return jsonify({'success': False, 'error': _('Forbidden')}), 403
+                    reason = _('Access denied from this network during initial setup.')
                     if request.headers.get('X-Forwarded-For'):
-                        reason = reason + ' Reverse proxy detected; configure security.trusted_proxies and enable security.trust_proxy_headers.'
+                        reason = reason + ' ' + _('Reverse proxy detected; configure security.trusted_proxies and enable security.trust_proxy_headers.')
                     return _render_setup_required(reason)
 
                 if setup_allow:
                     return f(*args, **kwargs)
 
                 if request.path.startswith('/api/'):
-                    return jsonify({'success': False, 'error': 'Setup required: create the first admin user at /users.'}), 403
+                    return jsonify({'success': False, 'error': _('Setup required: create the first admin user at /users.')}), 403
                 return redirect('/users')
 
             if not current_user.is_authenticated:
@@ -601,7 +602,7 @@ def access_required(access: str):
                 return login_manager.unauthorized()
 
             if not current_user.has_access(access):
-                return 'Forbidden', 403
+                return _('Forbidden'), 403
             return f(*args, **kwargs)
         return decorated_view
     return _access_required
@@ -616,9 +617,9 @@ def roles_required(roles: list, require_all=False):
             if not current_user.is_authenticated:
                 return login_manager.unauthorized()
             if require_all and not all(current_user.has_role(role) for role in roles):
-                return 'Forbidden', 403
+                return _('Forbidden'), 403
             elif not require_all and not any(current_user.has_role(role) for role in roles):
-                return 'Forbidden', 403
+                return _('Forbidden'), 403
             return f(*args, **kwargs)
 
         return decorated_view
@@ -768,7 +769,7 @@ def login():
                 app_settings = {}
 
             if _bootstrap_private_only(app_settings) and not _bootstrap_request_allowed(app_settings):
-                reason = 'Access denied from this network during initial setup.'
+                reason = _('Access denied from this network during initial setup.')
                 return _render_setup_required(reason)
             return redirect(url_for('users_page'))
         return render_template('login.html', title='Login')
@@ -804,7 +805,7 @@ def login():
         logger.warning(f'Incorrect login for user {username}')
         _log_login_event('login_failed_unknown_user', username=username, ok=False, status_code=401, window_s=15)
         if _should_count_failure(client_ip, username=username, password=password):
-            lockout_triggered, _ = _record_auth_failure(client_ip, auth_config)
+            lockout_triggered, _unused_duration = _record_auth_failure(client_ip, auth_config)
             if lockout_triggered:
                 _log_login_event('login_lockout_activated', username=username, ok=False, status_code=429, window_s=10)
         return redirect(url_for('auth.login')) # if the user doesn't exist or password is wrong, reload the page
@@ -814,7 +815,7 @@ def login():
         logger.warning(f'Incorrect login for user {username}')
         _log_login_event('login_failed_bad_password', username=username, ok=False, status_code=401, window_s=15)
         if _should_count_failure(client_ip, username=username, password=password):
-            lockout_triggered, _ = _record_auth_failure(client_ip, auth_config)
+            lockout_triggered, _unused_duration = _record_auth_failure(client_ip, auth_config)
             if lockout_triggered:
                 _log_login_event('login_lockout_activated', username=username, ok=False, status_code=429, window_s=10)
         return redirect(url_for('auth.login'))
@@ -875,7 +876,7 @@ def get_users():
 def get_user_history(user_id):
     user = User.query.filter_by(id=user_id).first()
     if not user:
-        return jsonify({'success': False, 'error': 'User not found.', 'history': []}), 404
+        return jsonify({'success': False, 'error': _('User not found.'), 'history': []}), 404
 
     limit = request.args.get('limit', 100)
     try:
@@ -888,7 +889,7 @@ def get_user_history(user_id):
         history = get_access_events(limit=limit, kinds=['transfer'], user=user.user)
     except Exception as e:
         logger.error(f'Failed to load history for user {user.user}: {e}')
-        return jsonify({'success': False, 'error': 'Failed to load user history.', 'history': []}), 500
+        return jsonify({'success': False, 'error': _('Failed to load user history.'), 'history': []}), 500
 
     title_ids = sorted({str(item.get('title_id') or '').strip().upper() for item in history if item.get('title_id')})
     title_names = {}
@@ -954,7 +955,7 @@ def get_auth_lockouts():
         })
     except Exception as e:
         logger.error(f'Failed to list auth lockouts: {e}')
-        return jsonify({'success': False, 'error': 'Failed to list auth lockouts.'}), 500
+        return jsonify({'success': False, 'error': _('Failed to list auth lockouts.')}), 500
 
 
 @auth_blueprint.route('/api/auth/lockouts/unlock', methods=['POST'])
@@ -963,7 +964,7 @@ def unlock_auth_lockout():
     data = request.json or {}
     ip = str(data.get('ip') or '').strip()
     if not ip:
-        return jsonify({'success': False, 'error': 'Missing ip.'}), 400
+        return jsonify({'success': False, 'error': _('Missing ip.')}), 400
     removed = _unlock_ip_lockout(ip)
     logger.info(f'Auth lockout unlock requested for {ip}: removed={removed}')
     return jsonify({'success': True, 'ip': ip, 'removed': bool(removed)})
@@ -989,13 +990,13 @@ def freeze_user():
     message = (data.get('message') or '').strip()
 
     if not user_id:
-        errors.append('Missing user id.')
+        errors.append(_('Missing user id.'))
     if frozen is None:
-        errors.append('Missing frozen state.')
+        errors.append(_('Missing frozen state.'))
 
     user = User.query.filter_by(id=user_id).first() if not errors else None
     if not user:
-        errors.append('User not found.')
+        errors.append(_('User not found.'))
 
     if errors:
         success = False
@@ -1014,17 +1015,17 @@ def delete_user():
     data = request.json or {}
     user_id = data.get('user_id')
     if not user_id:
-        return jsonify({'success': False, 'error': 'Missing user_id.'}), 400
+        return jsonify({'success': False, 'error': _('Missing user_id.')}), 400
 
     user = User.query.filter_by(id=user_id).first()
     if not user:
-        return jsonify({'success': False, 'error': 'User not found.'}), 404
+        return jsonify({'success': False, 'error': _('User not found.')}), 404
 
     # Prevent accidentally removing the last admin account.
     if bool(getattr(user, 'admin_access', False)):
         admin_count = User.query.filter_by(admin_access=True).count()
         if admin_count <= 1:
-            return jsonify({'success': False, 'error': 'Cannot delete the last admin account.'}), 400
+            return jsonify({'success': False, 'error': _('Cannot delete the last admin account.')}), 400
 
     try:
         User.query.filter_by(id=user_id).delete()
@@ -1035,7 +1036,7 @@ def delete_user():
     except Exception as e:
         db.session.rollback()
         logger.error(f'Could not delete user with id {user_id}: {e}')
-        return jsonify({'success': False, 'error': 'Delete failed.'}), 500
+        return jsonify({'success': False, 'error': _('Delete failed.')}), 500
 
 @auth_blueprint.route('/api/user', methods=['PATCH'])
 @login_required
@@ -1052,25 +1053,25 @@ def update_user():
     backup_access = data.get('backup_access')
 
     if not user_id:
-        errors.append('Missing user id.')
+        errors.append(_('Missing user id.'))
     if not username:
-        errors.append('Username is required.')
+        errors.append(_('Username is required.'))
     if admin_access is None or shop_access is None or backup_access is None:
-        errors.append('Missing access configuration.')
+        errors.append(_('Missing access configuration.'))
 
     user = User.query.filter_by(id=user_id).first() if not errors else None
     if not user:
-        errors.append('User not found.')
+        errors.append(_('User not found.'))
 
     if user and username != user.user:
         existing_user = User.query.filter_by(user=username).first()
         if existing_user:
-            errors.append('Username already exists.')
+            errors.append(_('Username already exists.'))
 
     if user and user.admin_access and admin_access is False:
         admin_count = User.query.filter_by(admin_access=True).count()
         if admin_count <= 1:
-            errors.append('Cannot remove the last admin account.')
+            errors.append(_('Cannot remove the last admin account.'))
 
     if errors:
         success = False
@@ -1108,13 +1109,13 @@ def reset_user_password():
     password = data.get('password')
 
     if not user_id:
-        errors.append('Missing user id.')
+        errors.append(_('Missing user id.'))
     if not password:
-        errors.append('Password is required.')
+        errors.append(_('Password is required.'))
 
     user = User.query.filter_by(id=user_id).first() if not errors else None
     if not user:
-        errors.append('User not found.')
+        errors.append(_('User not found.'))
 
     if errors:
         success = False

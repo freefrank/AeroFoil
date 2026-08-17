@@ -1,11 +1,11 @@
 <!doctype html>
-<html lang="en" data-bs-theme="dark">
+<html lang="{{ ui_language_tag or 'en' }}" data-bs-theme="dark">
 
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     {% if title %}
-    <title>AeroFoil | {{title}}</title>
+    <title>AeroFoil | {{ _(title) }}</title>
     {%else%}
     <title>AeroFoil</title>
     {%endif%}
@@ -50,9 +50,9 @@
                 if (message) {
                     parts.push(message);
                 } else if (total) {
-                    parts.push(`Conversion: ${done}/${total}`);
+                    parts.push({{ _('Conversion: {done}/{total}')|tojson }}.replace('{done}', done).replace('{total}', total));
                 } else {
-                    parts.push('Conversion running');
+                    parts.push({{ _('Conversion running')|tojson }});
                 }
                 if (file) {
                     parts.push(file);
@@ -155,16 +155,16 @@
 
                     rebuildEl.classList.remove('d-none');
                     if (titledbUpdating) {
-                        rebuildTextEl.textContent = 'Library: Updating TitleDB';
+                        rebuildTextEl.textContent = {{ _('Library: Updating TitleDB')|tojson }};
                         rebuildSpinnerEl.classList.remove('d-none');
                     } else if (scanActive) {
-                        rebuildTextEl.textContent = 'Library: Scanning';
+                        rebuildTextEl.textContent = {{ _('Library: Scanning')|tojson }};
                         rebuildSpinnerEl.classList.remove('d-none');
                     } else if (rebuildActive) {
-                        rebuildTextEl.textContent = 'Library: Rebuilding';
+                        rebuildTextEl.textContent = {{ _('Library: Rebuilding')|tojson }};
                         rebuildSpinnerEl.classList.remove('d-none');
                     } else {
-                        rebuildTextEl.textContent = 'Library: Ready';
+                        rebuildTextEl.textContent = {{ _('Library: Ready')|tojson }};
                         rebuildSpinnerEl.classList.add('d-none');
                     }
                 }).always(function () {
