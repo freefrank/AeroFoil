@@ -19,6 +19,8 @@ jobs:
   build-and-push:
     runs-on: ubuntu-latest
     timeout-minutes: 30
+    # Docker Hub credentials live in this GitHub Environment's secrets.
+    environment: Docker Build
     permissions:
       contents: read
     steps:

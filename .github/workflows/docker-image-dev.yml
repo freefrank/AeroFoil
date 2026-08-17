@@ -18,6 +18,7 @@ jobs:
   docker-build-branch-cache:
     runs-on: ubuntu-latest
     timeout-minutes: 30  # Add timeout to prevent hanging jobs
+    environment: Docker Build
     permissions:
       contents: read
     steps:
