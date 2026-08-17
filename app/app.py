@@ -71,6 +71,8 @@ _media_cache_index = {
     'banner': {}, # title_id -> filename
 }
 _media_cache_last_reset = 0
+_media_cache_last_full_refresh = {'icon': 0.0, 'banner': 0.0}
+_MEDIA_INDEX_REFRESH_MIN_INTERVAL_S = 5.0
 
 _media_resize_lock = threading.Lock()
 
@@ -220,15 +222,34 @@ def _get_cached_media_filename(cache_dir, title_id, media_kind='icon'):
             with _media_cache_lock:
                 _media_cache_index.get(media_kind, {}).pop(title_id, None)
 
+    # On a miss, refresh the whole per-kind index from one os.listdir instead
+    # of scanning the directory per miss (the post-rebuild icon stampede was
+    # ~10k listdir+linear-scans). Throttled so absent media cannot force a
+    # listdir per request.
+    global _media_cache_last_full_refresh
+    now = time.time()
+    if cache_enabled:
+        with _media_cache_lock:
+            last_refresh = _media_cache_last_full_refresh.get(media_kind, 0.0)
+        if (now - last_refresh) < _MEDIA_INDEX_REFRESH_MIN_INTERVAL_S:
+            return None
     try:
-        for name in os.listdir(cache_dir):
-            if name.startswith(f"{title_id}."):
-                if cache_enabled:
-                    with _media_cache_lock:
-                        _media_cache_index.setdefault(media_kind, {})[title_id] = name
-                return name
+        entries = os.listdir(cache_dir)
     except Exception:
         return None
+    if cache_enabled:
+        rebuilt = {}
+        for name in entries:
+            stem, sep, _rest = name.partition('.')
+            if sep:
+                rebuilt.setdefault(stem.upper(), name)
+        with _media_cache_lock:
+            _media_cache_index[media_kind] = rebuilt
+            _media_cache_last_full_refresh[media_kind] = now
+        return rebuilt.get(title_id)
+    for name in entries:
+        if name.startswith(f"{title_id}."):
+            return name
     return None
 
 def _remember_cached_media_filename(title_id, filename, media_kind='icon'):
@@ -280,10 +301,10 @@ def init():
     init_scheduler(app)
 
     def downloads_job():
-        run_downloads_job(scan_cb=scan_library, post_cb=post_library_change)
+        run_downloads_job(scan_cb=run_guarded_scan, post_cb=post_library_change)
 
     def downloads_pending_job():
-        check_completed_downloads(scan_cb=scan_library, post_cb=post_library_change)
+        check_completed_downloads(scan_cb=run_guarded_scan, post_cb=post_library_change)
 
     def maintenance_job():
         run_library_maintenance()
@@ -302,6 +323,23 @@ def init():
         interval=timedelta(seconds=30),
         log_level='debug'
     )
+    access_events_retention_days = _read_int_env(
+        'AEROFOIL_ACCESS_EVENTS_RETENTION_DAYS', 90, minimum=0, maximum=36500
+    )
+
+    def access_events_retention_job():
+        if access_events_retention_days <= 0:
+            return
+        with app.app_context():
+            prune_access_events_older_than(access_events_retention_days)
+
+    # Retention for the activity log; 0 disables cleanup entirely.
+    app.scheduler.add_job(
+        job_id='access_events_retention_job',
+        func=access_events_retention_job,
+        interval=timedelta(hours=24),
+    )
+
     maintenance_interval_minutes = _get_maintenance_interval_minutes(app_settings)
     app.scheduler.add_job(
         job_id=LIBRARY_MAINTENANCE_JOB_ID,
@@ -350,21 +388,12 @@ def init():
             )
             return
         logger.info("Starting scheduled library scan job...")
-        global scan_in_progress
-        with scan_lock:
-            if scan_in_progress:
-                logger.info(f'Skipping scheduled library scan: scan already in progress.')
-                return # Skip the scan if already in progress
-            scan_in_progress = True
         try:
-            scan_library()
-            post_library_change()
-            logger.info("Scheduled library scan job completed.")
+            if run_guarded_scan():
+                post_library_change()
+                logger.info("Scheduled library scan job completed.")
         except Exception as e:
             logger.error(f"Error during scheduled library scan job: {e}")
-        finally:
-            with scan_lock:
-                scan_in_progress = False
 
     # Update job: run update_titledb then scan_library once on startup
     def update_db_and_scan_job():
@@ -398,6 +427,9 @@ def run_library_maintenance():
     try:
         if _is_conversion_running():
             logger.info("Skipping scheduled library maintenance: conversion job is running.")
+            return
+        if _is_scan_in_progress():
+            logger.info("Skipping scheduled library maintenance: library scan is running.")
             return
         current_settings = load_settings()
         library_cfg = current_settings.get('library', {})
@@ -467,6 +499,11 @@ library_rebuild_status = {
     'updated_at': 0
 }
 library_rebuild_lock = threading.Lock()
+# Serializes actual rebuild work; library_rebuild_lock only guards the status dict.
+library_rebuild_run_lock = threading.Lock()
+# TitleDB token seen by the last rebuild: a change forces a full apps/titles sweep
+# (new TitleDB data can add versions/DLC to any title, not just dirty ones).
+_last_rebuild_titledb_token = None
 shop_sections_cache = {
     'limit': None,
     'timestamp': 0,
@@ -801,14 +838,14 @@ def _get_cached_titles_metadata():
             titles_metadata_cache.get('state_token') == state_token
             and int(titles_metadata_cache.get('version') or 0) == _TITLES_METADATA_CACHE_VERSION
         ):
+            # Read-only contract: callers must not mutate these structures.
+            # Deep-copying a 10k-entry name map plus every genre set on each
+            # hit made cache hits O(titles).
             return {
-                'genres': list(titles_metadata_cache.get('genres') or []),
-                'title_name_map': dict(titles_metadata_cache.get('title_name_map') or {}),
-                'genre_title_ids': {
-                    str(k): set(v or set())
-                    for k, v in (titles_metadata_cache.get('genre_title_ids') or {}).items()
-                },
-                'unrecognized_title_ids': set(titles_metadata_cache.get('unrecognized_title_ids') or set()),
+                'genres': titles_metadata_cache.get('genres') or [],
+                'title_name_map': titles_metadata_cache.get('title_name_map') or {},
+                'genre_title_ids': titles_metadata_cache.get('genre_title_ids') or {},
+                'unrecognized_title_ids': titles_metadata_cache.get('unrecognized_title_ids') or set(),
             }
 
     fresh = _build_titles_metadata_cache()
@@ -883,7 +920,12 @@ def _get_discovery_sections(limit=12):
                     disk_ok = (now - disk_ts) <= SHOP_SECTIONS_CACHE_TTL_S
                 if disk_payload and disk_ok:
                     payload = disk_payload
-                    _store_shop_sections_cache(payload, max(limit, 50), disk_ts, state_token, persist_disk=False)
+                    disk_size = disk_cache.get('size_bytes')
+                    _store_shop_sections_cache(
+                        payload, max(limit, 50), disk_ts, state_token,
+                        persist_disk=disk_size is None,
+                        payload_size=disk_size,
+                    )
 
     if payload is None:
         payload = _build_shop_sections_payload(max(limit, 50))
@@ -907,7 +949,7 @@ def _get_discovery_sections(limit=12):
 SHOP_SECTIONS_CACHE_TTL_S = _read_cache_ttl('SHOP_SECTIONS_CACHE_TTL_S', None)
 SHOP_SECTIONS_ALL_ITEMS_CAP = _read_cache_ttl('SHOP_SECTIONS_ALL_ITEMS_CAP', None)
 SHOP_SECTIONS_ALL_ITEMS_CAP_NO_TITLEDB = _read_cache_ttl('SHOP_SECTIONS_ALL_ITEMS_CAP_NO_TITLEDB', 120)
-SHOP_SECTIONS_MAX_IN_MEMORY_BYTES = _read_cache_ttl('SHOP_SECTIONS_MAX_IN_MEMORY_BYTES', 4 * 1024 * 1024)
+SHOP_SECTIONS_MAX_IN_MEMORY_BYTES = _read_cache_ttl('SHOP_SECTIONS_MAX_IN_MEMORY_BYTES', 64 * 1024 * 1024)
 MEDIA_INDEX_TTL_S = _read_cache_ttl('MEDIA_INDEX_TTL_S', None)
 REQUEST_SETTINGS_SYNC_INTERVAL_S = _read_cache_ttl('REQUEST_SETTINGS_SYNC_INTERVAL_S', 5)
 MISSING_FILES_SWEEP_INTERVAL_S = _read_cache_ttl('MISSING_FILES_SWEEP_INTERVAL_S', 21600)
@@ -917,8 +959,19 @@ TITLES_TOTAL_CACHE_MAX_ENTRIES = _read_int_env('AEROFOIL_TITLES_TOTAL_CACHE_MAX_
 TITLES_TOTAL_CACHE_MAX_ENTRIES = _read_int_env('OWNFOIL_TITLES_TOTAL_CACHE_MAX_ENTRIES', TITLES_TOTAL_CACHE_MAX_ENTRIES, minimum=16, maximum=4096)
 # ===============================
 
-def _load_shop_sections_cache_from_disk():
-    cache_path = SHOP_SECTIONS_CACHE_FILE
+def _shop_sections_cache_path(cache_limit=None):
+    # The uncapped CyberFoil payload (limit=-1) gets its own file so it does not
+    # evict the capped web payload (and vice versa) on alternating traffic.
+    try:
+        if cache_limit is not None and int(cache_limit) == -1:
+            base, ext = os.path.splitext(SHOP_SECTIONS_CACHE_FILE)
+            return f"{base}.cyberfoil{ext}"
+    except (TypeError, ValueError):
+        pass
+    return SHOP_SECTIONS_CACHE_FILE
+
+def _load_shop_sections_cache_from_disk(cache_limit=None):
+    cache_path = _shop_sections_cache_path(cache_limit)
     if not os.path.exists(cache_path):
         return None
     try:
@@ -932,14 +985,15 @@ def _load_shop_sections_cache_from_disk():
         return None
     return data
 
-def _save_shop_sections_cache_to_disk(payload, limit, timestamp, state_token=None):
-    cache_path = SHOP_SECTIONS_CACHE_FILE
+def _save_shop_sections_cache_to_disk(payload, limit, timestamp, state_token=None, size_bytes=None):
+    cache_path = _shop_sections_cache_path(limit)
     os.makedirs(os.path.dirname(cache_path), exist_ok=True)
     data = {
         'payload': payload,
         'limit': limit,
         'timestamp': timestamp,
         'state_token': state_token,
+        'size_bytes': size_bytes,
     }
     try:
         with open(cache_path, 'w', encoding='utf-8') as handle:
@@ -953,7 +1007,7 @@ def _estimate_json_size_bytes(payload):
     except Exception:
         return None
 
-def _store_shop_sections_cache(payload, limit, timestamp, state_token, persist_disk=True):
+def _store_shop_sections_cache(payload, limit, timestamp, state_token, persist_disk=True, payload_size=None):
     cache_payload = payload
     if '::missing' in str(state_token or ''):
         # Keep cold-boot payload on disk only; avoid retaining large placeholder payloads in RAM.
@@ -963,7 +1017,8 @@ def _store_shop_sections_cache(payload, limit, timestamp, state_token, persist_d
     if cache_payload is not None and max_bytes is not None:
         try:
             max_bytes = max(0, int(max_bytes))
-            payload_size = _estimate_json_size_bytes(cache_payload)
+            if payload_size is None:
+                payload_size = _estimate_json_size_bytes(cache_payload)
             if payload_size is not None and payload_size > max_bytes:
                 logger.info(
                     "Skipping in-memory shop sections cache (%s bytes > %s bytes); using disk cache only.",
@@ -974,22 +1029,24 @@ def _store_shop_sections_cache(payload, limit, timestamp, state_token, persist_d
         except Exception:
             pass
 
+    # Never clear the encrypted-response cache here: its keys embed the state
+    # token, so entries for stale tokens miss naturally and are evicted by the
+    # size bound. Clearing it whenever an oversized payload was stored meant it
+    # could never hit while the payload lived on disk only.
     with shop_sections_cache_lock:
         if cache_payload is None:
             shop_sections_cache['payload'] = None
             shop_sections_cache['limit'] = None
             shop_sections_cache['timestamp'] = 0
             shop_sections_cache['state_token'] = None
-            shop_sections_cache['encrypted'] = {}
         else:
             shop_sections_cache['payload'] = cache_payload
             shop_sections_cache['limit'] = limit
             shop_sections_cache['timestamp'] = timestamp
             shop_sections_cache['state_token'] = state_token
-            shop_sections_cache['encrypted'] = {}
 
     if persist_disk:
-        _save_shop_sections_cache_to_disk(payload, limit, timestamp, state_token=state_token)
+        _save_shop_sections_cache_to_disk(payload, limit, timestamp, state_token=state_token, size_bytes=payload_size)
 
 def _summarize_shop_sections_payload(payload):
     summary = {
@@ -1843,6 +1900,13 @@ def select_ui_locale():
 def create_app():
     app = Flask(__name__)
     app.config["SQLALCHEMY_DATABASE_URI"] = AEROFOIL_DB
+    # The pool must cover waitress workers + scheduler workers + watcher/debounce
+    # threads; the sqlite connect timeout backs up the busy_timeout PRAGMA.
+    app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {
+        "connect_args": {"timeout": 30},
+        "pool_size": 20,
+        "max_overflow": 30,
+    }
     static_max_age = _read_int_env('AEROFOIL_STATIC_MAX_AGE_S', 3600, minimum=0, maximum=31536000)
     static_max_age = _read_int_env('OWNFOIL_STATIC_MAX_AGE_S', static_max_age, minimum=0, maximum=31536000)
     app.config['SEND_FILE_MAX_AGE_DEFAULT'] = int(static_max_age)
@@ -4392,14 +4456,14 @@ def manage_delete_orphaned_addons():
 @app.post('/api/manage/check-downloads')
 @access_required('admin')
 def manage_check_downloads():
-    ok, message = check_completed_downloads(scan_cb=scan_library, post_cb=post_library_change)
+    ok, message = check_completed_downloads(scan_cb=run_guarded_scan, post_cb=post_library_change)
     return jsonify({'success': ok, 'message': message})
 
 
 @app.post('/api/downloads/check-completed')
 @access_required('admin')
 def downloads_check_completed():
-    ok, message = check_completed_downloads(scan_cb=scan_library, post_cb=post_library_change)
+    ok, message = check_completed_downloads(scan_cb=run_guarded_scan, post_cb=post_library_change)
     return jsonify({'success': ok, 'message': message})
 
 
@@ -5501,10 +5565,22 @@ def get_all_titles_api():
     info_cache = {}
     release_dates_by_title = {}
     if use_name_sort:
-        rows_for_sort = query.order_by(None).all()
-        total = len(rows_for_sort)
-        all_lookup_ids.update([row.title_id for row in rows_for_sort if row.title_id])
-        all_lookup_ids.update([row.app_id for row in rows_for_sort if row.app_type == APP_TYPE_DLC and row.app_id])
+        # Sort on a slim 4-column projection instead of materializing every
+        # 16-column row, then hydrate only the requested page. Display names
+        # come from the memoized TitleDB lookups (LRU-cached across requests).
+        slim_rows = (
+            query.order_by(None)
+            .with_entities(
+                Apps.id.label('app_pk'),
+                Titles.title_id.label('title_id'),
+                Apps.app_id.label('app_id'),
+                Apps.app_type.label('app_type'),
+            )
+            .all()
+        )
+        total = len(slim_rows)
+        all_lookup_ids.update([row.title_id for row in slim_rows if row.title_id])
+        all_lookup_ids.update([row.app_id for row in slim_rows if row.app_type == APP_TYPE_DLC and row.app_id])
 
         with titles.titledb_session() as titledb_loaded:
             if titledb_loaded:
@@ -5527,8 +5603,14 @@ def get_all_titles_api():
                 str(row.app_id or ''),
             )
 
-        rows_for_sort.sort(key=_row_sort_key, reverse=(sort_key == 'title_desc'))
-        rows = rows_for_sort[start:start + per_page]
+        slim_rows.sort(key=_row_sort_key, reverse=(sort_key == 'title_desc'))
+        page_pks = [row.app_pk for row in slim_rows[start:start + per_page]]
+        if page_pks:
+            page_rows = query.filter(Apps.id.in_(page_pks)).all()
+            rows_by_pk = {row.app_pk: row for row in page_rows}
+            rows = [rows_by_pk[pk] for pk in page_pks if pk in rows_by_pk]
+        else:
+            rows = []
     else:
         rows = query.offset(start).limit(per_page).all()
 
@@ -6192,7 +6274,7 @@ def shop_sections_api():
 
     if payload is None:
         if SHOP_SECTIONS_CACHE_TTL_S is None or SHOP_SECTIONS_CACHE_TTL_S > 0:
-            disk_cache = _load_shop_sections_cache_from_disk()
+            disk_cache = _load_shop_sections_cache_from_disk(cache_limit)
             if (
                 disk_cache
                 and disk_cache.get('limit') == cache_limit
@@ -6205,7 +6287,15 @@ def shop_sections_api():
                     disk_ok = (now - disk_ts) <= SHOP_SECTIONS_CACHE_TTL_S
                 if disk_payload and disk_ok:
                     payload = disk_payload
-                    _store_shop_sections_cache(payload, cache_limit, disk_ts, state_token, persist_disk=False)
+                    # Reuse the size recorded with the disk cache so the store
+                    # does not re-serialize a multi-MB payload per request;
+                    # legacy cache files without a size get re-persisted once.
+                    disk_size = disk_cache.get('size_bytes')
+                    _store_shop_sections_cache(
+                        payload, cache_limit, disk_ts, state_token,
+                        persist_disk=disk_size is None,
+                        payload_size=disk_size,
+                    )
 
     if payload is None:
         payload = _build_shop_sections_payload(limit, full_catalog=is_cyberfoil)
@@ -6537,6 +6627,18 @@ def _run_post_library_change():
     if _is_conversion_running():
         logger.info("Skipping library rebuild: conversion job is running.")
         return
+    # One rebuild at a time. A request arriving mid-rebuild schedules a
+    # trailing debounced run instead of doubling the full sweep.
+    if not library_rebuild_run_lock.acquire(blocking=False):
+        logger.info("Library rebuild already running; scheduling a trailing rebuild.")
+        post_library_change()
+        return
+    try:
+        _run_post_library_change_locked()
+    finally:
+        library_rebuild_run_lock.release()
+
+def _run_post_library_change_locked():
     with library_rebuild_lock:
         if not library_rebuild_status['in_progress']:
             library_rebuild_status['started_at'] = time.time()
@@ -6547,8 +6649,19 @@ def _run_post_library_change():
             invalidate_library_cache_state_token()
             titles.load_titledb()
             process_library_identification(app)
-            add_missing_apps_to_db()
-            update_titles() # Ensure titles are updated after identification
+            global _last_rebuild_titledb_token
+            dirty_pks, full_requested = drain_dirty_title_pks()
+            titledb_token = titles.get_titledb_cache_token()
+            if full_requested or titledb_token != _last_rebuild_titledb_token:
+                sweep_scope = None  # full sweep
+            else:
+                sweep_scope = sorted(dirty_pks)
+            if sweep_scope is None or sweep_scope:
+                add_missing_apps_to_db(title_pks=sweep_scope)
+                update_titles(title_pks=sweep_scope) # Ensure titles are updated after identification
+            else:
+                logger.info('No title changes since last rebuild; skipping apps/titles sweeps.')
+            _last_rebuild_titledb_token = titledb_token
             # Expensive filesystem sweep: run periodically, not on every rebuild.
             _maybe_remove_missing_files_from_db(force=False)
             organize_pending_downloads()
@@ -6602,26 +6715,14 @@ def scan_library_api():
         logger.info('Skipping scan_library_api call: conversion job is running.')
         return jsonify({'success': False, 'errors': [_('Conversion in progress. Try again after conversion finishes.')]})
 
-    global scan_in_progress
-    with scan_lock:
-        if scan_in_progress:
+    try:
+        if not run_guarded_scan(path):
             logger.info('Skipping scan_library_api call: Scan already in progress')
             return {'success': False, 'errors': []}
-    # Set the scan status to in progress
-    scan_in_progress = True
-
-    try:
-        if path is None:
-            scan_library()
-        else:
-            scan_library_path(path)
     except Exception as e:
         errors.append(e)
         success = False
         logger.error(f"Error during library scan: {e}")
-    finally:
-        with scan_lock:
-            scan_in_progress = False
 
     post_library_change()
     resp = {
@@ -6635,6 +6736,36 @@ def scan_library():
     libraries = get_libraries()
     for library in libraries:
         scan_library_path(library.path) # Only scan, identification will be done globally
+
+def _is_scan_in_progress():
+    with scan_lock:
+        return scan_in_progress
+
+def run_guarded_scan(path=None):
+    """Run a library scan unless one is already in progress.
+
+    The single entry point for every scan trigger (scheduler, API, download
+    manager) so concurrent full scans cannot interleave writes. Returns True
+    if the scan ran, False if it was skipped.
+    """
+    global scan_in_progress
+    if _is_conversion_running():
+        logger.info('Skipping library scan: conversion job is running.')
+        return False
+    with scan_lock:
+        if scan_in_progress:
+            logger.info('Skipping library scan: scan already in progress.')
+            return False
+        scan_in_progress = True
+    try:
+        if path is None:
+            scan_library()
+        else:
+            scan_library_path(path)
+        return True
+    finally:
+        with scan_lock:
+            scan_in_progress = False
 
 if __name__ == '__main__':
     logger.info('Starting initialization of AeroFoil...')

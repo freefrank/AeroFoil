@@ -10,6 +10,7 @@ import sys
 import threading
 import time
 import importlib.util
+from sqlalchemy.exc import OperationalError
 from sqlalchemy.orm import aliased
 from app.constants import *
 from app.db import *
@@ -36,7 +37,7 @@ _library_state_token_cache = {
     'token': None,
     'updated_at': 0.0,
 }
-_LIBRARY_STATE_TOKEN_CACHE_TTL_S = 1.0
+_LIBRARY_STATE_TOKEN_CACHE_TTL_S = 30.0
 
 def _diag_phase_start(phase, **metadata):
     now = time.time()
@@ -202,6 +203,30 @@ def init_libraries(app, watcher, paths):
                 # Ensure watchdog is monitoring existing library
                 watcher.add_directory(path)
 
+def _flush_new_file_rows(pending_rows):
+    """Insert gathered file rows in one short transaction.
+
+    Retries once on a lock error; a chunk that still fails is logged and
+    skipped so one contended commit no longer aborts the whole scan (the
+    files are re-discovered on the next cycle).
+    """
+    if not pending_rows:
+        return
+    for attempt in (1, 2):
+        try:
+            for row in pending_rows:
+                db.session.add(Files(**row))
+            db.session.commit()
+            db.session.expunge_all()
+            return
+        except OperationalError as e:
+            db.session.rollback()
+            if attempt == 1:
+                logger.warning(f'Commit of {len(pending_rows)} new files failed ({e}); retrying once.')
+            else:
+                logger.error(f'Commit of {len(pending_rows)} new files failed after retry, skipping chunk: {e}')
+    pending_rows.clear()
+
 def add_files_to_library(library, files, check_existing=True):
     nb_to_identify = len(files)
     if isinstance(library, int) or library.isdigit():
@@ -212,12 +237,20 @@ def add_files_to_library(library, files, check_existing=True):
         library_id = get_library_id(library_path)
 
     library_path = get_library_path(library_id)
+    # Gather file info (filesystem I/O) with nothing pending in the session,
+    # then insert in short transactions: the write lock is never held across
+    # slow disk/network reads.
+    pending_rows = []
     for n, filepath in enumerate(files):
         if check_existing and file_exists_in_db(filepath):
             logger.debug(f'File already in database, skipping: {filepath}')
             continue
         file = filepath.replace(library_path, "")
-        logger.info(f'Getting file info ({n+1}/{nb_to_identify}): {file}')
+        # Per-file lines at DEBUG: a 100k-file scan otherwise emits 100k+
+        # eagerly formatted INFO lines; INFO gets a periodic progress summary.
+        if (n + 1) % 500 == 0 or (n + 1) == nb_to_identify:
+            logger.info(f'Getting file info ({n+1}/{nb_to_identify})')
+        logger.debug(f'Getting file info ({n+1}/{nb_to_identify}): {file}')
 
         file_info = titles_lib.get_file_info(filepath)
 
@@ -226,24 +259,21 @@ def add_files_to_library(library, files, check_existing=True):
             # in the future save identification error to be displayed and inspected in the UI
             continue
 
-        new_file = Files(
+        pending_rows.append(dict(
             filepath = filepath,
             library_id = library_id,
             folder = file_info["filedir"],
             filename = file_info["filename"],
             extension = file_info["extension"],
             size = file_info["size"],
-        )
-        db.session.add(new_file)
+        ))
 
-        # Commit every 100 files to avoid excessive memory use
-        if (n + 1) % 100 == 0:
-            db.session.commit()
-            db.session.expunge_all()
+        # Insert every 100 files to bound memory use
+        if len(pending_rows) >= 100:
+            _flush_new_file_rows(pending_rows)
+            pending_rows = []
 
-    # Final commit
-    db.session.commit()
-    db.session.expunge_all()
+    _flush_new_file_rows(pending_rows)
 
 def scan_library_path(library_path):
     phase = 'scan_library_path'
@@ -316,6 +346,26 @@ def scan_library_path(library_path):
             files_added=added,
             files_removed=missing_count
         )
+
+# Retry backoff for identification: base 2h doubling per failed attempt,
+# capped at 7 days. Without this, files that persistently fail identification
+# (corrupt dumps, unknown app IDs) were re-opened and re-decrypted every cycle
+# forever — the attempts/last_attempt columns were written but never read.
+_IDENTIFY_BACKOFF_BASE_HOURS = 2
+_IDENTIFY_BACKOFF_CAP_HOURS = 7 * 24
+
+def _identification_retry_due(attempts, last_attempt, now=None):
+    if not attempts or last_attempt is None:
+        return True
+    now = now or datetime.datetime.now()
+    delay_hours = min(
+        _IDENTIFY_BACKOFF_BASE_HOURS * (2 ** (min(int(attempts), 16) - 1)),
+        _IDENTIFY_BACKOFF_CAP_HOURS,
+    )
+    try:
+        return (now - last_attempt).total_seconds() >= delay_hours * 3600
+    except TypeError:
+        return True
 
 def _get_identification_file_ids_batch(library_id, include_filename_retry, include_orphaned, last_id, batch_size):
     orphaned_condition = ~db.session.query(app_files.c.file_id).filter(app_files.c.file_id == Files.id).exists()
@@ -394,104 +444,172 @@ def identify_library_files(library):
                 break
             last_id = batch_ids[-1]
 
-            for file_id in batch_ids:
-                file = db.session.get(Files, file_id)
-                if file is None:
+            # Phase 1 — file I/O only, nothing pending in the session: the
+            # SQLite write lock is not held while containers are opened and
+            # decrypted (which can take seconds per file on network mounts).
+            batch_rows = (
+                db.session.query(
+                    Files.id, Files.filepath, Files.filename,
+                    Files.identification_attempts, Files.last_attempt,
+                )
+                .filter(Files.id.in_(batch_ids))
+                .all()
+            )
+            identify_results = []
+            retry_now = datetime.datetime.now()
+            for row in batch_rows:
+                if not _identification_retry_due(row.identification_attempts, row.last_attempt, retry_now):
                     continue
-                filename = file.filename or file.filepath or str(file.id)
-                filepath = file.filepath
-                file_deleted = False
-
+                filename = row.filename or row.filepath or str(row.id)
+                filepath = row.filepath
+                processed += 1
+                if not filepath or not os.path.exists(filepath):
+                    logger.warning(
+                        f'Identifying file ({processed}/{nb_to_identify}): {filename} no longer exists, deleting from database.'
+                    )
+                    identify_results.append((row.id, filename, True, None, False, None, None))
+                    continue
+                if processed % 500 == 0 or processed == nb_to_identify:
+                    logger.info(f'Identifying files: {processed}/{nb_to_identify}')
+                logger.debug(f'Identifying file ({processed}/{nb_to_identify}): {filename}')
                 try:
-                    if not filepath or not os.path.exists(filepath):
-                        logger.warning(
-                            f'Identifying file ({processed + 1}/{nb_to_identify}): {filename} no longer exists, deleting from database.'
+                    identification, success, file_contents, error = titles_lib.identify_file(filepath)
+                except Exception as e:
+                    identification, success, file_contents, error = None, False, None, str(e)
+                identify_results.append((row.id, filename, False, identification, success, file_contents, error))
+
+            # Phase 2 — apply results in one short write transaction per batch.
+            # A contended commit is retried once; a chunk that still fails is
+            # skipped (retried by backoff on the next cycle) instead of
+            # aborting the whole identification pass.
+            def _apply_identify_results():
+                dirty_pks = set()
+                for file_id, filename, missing, identification, success, file_contents, error in identify_results:
+                    file = db.session.get(Files, file_id)
+                    if file is None:
+                        continue
+                    if missing:
+                        # Titles losing this file need their ownership flags
+                        # recomputed by the scoped update_titles pass.
+                        dirty_pks.update(
+                            r.title_id
+                            for r in db.session.query(Apps.title_id)
+                            .join(app_files, app_files.c.app_id == Apps.id)
+                            .filter(app_files.c.file_id == file_id)
+                            .distinct()
+                            .all()
                         )
                         db.session.delete(file)
-                        file_deleted = True
                         continue
+                    try:
+                        if success and file_contents and not error:
+                            title_ids = list(dict.fromkeys([c['title_id'] for c in file_contents if c.get('title_id')]))
+                            for title_id in title_ids:
+                                title_db_id = title_id_db_cache.get(title_id)
+                                if title_db_id is None:
+                                    title_obj = Titles.query.filter_by(title_id=title_id).first()
+                                    if not title_obj:
+                                        title_obj = Titles(title_id=title_id)
+                                        db.session.add(title_obj)
+                                        db.session.flush()
+                                    title_db_id = title_obj.id
+                                    title_id_db_cache[title_id] = title_db_id
 
-                    logger.info(f'Identifying file ({processed + 1}/{nb_to_identify}): {filename}')
-                    identification, success, file_contents, error = titles_lib.identify_file(filepath)
-                    if success and file_contents and not error:
-                        title_ids = list(dict.fromkeys([c['title_id'] for c in file_contents if c.get('title_id')]))
-                        for title_id in title_ids:
-                            title_db_id = title_id_db_cache.get(title_id)
-                            if title_db_id is None:
-                                title_obj = Titles.query.filter_by(title_id=title_id).first()
-                                if not title_obj:
-                                    title_obj = Titles(title_id=title_id)
-                                    db.session.add(title_obj)
-                                    db.session.flush()
-                                title_db_id = title_obj.id
-                                title_id_db_cache[title_id] = title_db_id
-
-                        nb_content = 0
-                        for file_content in file_contents:
-                            logger.info(
-                                "Identifying file (%s/%s) - Found content Title ID: %s App ID : %s Title Type: %s Version: %s",
-                                processed + 1,
-                                nb_to_identify,
-                                file_content.get("title_id"),
-                                file_content.get("app_id"),
-                                file_content.get("type"),
-                                file_content.get("version")
-                            )
-                            title_id_in_db = title_id_db_cache.get(file_content.get("title_id"))
-                            if title_id_in_db is None:
-                                continue
-
-                            app_id = file_content.get("app_id")
-                            app_version = str(file_content.get("version") or "0")
-                            existing_app = Apps.query.filter_by(
-                                app_id=app_id,
-                                app_version=app_version
-                            ).first()
-
-                            if existing_app:
-                                if file not in existing_app.files:
-                                    existing_app.files.append(file)
-                                existing_app.owned = True
-                            else:
-                                new_app = Apps(
-                                    app_id=app_id,
-                                    app_version=app_version,
-                                    app_type=file_content.get("type"),
-                                    owned=True,
-                                    title_id=title_id_in_db
+                            nb_content = 0
+                            for file_content in file_contents:
+                                logger.debug(
+                                    "Identified %s - content Title ID: %s App ID : %s Title Type: %s Version: %s",
+                                    filename,
+                                    file_content.get("title_id"),
+                                    file_content.get("app_id"),
+                                    file_content.get("type"),
+                                    file_content.get("version")
                                 )
-                                new_app.files.append(file)
-                                db.session.add(new_app)
+                                title_id_in_db = title_id_db_cache.get(file_content.get("title_id"))
+                                if title_id_in_db is None:
+                                    continue
+                                dirty_pks.add(title_id_in_db)
 
-                            nb_content += 1
+                                app_id = file_content.get("app_id")
+                                app_version = str(file_content.get("version") or "0")
+                                existing_app = Apps.query.filter_by(
+                                    app_id=app_id,
+                                    app_version=app_version
+                                ).first()
 
-                        file.multicontent = nb_content > 1
-                        file.nb_content = nb_content
-                        file.identified = True
-                        file.identification_error = None
-                    else:
-                        logger.warning(f"Error identifying file {filename}: {error}")
-                        file.identification_error = error
+                                if existing_app:
+                                    if file not in existing_app.files:
+                                        existing_app.files.append(file)
+                                    existing_app.owned = True
+                                else:
+                                    new_app = Apps(
+                                        app_id=app_id,
+                                        app_version=app_version,
+                                        app_type=file_content.get("type"),
+                                        owned=True,
+                                        title_id=title_id_in_db
+                                    )
+                                    new_app.files.append(file)
+                                    db.session.add(new_app)
+
+                                nb_content += 1
+
+                            file.multicontent = nb_content > 1
+                            file.nb_content = nb_content
+                            if nb_content > 0:
+                                file.identified = True
+                                file.identification_error = None
+                            else:
+                                # Every content resolved to an app ID unknown to
+                                # TitleDB. Marking such files identified used to
+                                # leave them with zero app links, matching the
+                                # orphaned predicate and re-identifying them every
+                                # cycle forever; keep them unidentified so the
+                                # retry backoff governs them instead.
+                                logger.warning(f"No recognized content in file {filename}; will retry with backoff.")
+                                file.identified = False
+                                file.identification_error = 'No recognized content (app IDs unknown to TitleDB)'
+                        else:
+                            logger.warning(f"Error identifying file {filename}: {error}")
+                            file.identification_error = error
+                            file.identified = False
+
+                        if identification is not None:
+                            file.identification_type = identification
+                    except Exception as e:
+                        logger.warning(f"Error identifying file {filename}: {e}")
+                        file.identification_error = str(e)
                         file.identified = False
-
-                    file.identification_type = identification
-                except Exception as e:
-                    logger.warning(f"Error identifying file {filename}: {e}")
-                    file.identification_error = str(e)
-                    file.identified = False
-                finally:
-                    if not file_deleted:
+                    if file.identified and identification == 'cnmt':
+                        # Fully identified: nothing left to retry.
+                        file.identification_attempts = 0
+                    else:
+                        # Failed, or filename-only identification that a later
+                        # pass may upgrade via CNMT — both follow the backoff.
                         file.identification_attempts = (file.identification_attempts or 0) + 1
-                        file.last_attempt = datetime.datetime.now()
-                    processed += 1
+                    file.last_attempt = datetime.datetime.now()
+                db.session.commit()
+                return dirty_pks
 
-                    if processed % _IDENTIFY_COMMIT_INTERVAL == 0:
-                        db.session.commit()
-                        db.session.expunge_all()
-                        _diag_sample_identity_map(phase)
-                        if processed % (_IDENTIFY_COMMIT_INTERVAL * 10) == 0:
-                            gc.collect()
-                            _diag_note_gc(phase)
+            for attempt in (1, 2):
+                try:
+                    mark_titles_dirty(_apply_identify_results())
+                    break
+                except OperationalError as e:
+                    db.session.rollback()
+                    # Title ids minted inside the rolled-back transaction are gone.
+                    title_id_db_cache.clear()
+                    if attempt == 1:
+                        logger.warning(f'Identification batch commit failed ({e}); retrying once.')
+                    else:
+                        logger.error(
+                            f'Identification batch failed after retry, skipping {len(identify_results)} results: {e}'
+                        )
+
+            db.session.expunge_all()
+            _diag_sample_identity_map(phase)
+            gc.collect()
+            _diag_note_gc(phase)
 
         db.session.commit()
         db.session.expunge_all()
@@ -512,10 +630,20 @@ def identify_library_files(library):
             processed=processed
         )
 
-def add_missing_apps_to_db():
+def add_missing_apps_to_db(title_pks=None):
     phase = 'add_missing_apps_to_db'
+    scoped_pks = None
+    if title_pks is not None:
+        scoped_pks = [int(v) for v in title_pks if v is not None]
+        if not scoped_pks:
+            _diag_phase_start(phase)
+            _diag_phase_end(phase, processed=0, apps_added=0, scoped=True)
+            return
     _diag_phase_start(phase)
-    logger.info('Adding missing apps to database...')
+    if scoped_pks is None:
+        logger.info('Adding missing apps to database...')
+    else:
+        logger.info(f'Adding missing apps to database for {len(scoped_pks)} changed title(s)...')
     apps_added = 0
     processed = 0
     last_title_pk = 0
@@ -523,9 +651,14 @@ def add_missing_apps_to_db():
 
     try:
         while True:
-            title_rows = (
+            title_query = (
                 db.session.query(Titles.id, Titles.title_id)
                 .filter(Titles.id > last_title_pk)
+            )
+            if scoped_pks is not None:
+                title_query = title_query.filter(Titles.id.in_(scoped_pks))
+            title_rows = (
+                title_query
                 .order_by(Titles.id)
                 .limit(_IDENTIFY_QUERY_BATCH_SIZE)
                 .all()
@@ -661,8 +794,11 @@ def process_library_identification(app):
         logger.error(f"Error during library identification process: {e}")
     logger.info(f"Library identification process for all libraries completed.")
 
-def update_titles():
+def update_titles(title_pks=None):
     phase = 'update_titles'
+    scoped_pks = None
+    if title_pks is not None:
+        scoped_pks = [int(v) for v in title_pks if v is not None]
     _diag_phase_start(phase)
     _diag_sample_identity_map(phase)
     # Remove titles that no longer have any owned apps
@@ -670,13 +806,22 @@ def update_titles():
     if titles_removed > 0:
             logger.info(f"Removed {titles_removed} titles with no owned apps.")
 
+    if scoped_pks is not None and not scoped_pks:
+        _diag_phase_end(phase, processed=0, titles_removed=titles_removed, scoped=True)
+        return
+
     last_title_pk = 0
     processed = 0
     try:
         while True:
-            title_batch = (
+            title_query = (
                 Titles.query
                 .filter(Titles.id > last_title_pk)
+            )
+            if scoped_pks is not None:
+                title_query = title_query.filter(Titles.id.in_(scoped_pks))
+            title_batch = (
+                title_query
                 .order_by(Titles.id)
                 .limit(_IDENTIFY_QUERY_BATCH_SIZE)
                 .all()
@@ -883,7 +1028,10 @@ def is_library_unchanged():
     if not saved_state_token:
         return False
 
-    current_state_token = get_library_cache_state_token(force_refresh=True)
+    # The memoized token is fine here: every rebuild invalidates it up front,
+    # and the fingerprint query is a multi-table full scan worth avoiding on
+    # the request path.
+    current_state_token = get_library_cache_state_token()
     return saved_state_token == current_state_token
 
 def save_library_to_disk(library_data):
@@ -1401,6 +1549,9 @@ def _sync_apps_owned_flags(app_ids=None, title_ids=None):
         if not scoped_title_ids:
             return 0
         query = query.filter(Apps.title_id.in_(scoped_title_ids))
+    # Only rewrite rows whose owned value actually changes; SQLite rewrites
+    # every matched row otherwise, dirtying the whole table each sweep.
+    query = query.filter(or_(Apps.owned.is_(None), Apps.owned != has_files_expr))
     return int(query.update({Apps.owned: has_files_expr}, synchronize_session=False) or 0)
 
 def _replace_or_create_converted_file_row(

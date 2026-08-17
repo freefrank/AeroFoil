@@ -120,7 +120,9 @@ _english_titles_index_file = os.path.join(TITLEDB_DIR, 'titles.english.index.sql
 _titledb_lock = threading.Lock()
 _missing_titledb_log_lock = threading.Lock()
 _missing_titledb_last_log = {}
+_missing_titledb_prune_last = 0.0
 _MISSING_TITLE_LOG_TTL_S = 3600
+_MISSING_TITLE_PRUNE_INTERVAL_S = 60
 _TITLEDB_STATE_WARN_TTL_S = 60
 _titledb_state_warn_last_log = {}
 _MISSING_FILES_RECOVERY_COOLDOWN_S = 60
@@ -131,7 +133,7 @@ _title_lookup_cache = {}
 _title_lookup_cache_lock = threading.Lock()
 _english_title_lookup_cache = {}
 _english_title_lookup_cache_lock = threading.Lock()
-_TITLE_LOOKUP_CACHE_MAX = 4096
+_TITLE_LOOKUP_CACHE_MAX = 32768
 _english_titles_index_ready = False
 
 try:
@@ -184,6 +186,9 @@ def _reset_titledb_state():
         _title_lookup_cache.clear()
     with _english_title_lookup_cache_lock:
         _english_title_lookup_cache.clear()
+    with _identify_app_cache_lock:
+        _identify_app_cache.clear()
+    _bump_index_conn_generation()
 
 def _load_json_file(path, label):
     try:
@@ -226,6 +231,39 @@ def _get_local_preferred_english_titles_files(app_settings=None):
 def _open_versions_index_db(path):
     conn = sqlite3.connect(path, timeout=30)
     conn.execute("PRAGMA synchronous=NORMAL")
+    return conn
+
+# Read connections to the on-disk index DBs are reused per thread: hot paths
+# used to open/PRAGMA/close a fresh connection per lookup (tens of thousands
+# per rebuild). The generation counter is bumped when TitleDB unloads so
+# threads lazily reopen after index files are rebuilt/replaced.
+_index_conn_local = threading.local()
+_index_conn_generation = 0
+_index_conn_generation_lock = threading.Lock()
+
+def _bump_index_conn_generation():
+    global _index_conn_generation
+    with _index_conn_generation_lock:
+        _index_conn_generation += 1
+
+def _get_read_index_connection(path):
+    with _index_conn_generation_lock:
+        generation = _index_conn_generation
+    conns = getattr(_index_conn_local, 'conns', None)
+    if conns is None:
+        conns = _index_conn_local.conns = {}
+    key = (path, generation)
+    conn = conns.get(key)
+    if conn is None:
+        for stale_key in [k for k in list(conns) if k[0] == path]:
+            try:
+                conns.pop(stale_key).close()
+            except Exception:
+                pass
+        conn = sqlite3.connect(path, timeout=30)
+        conn.execute("PRAGMA synchronous=NORMAL")
+        conn.execute("PRAGMA query_only=1")
+        conns[key] = conn
     return conn
 
 def _release_process_memory():
@@ -843,7 +881,27 @@ def get_file_info(filepath):
         'size': get_file_size(filepath),
     }
 
+_identify_app_cache = {}
+_identify_app_cache_lock = threading.Lock()
+_IDENTIFY_APP_CACHE_MAX = 65536
+
 def identify_appId(app_id):
+    # Pure function of an immutable index; memoized because it is called once
+    # per content per file during identification (a fresh SQLite query before).
+    key = str(app_id or '').lower()
+    with _identify_app_cache_lock:
+        cached = _identify_app_cache.get(key)
+    if cached is not None:
+        return cached
+    result = _identify_appId_uncached(key)
+    if _cnmts_index_ready and result and result[0] is not None:
+        with _identify_app_cache_lock:
+            if len(_identify_app_cache) >= _IDENTIFY_APP_CACHE_MAX:
+                _identify_app_cache.clear()
+            _identify_app_cache[key] = result
+    return result
+
+def _identify_appId_uncached(app_id):
     app_id = app_id.lower()
 
     def _fallback_identification():
@@ -865,16 +923,13 @@ def identify_appId(app_id):
         return None, None
 
     try:
-        conn = _open_versions_index_db(_cnmts_index_file)
-        try:
-            row = conn.execute(
-                "SELECT title_type, other_application_id "
-                "FROM cnmts WHERE app_id = ? "
-                "ORDER BY sort_order DESC LIMIT 1",
-                (app_id,),
-            ).fetchone()
-        finally:
-            conn.close()
+        conn = _get_read_index_connection(_cnmts_index_file)
+        row = conn.execute(
+            "SELECT title_type, other_application_id "
+            "FROM cnmts WHERE app_id = ? "
+            "ORDER BY sort_order DESC LIMIT 1",
+            (app_id,),
+        ).fetchone()
     except Exception as e:
         logger.warning(f"Failed querying cnmts index for {app_id.upper()}: {e}")
         return _fallback_identification()
@@ -1144,6 +1199,9 @@ def unload_titledb():
             _title_lookup_cache.clear()
         with _english_title_lookup_cache_lock:
             _english_title_lookup_cache.clear()
+        with _identify_app_cache_lock:
+            _identify_app_cache.clear()
+        _bump_index_conn_generation()
         logger.info("TitleDBs unloaded.")
 
 def identify_file_from_filename(filename):
@@ -1196,18 +1254,27 @@ def extract_meta_from_cnmt(cnmt_sections):
             contents.append((title_type, title_id, version))
     return contents
 
+_nsz_meta_only_supported = True
+
 def identify_file_from_cnmt(filepath):
+    global _nsz_meta_only_supported
     if not _ensure_nsz_loaded(require_fs=True):
         raise RuntimeError('NSZ modules are not available.')
     contents = []
     container = factory(Path(filepath).resolve())
-    try:
-        container.open(filepath, 'rb', meta_only=True)
-    except TypeError as e:
-        # Backward compatibility: some nsz builds do not support meta_only.
-        if 'meta_only' not in str(e):
-            raise
-        logger.debug('meta_only is not supported by this nsz build; using full container open.')
+    if _nsz_meta_only_supported:
+        try:
+            container.open(filepath, 'rb', meta_only=True)
+        except TypeError as e:
+            # Backward compatibility: some nsz builds do not support meta_only.
+            if 'meta_only' not in str(e):
+                raise
+            # Remember the capability: probing per file paid a failed open +
+            # full container parse for every identification on such builds.
+            _nsz_meta_only_supported = False
+            logger.info('meta_only is not supported by this nsz build; using full container opens.')
+            container.open(filepath, 'rb')
+    else:
         container.open(filepath, 'rb')
     try:
         for cnmt_sections in get_cnmts(container):
@@ -1286,24 +1353,32 @@ def _apply_manual_title_override(title_id, info):
 def _get_title_info_from_index_file(title_key, index_file, cache_store, cache_lock):
     with cache_lock:
         cached = cache_store.get(title_key)
-        if isinstance(cached, dict):
-            return dict(cached)
+        if cached is not None:
+            # Move-to-end on hit so eviction is LRU rather than FIFO.
+            cache_store[title_key] = cache_store.pop(title_key)
+            # False is the negative-result sentinel: titles absent from the
+            # index would otherwise re-query it on every lookup.
+            return dict(cached) if isinstance(cached, dict) else None
 
     try:
-        conn = _open_versions_index_db(index_file)
-        try:
-            row = conn.execute(
-                "SELECT name, banner_url, icon_url, title_id, category, nsu_id, description "
-                "FROM titles WHERE title_id = ? LIMIT 1",
-                (title_key,),
-            ).fetchone()
-        finally:
-            conn.close()
+        conn = _get_read_index_connection(index_file)
+        row = conn.execute(
+            "SELECT name, banner_url, icon_url, title_id, category, nsu_id, description "
+            "FROM titles WHERE title_id = ? LIMIT 1",
+            (title_key,),
+        ).fetchone()
     except Exception as e:
         logger.warning(f"Failed querying titles index for {title_key}: {e}")
         return None
 
     if not row:
+        with cache_lock:
+            cache_store[title_key] = False
+            if len(cache_store) > _TITLE_LOOKUP_CACHE_MAX:
+                try:
+                    cache_store.pop(next(iter(cache_store)))
+                except Exception:
+                    cache_store.clear()
         return None
 
     info = {
@@ -1424,7 +1499,15 @@ def get_game_info(title_id):
             if (now - last_logged) >= _MISSING_TITLE_LOG_TTL_S:
                 _missing_titledb_last_log[normalized_title_id] = now
                 should_log = True
-            if len(_missing_titledb_last_log) > 5000:
+            global _missing_titledb_prune_last
+            if (
+                len(_missing_titledb_last_log) > 5000
+                and (now - _missing_titledb_prune_last) >= _MISSING_TITLE_PRUNE_INTERVAL_S
+            ):
+                # Throttled: pruning on every unrecognized lookup made each
+                # miss scan the whole throttle dict (O(misses x entries) on
+                # libraries with many unrecognized titles).
+                _missing_titledb_prune_last = now
                 cutoff = now - (_MISSING_TITLE_LOG_TTL_S * 2)
                 stale_keys = [k for k, ts in _missing_titledb_last_log.items() if ts < cutoff]
                 for key in stale_keys:
@@ -1468,18 +1551,15 @@ def search_titles(query, limit=20):
     if _titles_index_ready:
         like_query = f"%{q}%"
         try:
-            conn = _open_versions_index_db(_titles_index_file)
-            try:
-                rows = conn.execute(
-                    "SELECT title_id, name, category, icon_url, banner_url "
-                    "FROM titles "
-                    "WHERE search_hay LIKE ? "
-                    "ORDER BY sort_order ASC "
-                    "LIMIT ?",
-                    (like_query, int(limit)),
-                ).fetchall()
-            finally:
-                conn.close()
+            conn = _get_read_index_connection(_titles_index_file)
+            rows = conn.execute(
+                "SELECT title_id, name, category, icon_url, banner_url "
+                "FROM titles "
+                "WHERE search_hay LIKE ? "
+                "ORDER BY sort_order ASC "
+                "LIMIT ?",
+                (like_query, int(limit)),
+            ).fetchall()
         except Exception as e:
             logger.warning(f"Failed searching titles index for '{q}': {e}")
             rows = []
@@ -1539,14 +1619,11 @@ def get_all_existing_versions(titleid):
 
     titleid = titleid.lower()
     try:
-        conn = _open_versions_index_db(_versions_index_file)
-        try:
-            rows = conn.execute(
-                "SELECT version, release_date FROM versions WHERE title_id = ? ORDER BY version ASC",
-                (titleid,),
-            ).fetchall()
-        finally:
-            conn.close()
+        conn = _get_read_index_connection(_versions_index_file)
+        rows = conn.execute(
+            "SELECT version, release_date FROM versions WHERE title_id = ? ORDER BY version ASC",
+            (titleid,),
+        ).fetchall()
     except Exception as e:
         logger.warning(f"Failed querying versions index for {titleid.upper()}: {e}")
         return []
@@ -1578,14 +1655,11 @@ def get_all_app_existing_versions(app_id):
 
     app_id = app_id.lower()
     try:
-        conn = _open_versions_index_db(_cnmts_index_file)
-        try:
-            rows = conn.execute(
-                "SELECT version_key FROM cnmts WHERE app_id = ?",
-                (app_id,),
-            ).fetchall()
-        finally:
-            conn.close()
+        conn = _get_read_index_connection(_cnmts_index_file)
+        rows = conn.execute(
+            "SELECT version_key FROM cnmts WHERE app_id = ?",
+            (app_id,),
+        ).fetchall()
     except Exception as e:
         logger.warning(f"Failed querying cnmts index for app versions {app_id.upper()}: {e}")
         return None
@@ -1616,16 +1690,13 @@ def get_all_existing_dlc(title_id):
 
     title_id = title_id.lower()
     try:
-        conn = _open_versions_index_db(_cnmts_index_file)
-        try:
-            rows = conn.execute(
-                "SELECT DISTINCT app_id FROM cnmts "
-                "WHERE title_type = 130 AND other_application_id = ? "
-                "ORDER BY app_id ASC",
-                (title_id,),
-            ).fetchall()
-        finally:
-            conn.close()
+        conn = _get_read_index_connection(_cnmts_index_file)
+        rows = conn.execute(
+            "SELECT DISTINCT app_id FROM cnmts "
+            "WHERE title_type = 130 AND other_application_id = ? "
+            "ORDER BY app_id ASC",
+            (title_id,),
+        ).fetchall()
     except Exception as e:
         logger.warning(f"Failed querying cnmts DLC entries for {title_id.upper()}: {e}")
         return []

@@ -123,18 +123,23 @@ def allowed_file(filename):
            filename.rsplit('.', 1)[1].lower() in ['keys', 'txt']
 
 
+from app.constants import ALLOWED_EXTENSIONS
+
+# Precomputed once: this check runs for every file yielded by library walks
+# and twice per watchdog event; per-call imports and f-string suffix
+# construction added millions of transient allocations per scan.
+_SUPPORTED_EXTENSION_SUFFIXES = tuple(
+    (extension, f".{extension}", f".{extension}.hdf")
+    for extension in ALLOWED_EXTENSIONS
+)
+
 def get_supported_content_extension(path):
     name = os.path.basename(str(path or ""))
     lowered = name.lower()
     if not lowered:
         return None
-    try:
-        from app.constants import ALLOWED_EXTENSIONS
-    except Exception:
-        return None
-    for extension in ALLOWED_EXTENSIONS:
-        suffix = f".{extension}"
-        if lowered.endswith(suffix) or lowered.endswith(f"{suffix}.hdf"):
+    for extension, suffix, wrapped_suffix in _SUPPORTED_EXTENSION_SUFFIXES:
+        if lowered.endswith(suffix) or lowered.endswith(wrapped_suffix):
             return extension
     return None
 
