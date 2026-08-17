@@ -246,11 +246,7 @@ def add_files_to_library(library, files, check_existing=True):
             logger.debug(f'File already in database, skipping: {filepath}')
             continue
         file = filepath.replace(library_path, "")
-        # Per-file lines at DEBUG: a 100k-file scan otherwise emits 100k+
-        # eagerly formatted INFO lines; INFO gets a periodic progress summary.
-        if (n + 1) % 500 == 0 or (n + 1) == nb_to_identify:
-            logger.info(f'Getting file info ({n+1}/{nb_to_identify})')
-        logger.debug(f'Getting file info ({n+1}/{nb_to_identify}): {file}')
+        logger.info(f'Getting file info ({n+1}/{nb_to_identify}): {file}')
 
         file_info = titles_lib.get_file_info(filepath)
 
@@ -469,9 +465,7 @@ def identify_library_files(library):
                     )
                     identify_results.append((row.id, filename, True, None, False, None, None))
                     continue
-                if processed % 500 == 0 or processed == nb_to_identify:
-                    logger.info(f'Identifying files: {processed}/{nb_to_identify}')
-                logger.debug(f'Identifying file ({processed}/{nb_to_identify}): {filename}')
+                logger.info(f'Identifying file ({processed}/{nb_to_identify}): {filename}')
                 try:
                     identification, success, file_contents, error = titles_lib.identify_file(filepath)
                 except Exception as e:
@@ -517,7 +511,7 @@ def identify_library_files(library):
 
                             nb_content = 0
                             for file_content in file_contents:
-                                logger.debug(
+                                logger.info(
                                     "Identified %s - content Title ID: %s App ID : %s Title Type: %s Version: %s",
                                     filename,
                                     file_content.get("title_id"),
