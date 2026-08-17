@@ -2203,8 +2203,8 @@
             .filter(file => file && file.url)
             .map(file => `
                 <a class="btn btn-outline-primary btn-sm" href="${escapeHtml(String(file.url))}" download
-                    title="Download ${escapeHtml(String(file.filename || 'library file'))}">
-                    <i class="bi bi-download"></i> Download
+                    title="${ {{ _('Download {filename}')|tojson }}.replace('{filename}', escapeHtml(String(file.filename || {{ _('library file')|tojson }}))) }">
+                    <i class="bi bi-download"></i> ${ {{ _('Download')|tojson }} }
                 </a>
             `).join('');
         const currentFileDownloads = buildLibraryDownloadLinks(game.files);
@@ -2228,7 +2228,7 @@
                             : ''}
                         ${canManageDownloads && !version.owned
                             ? `<button type="button" class="btn btn-outline-secondary btn-sm details-ignore-content-btn"
-                                    title="${version.ignored ? 'Restore update to completeness checks' : 'Ignore update for completeness checks'}"
+                                    title="${version.ignored ? {{ _('Restore update to completeness checks')|tojson }} : {{ _('Ignore update for completeness checks')|tojson }}}"
                                     data-app-id="${escapeHtml(String(version.app_id || game.app_id || ''))}"
                                     data-app-type="${escapeHtml(String(version.app_type || game.app_type || ''))}"
                                     data-version="${escapeHtml(String(version.version ?? ''))}"
@@ -2260,7 +2260,7 @@
                     <div class="d-inline-flex align-items-center gap-2 small text-success fw-semibold"
                         role="status" aria-live="polite">
                         <i class="bi bi-check-circle"></i>
-                        <span>Latest update already installed.</span>
+                        <span>${ {{ _('Latest update already installed.')|tojson }} }</span>
                     </div>
                 `
                 : `
@@ -2276,7 +2276,7 @@
                     <div class="d-inline-flex align-items-center gap-2 small text-success fw-semibold"
                         role="status" aria-live="polite">
                         <i class="bi bi-check-circle"></i>
-                        <span>Base game already in library.</span>
+                        <span>${ {{ _('Base game already in library.')|tojson }} }</span>
                     </div>
                 `
                 : `
@@ -2340,7 +2340,7 @@
         const libraryFilesRow = currentFileDownloads
             ? `
                 <div class="mt-3">
-                    <div class="small text-muted mb-1">Library files</div>
+                    <div class="small text-muted mb-1">${ {{ _('Library files')|tojson }} }</div>
                     <div class="d-flex flex-wrap gap-2">${currentFileDownloads}</div>
                 </div>
             `
@@ -2370,7 +2370,7 @@
                             : ''}
                         ${canManageDownloads && !dlc.owned
                             ? `<button type="button" class="btn btn-outline-secondary btn-sm details-ignore-content-btn ms-1"
-                                    title="${dlc.ignored ? 'Restore DLC to completeness checks' : 'Ignore DLC for completeness checks'}"
+                                    title="${dlc.ignored ? {{ _('Restore DLC to completeness checks')|tojson }} : {{ _('Ignore DLC for completeness checks')|tojson }}}"
                                     data-app-id="${escapeHtml(String(dlc.app_id || ''))}"
                                     data-app-type="DLC"
                                     data-ignored="${dlc.ignored ? 'false' : 'true'}">
@@ -2445,7 +2445,7 @@
                 <td>${formatBytes(cheat.size || 0)}</td>
                 <td class="text-end">
                     <a class="btn btn-outline-primary btn-sm" href="${escapeHtml(String(cheat.url || ''))}" download>
-                        <i class="bi bi-download"></i> Download
+                        <i class="bi bi-download"></i> ${ {{ _('Download')|tojson }} }
                     </a>
                 </td>
             </tr>
@@ -2457,10 +2457,10 @@
                         <table class="table table-sm table-striped mb-0">
                             <thead>
                                 <tr>
-                                    <th scope="col">Build ID</th>
-                                    <th scope="col">Note</th>
-                                    <th scope="col">Size</th>
-                                    <th scope="col" class="text-end">Download</th>
+                                    <th scope="col">${ {{ _('Build ID')|tojson }} }</th>
+                                    <th scope="col">${ {{ _('Note')|tojson }} }</th>
+                                    <th scope="col">${ {{ _('Size')|tojson }} }</th>
+                                    <th scope="col" class="text-end">${ {{ _('Download')|tojson }} }</th>
                                 </tr>
                             </thead>
                             <tbody>${cheatRows}</tbody>
@@ -2468,7 +2468,7 @@
                     </div>
                 </div>
             `
-            : '<div class="text-muted py-2">No cheats are available for this title.</div>';
+            : '<div class="text-muted py-2">' + {{ _('No cheats are available for this title.')|tojson }} + '</div>';
         const defaultToDlcTab = dlcList.length > 0 && String(game.app_type || '').toUpperCase() === 'DLC';
 
         if (dlcList.length > 0 || availableCheats.length > 0) {
@@ -2489,7 +2489,7 @@
                             <button class="nav-link ${defaultToDlcTab ? 'active' : ''}" id="details-dlc-tab" data-bs-toggle="tab"
                                 data-bs-target="#details-dlc-pane" type="button" role="tab"
                                 aria-controls="details-dlc-pane" aria-selected="${defaultToDlcTab ? 'true' : 'false'}">
-                                DLC <span class="badge rounded-pill text-bg-secondary ms-1">${dlcList.length}</span>
+                                ${ {{ _('DLC')|tojson }} } <span class="badge rounded-pill text-bg-secondary ms-1">${dlcList.length}</span>
                             </button>
                         </li>
                     ` : ''}
@@ -2570,13 +2570,13 @@
             $dialog.css('max-width', '90vw');
             $dialog.removeClass('modal-lg modal-xl');
             $icon.removeClass('bi-arrows-angle-expand').addClass('bi-arrows-angle-contract');
-            $btn.attr('title', 'Contract details card').attr('aria-label', 'Contract details card');
+            $btn.attr('title', {{ _('Contract details card')|tojson }}).attr('aria-label', {{ _('Contract details card')|tojson }});
             sessionStorage.setItem('detailsModalSize', 'expanded');
         } else {
             $dialog.css('max-width', '');
             $dialog.removeClass('modal-lg').addClass('modal-xl');
             $icon.removeClass('bi-arrows-angle-contract').addClass('bi-arrows-angle-expand');
-            $btn.attr('title', 'Expand details card').attr('aria-label', 'Expand details card');
+            $btn.attr('title', {{ _('Expand details card')|tojson }}).attr('aria-label', {{ _('Expand details card')|tojson }});
             sessionStorage.setItem('detailsModalSize', 'small');
         }
     }
@@ -2698,7 +2698,7 @@
                 renderGameInfoModalFromTitleDb(initial, initial.title_id, getGameTitle(initial));
             } else {
                 showDetailsLoading();
-                renderGameInfoModalFromTitleDb(null, '', 'Loading game info...');
+                renderGameInfoModalFromTitleDb(null, '', {{ _('Loading game info...')|tojson }});
             }
             fetchGameDetails(appId, appType)
                 .then(game => {
@@ -2707,7 +2707,7 @@
                 })
                 .catch(() => {
                     renderDetails(null);
-                    renderGameInfoModalFromTitleDb(null, '', 'Game info unavailable');
+                    renderGameInfoModalFromTitleDb(null, '', {{ _('Game info unavailable')|tojson }});
                 });
         });
         detailsModalEl.addEventListener('hidden.bs.modal', () => {
@@ -3042,7 +3042,7 @@
             data: JSON.stringify({ app_id: appId, app_type: appType, version, ignored }),
         }).done(function (response) {
             if (!response || response.success !== true) {
-                setDetailsStatus('Unable to update ignored content.', 'danger');
+                setDetailsStatus({{ _('Unable to update ignored content.')|tojson }}, 'danger');
                 return;
             }
             gameDetailsCache.clear();
@@ -3053,9 +3053,9 @@
             const context = currentDetailsContext || {};
             $.getJSON(`/api/title-details?app_id=${encodeURIComponent(context.appId || appId)}&app_type=${encodeURIComponent(context.appType || appType)}`)
                 .done(data => renderDetails(data && data.game ? data.game : null))
-                .fail(() => setDetailsStatus('Saved, but refreshing title details failed.', 'danger'));
+                .fail(() => setDetailsStatus({{ _('Saved, but refreshing title details failed.')|tojson }}, 'danger'));
         }).fail(function () {
-            setDetailsStatus('Unable to update ignored content.', 'danger');
+            setDetailsStatus({{ _('Unable to update ignored content.')|tojson }}, 'danger');
         }).always(function () {
             button.prop('disabled', false);
         });

@@ -1471,7 +1471,7 @@
                     <td><span class="location-cell">${flagIcon}${escapeHtml(locationLabel)}</span></td>
                     <td>${escapeHtml(item.title_id || "-")}${item.title_name ? ` <span class="text-muted">(${escapeHtml(item.title_name)})</span>` : ""}</td>
                     <td class="text-truncate" style="max-width: 300px;">${escapeHtml(item.filename || "-")}</td>
-                    <td>${item.transfer_mode === "virtual" ? `<span class="badge text-bg-info">Virtual ${escapeHtml((item.virtual_filename || "").split(".").pop().toUpperCase() || "stream")}</span>` : '<span class="text-muted">Original file</span>'}</td>
+                    <td>${item.transfer_mode === "virtual" ? `<span class="badge text-bg-info">${ {{ _('Virtual {format}')|tojson }}.replace('{format}', escapeHtml((item.virtual_filename || "").split(".").pop().toUpperCase() || "stream")) }</span>` : '<span class="text-muted">' + {{ _('Original file')|tojson }} + '</span>'}</td>
                     <td>${escapeHtml(formatBytes(item.bytes_sent))}</td>
                 </tr>`,
             );

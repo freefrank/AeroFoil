@@ -76,7 +76,7 @@
                                     </div>
                                     <div class="form-check">
                                         <input class="form-check-input" type="checkbox" id="checkboxNewUserCheatAccess" checked>
-                                        <label class="form-check-label" for="checkboxNewUserCheatAccess">Cheats</label>
+                                        <label class="form-check-label" for="checkboxNewUserCheatAccess">{{ _('Cheats') }}</label>
                                     </div>
                                     <div class="form-check">
                                         <input class="form-check-input" type="checkbox" id="checkboxNewUserAdminAccess">
@@ -85,16 +85,16 @@
                                 </div>
                             </div>
                             <div class="col-md-4">
-                                <label for="selectNewUserMaxRating" class="form-label">Max rating</label>
+                                <label for="selectNewUserMaxRating" class="form-label">{{ _('Max rating') }}</label>
                                 <select class="form-select" id="selectNewUserMaxRating">
-                                    <option value="" selected>No limit</option>
-                                    <option value="0">Everyone (E)</option>
-                                    <option value="10">Everyone 10+ (E10+)</option>
-                                    <option value="13">Teen (T)</option>
-                                    <option value="17">Mature 17+ (M)</option>
-                                    <option value="18">Adults Only 18+ (AO)</option>
+                                    <option value="" selected>{{ _('No limit') }}</option>
+                                    <option value="0">{{ _('Everyone (E)') }}</option>
+                                    <option value="10">{{ _('Everyone 10+ (E10+)') }}</option>
+                                    <option value="13">{{ _('Teen (T)') }}</option>
+                                    <option value="17">{{ _('Mature 17+ (M)') }}</option>
+                                    <option value="18">{{ _('Adults Only 18+ (AO)') }}</option>
                                 </select>
-                                <div class="form-text">Hide titles above this ESRB rating from this user's shop.</div>
+                                <div class="form-text">{{ _("Hide titles above this ESRB rating from this user's shop.") }}</div>
                             </div>
                             <div class="col-12">
                                 <button type="button" class="btn btn-primary" onClick='submitNewUser()'>{{ _('Create user') }}</button>
@@ -175,7 +175,7 @@
                                         </div>
                                         <div class="form-check">
                                             <input class="form-check-input" type="checkbox" id="checkboxEditUserCheatAccess">
-                                            <label class="form-check-label" for="checkboxEditUserCheatAccess">Cheats</label>
+                                            <label class="form-check-label" for="checkboxEditUserCheatAccess">{{ _('Cheats') }}</label>
                                         </div>
                                         <div class="form-check">
                                             <input class="form-check-input" type="checkbox" id="checkboxEditUserAdminAccess">
@@ -184,16 +184,16 @@
                                     </div>
                                 </div>
                                 <div class="mb-3">
-                                    <label for="editUserMaxRatingSelect" class="form-label">Max rating</label>
+                                    <label for="editUserMaxRatingSelect" class="form-label">{{ _('Max rating') }}</label>
                                     <select class="form-select" id="editUserMaxRatingSelect">
-                                        <option value="">No limit</option>
-                                        <option value="0">Everyone (E)</option>
-                                        <option value="10">Everyone 10+ (E10+)</option>
-                                        <option value="13">Teen (T)</option>
-                                        <option value="17">Mature 17+ (M)</option>
-                                        <option value="18">Adults Only 18+ (AO)</option>
+                                        <option value="">{{ _('No limit') }}</option>
+                                        <option value="0">{{ _('Everyone (E)') }}</option>
+                                        <option value="10">{{ _('Everyone 10+ (E10+)') }}</option>
+                                        <option value="13">{{ _('Teen (T)') }}</option>
+                                        <option value="17">{{ _('Mature 17+ (M)') }}</option>
+                                        <option value="18">{{ _('Adults Only 18+ (AO)') }}</option>
                                     </select>
-                                    <div class="form-text">Hide titles above this ESRB rating from this user's shop.</div>
+                                    <div class="form-text">{{ _("Hide titles above this ESRB rating from this user's shop.") }}</div>
                                 </div>
                             </div>
                             <div class="modal-footer">
@@ -692,7 +692,7 @@
                 badges += '<span class="badge text-bg-info me-1">' + {{ _('Backup')|tojson }} + '</span>';
             }
             if (isCheat) {
-                badges += '<span class="badge text-bg-primary me-1">Cheats</span>';
+                badges += '<span class="badge text-bg-primary me-1">' + {{ _('Cheats')|tojson }} + '</span>';
             }
             if (!badges) {
                 badges = '<span class="badge text-bg-secondary">' + {{ _('None')|tojson }} + '</span>';

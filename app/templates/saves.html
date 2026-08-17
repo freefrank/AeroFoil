@@ -31,21 +31,21 @@
                     <div class="card-body">
                         <div class="row g-2 align-items-end">
                             <div class="col-12 col-lg-4 position-relative">
-                                <label for="saveUploadTitleSearch" class="form-label mb-1">Title</label>
-                                <input type="text" class="form-control" id="saveUploadTitleSearch" placeholder="Search title name or id">
+                                <label for="saveUploadTitleSearch" class="form-label mb-1">{{ _('Title') }}</label>
+                                <input type="text" class="form-control" id="saveUploadTitleSearch" placeholder="{{ _('Search title name or id') }}">
                                 <div class="list-group save-upload-search-results" id="saveUploadTitleSearchResults"></div>
                             </div>
                             <div class="col-12 col-lg-3">
-                                <label for="saveUploadNote" class="form-label mb-1">Note (optional)</label>
-                                <input type="text" class="form-control" id="saveUploadNote" placeholder="Example: before chapter 4">
+                                <label for="saveUploadNote" class="form-label mb-1">{{ _('Note (optional)') }}</label>
+                                <input type="text" class="form-control" id="saveUploadNote" placeholder="{{ _('Example: before chapter 4') }}">
                             </div>
                             <div class="col-12 col-lg-3">
-                                <label for="saveUploadFile" class="form-label mb-1">Save ZIP</label>
+                                <label for="saveUploadFile" class="form-label mb-1">{{ _('Save ZIP') }}</label>
                                 <input type="file" class="form-control" id="saveUploadFile" accept=".zip,application/zip">
                             </div>
                             <div class="col-12 col-lg-2">
                                 <button type="button" id="uploadSaveBtn" class="btn btn-warning w-100">
-                                    <i class="bi bi-upload"></i> Upload
+                                    <i class="bi bi-upload"></i> {{ _('Upload') }}
                                 </button>
                             </div>
                         </div>
@@ -488,11 +488,11 @@
         const file = input && input.files && input.files.length ? input.files[0] : null;
 
         if (!titleId) {
-            showSavesAlert('Select a title before upload.', 'warning');
+            showSavesAlert({{ _('Select a title before upload.')|tojson }}, 'warning');
             return;
         }
         if (!file) {
-            showSavesAlert('Select a save ZIP file to upload.', 'warning');
+            showSavesAlert({{ _('Select a save ZIP file to upload.')|tojson }}, 'warning');
             return;
         }
 
@@ -512,16 +512,16 @@
             dataType: 'json',
         }).done(function (result) {
             if (!result || result['success'] === false) {
-                const message = (result && result['message']) ? result['message'] : 'Save upload failed.';
+                const message = (result && result['message']) ? result['message'] : {{ _('Save upload failed.')|tojson }};
                 showSavesAlert(message, 'danger');
                 return;
             }
-            showSavesAlert((result && result['message']) ? result['message'] : 'Save uploaded successfully.', 'success');
+            showSavesAlert((result && result['message']) ? result['message'] : {{ _('Save uploaded successfully.')|tojson }}, 'success');
             $('#saveUploadFile').val('');
             $('#saveUploadNote').val('');
             loadSaves();
         }).fail(function (xhr) {
-            let message = 'Save upload failed.';
+            let message = {{ _('Save upload failed.')|tojson }};
             try {
                 if (xhr && xhr.responseJSON && xhr.responseJSON.message) {
                     message = xhr.responseJSON.message;
@@ -553,7 +553,7 @@
             button.innerHTML = `
                 <div class="d-flex justify-content-between align-items-start gap-2">
                     <div>
-                        <div class="fw-semibold">${escapeHtml(item.name || 'Unrecognized')}</div>
+                        <div class="fw-semibold">${escapeHtml(item.name || {{ _('Unrecognized')|tojson }})}</div>
                         <div class="text-muted small">${escapeHtml(item.id || '')}</div>
                     </div>
                 </div>

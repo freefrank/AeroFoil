@@ -7556,7 +7556,7 @@ def shop_sections_api():
 @access_required('shop')
 def list_cheats_api():
     if not _request_has_cheat_access():
-        return jsonify({'success': False, 'error': 'Cheat access is disabled for this account.'}), 403
+        return jsonify({'success': False, 'error': _('Cheat access is disabled for this account.')}), 403
     return jsonify({'success': True, 'cheats': _build_cyberfoil_cheat_items()})
 
 
@@ -7583,13 +7583,13 @@ def upload_cheat_api():
     pasted_content = request.form.get('content')
     note = str(request.form.get('note') or '').strip()
     if len(note) > 1000:
-        return jsonify({'success': False, 'error': 'Cheat note must be 1000 characters or less.'}), 400
+        return jsonify({'success': False, 'error': _('Cheat note must be 1000 characters or less.')}), 400
     if upload is not None and upload.filename:
         cheat_data = upload.read()
     elif pasted_content is not None and pasted_content.strip():
         cheat_data = pasted_content.encode('utf-8')
     else:
-        return jsonify({'success': False, 'error': 'Provide a cheat file or paste cheat content.'}), 400
+        return jsonify({'success': False, 'error': _('Provide a cheat file or paste cheat content.')}), 400
     try:
         cheat = cheats.save_cheat(
             request.form.get('title_id'), request.form.get('build_id'), cheat_data)
@@ -7622,13 +7622,13 @@ def sync_cheats_api():
     data = request.get_json(silent=True) or {}
     sync_url = str(data.get('url') or (app_settings.get('cheats') or {}).get('sync_url') or '').strip()
     if not sync_url.lower().startswith(('https://', 'http://')):
-        return jsonify({'success': False, 'error': 'Configure an HTTP(S) cheat ZIP URL first.'}), 400
+        return jsonify({'success': False, 'error': _('Configure an HTTP(S) cheat ZIP URL first.')}), 400
     try:
         response = requests.get(sync_url, timeout=(10, 90))
         response.raise_for_status()
         result = cheats.import_zip(response.content)
     except requests.RequestException as exc:
-        return jsonify({'success': False, 'error': f'Cheat sync failed: {exc}'}), 502
+        return jsonify({'success': False, 'error': _('Cheat sync failed: %(error)s', error=exc)}), 502
     except ValueError as exc:
         return jsonify({'success': False, 'error': str(exc)}), 400
     _invalidate_shop_root_cache()

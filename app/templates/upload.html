@@ -217,13 +217,13 @@
                         $('#uploadStatus').text({{ _('Uploading... {percent}')|tojson }}.replace('{percent}', `${percent}%`));
                         $('#uploadProgressBar').css('width', `${percent}%`).text(`${percent}%`);
                         if (percent >= 100) {
-                            $('#uploadStatus').text('Upload complete. Processing on server...');
+                            $('#uploadStatus').text({{ _('Upload complete. Processing on server...')|tojson }});
                             startUploadStatusPolling(uploadId);
                         }
                     }
                 }, false);
                 xhr.upload.addEventListener('load', function () {
-                    $('#uploadStatus').text('Upload complete. Processing on server...');
+                    $('#uploadStatus').text({{ _('Upload complete. Processing on server...')|tojson }});
                     startUploadStatusPolling(uploadId);
                 }, false);
                 return xhr;
