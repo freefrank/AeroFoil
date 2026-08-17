@@ -1,7 +1,126 @@
 {% extends "base.html" %}
 
 {% block content %}
-<h1 class="title">
-  {{ _('Welcome, Anthony!') }}
-</h1>
+{% include 'nav.html' %}
+
+<div class="container-fluid setting-body">
+  <div class="row">
+    <div class="col">
+      <div class="settings-container container mt-3">
+        <h2 class="pb-2">{{ _('Profile') }}</h2>
+        <p class="text-muted">{{ _('Change your account password.') }}</p>
+
+        <div class="card">
+          <div class="card-body">
+            <form id="changePasswordForm" class="row g-3" onsubmit="return false;">
+              <div class="col-12">
+                <label for="currentPasswordInput" class="form-label">{{ _('Current password') }}</label>
+                <input type="password" class="form-control" id="currentPasswordInput" autocomplete="current-password">
+              </div>
+              <div class="col-12">
+                <label for="newPasswordInput" class="form-label">{{ _('New password') }}</label>
+                <input type="password" class="form-control" id="newPasswordInput" autocomplete="new-password">
+                <div class="form-text">{{ _('Use at least 8 characters and make sure it is different from your current password.') }}</div>
+              </div>
+              <div class="col-12">
+                <label for="confirmPasswordInput" class="form-label">{{ _('Confirm new password') }}</label>
+                <input type="password" class="form-control" id="confirmPasswordInput" autocomplete="new-password">
+              </div>
+              <div class="col-12">
+                <button type="button" class="btn btn-primary" id="changePasswordBtn">
+                  <i class="bi bi-key"></i> {{ _('Change password') }}
+                </button>
+              </div>
+            </form>
+            <div id="changePasswordStatus" class="alert mt-3 d-none" role="alert"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  (function () {
+    const currentPasswordInput = document.getElementById('currentPasswordInput');
+    const newPasswordInput = document.getElementById('newPasswordInput');
+    const confirmPasswordInput = document.getElementById('confirmPasswordInput');
+    const changePasswordBtn = document.getElementById('changePasswordBtn');
+    const statusEl = document.getElementById('changePasswordStatus');
+
+    function showStatus(kind, message) {
+      statusEl.classList.remove('d-none', 'alert-success', 'alert-danger', 'alert-warning');
+      statusEl.classList.add(kind === 'success' ? 'alert-success' : (kind === 'warning' ? 'alert-warning' : 'alert-danger'));
+      statusEl.textContent = message;
+    }
+
+    function clearStatus() {
+      statusEl.classList.add('d-none');
+      statusEl.textContent = '';
+      statusEl.classList.remove('alert-success', 'alert-danger', 'alert-warning');
+    }
+
+    async function changePassword() {
+      clearStatus();
+      const currentPassword = (currentPasswordInput.value || '').trim();
+      const newPassword = (newPasswordInput.value || '').trim();
+      const confirmPassword = (confirmPasswordInput.value || '').trim();
+
+      if (!currentPassword) {
+        showStatus('warning', {{ _('Current password is required.')|tojson }});
+        return;
+      }
+      if (!newPassword) {
+        showStatus('warning', {{ _('New password is required.')|tojson }});
+        return;
+      }
+      if (newPassword.length < 8) {
+        showStatus('warning', {{ _('New password must be at least 8 characters.')|tojson }});
+        return;
+      }
+      if (newPassword !== confirmPassword) {
+        showStatus('warning', {{ _('New password and confirmation do not match.')|tojson }});
+        return;
+      }
+      if (newPassword === currentPassword) {
+        showStatus('warning', {{ _('New password must be different from current password.')|tojson }});
+        return;
+      }
+
+      changePasswordBtn.disabled = true;
+      try {
+        const response = await fetch('/api/user/password', {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            current_password: currentPassword,
+            password: newPassword,
+          }),
+        });
+        const result = await response.json();
+        if (!result || result.success !== true) {
+          const errors = (result && Array.isArray(result.errors)) ? result.errors : [];
+          showStatus('danger', errors.length ? errors.join(' ') : {{ _('Failed to change password.')|tojson }});
+          return;
+        }
+        currentPasswordInput.value = '';
+        newPasswordInput.value = '';
+        confirmPasswordInput.value = '';
+        showStatus('success', {{ _('Password changed successfully.')|tojson }});
+      } catch (error) {
+        showStatus('danger', {{ _('Failed to change password.')|tojson }});
+      } finally {
+        changePasswordBtn.disabled = false;
+      }
+    }
+
+    changePasswordBtn.addEventListener('click', changePassword);
+    confirmPasswordInput.addEventListener('keydown', function (event) {
+      if (event.key === 'Enter') {
+        event.preventDefault();
+        changePassword();
+      }
+    });
+  })();
+</script>
 {% endblock %}

@@ -13,8 +13,8 @@
             <h2 class="pb-2">{{ _('Requests') }}</h2>
             <p class="text-muted">{{ _('User title requests and download search.') }}</p>
             {% else %}
-            <h2 class="pb-2">{{ _('Request A Title') }}</h2>
-            <p class="text-muted">{{ _('Search TitleDB and request content not yet in your library.') }}</p>
+            <h2 class="pb-2">{{ _('Request a Title') }}</h2>
+            <p class="text-muted">{{ _('Search TitleDB and request content that is not yet in your library.') }}</p>
             {% endif %}
           </div>
           <div class="d-flex align-items-center gap-2">
@@ -70,6 +70,25 @@
               <div class="text-muted small mt-3" id="requestsStatus"></div>
             </div>
             {% else %}
+            <div class="border-top mt-3 pt-3">
+              <div class="d-flex align-items-center justify-content-between gap-2 flex-wrap">
+                <div class="fw-semibold">My requests</div>
+                <button class="btn btn-outline-light btn-sm text-nowrap" id="refreshMyRequestsBtn"><i class="bi bi-arrow-clockwise"></i> Refresh</button>
+              </div>
+              <div class="table-responsive mt-3">
+                <table class="table table-dark table-sm align-middle mb-0">
+                  <thead>
+                    <tr>
+                      <th>Requested</th>
+                      <th>Title</th>
+                      <th>Status</th>
+                    </tr>
+                  </thead>
+                  <tbody id="myRequestsTableBody"></tbody>
+                </table>
+              </div>
+              <div class="text-muted small mt-3" id="myRequestsStatus"></div>
+            </div>
             {% endif %}
           </div>
         </div>
@@ -202,6 +221,7 @@
 
   let selectedTitle = null;
   let adminRequests = [];
+  let myRequests = [];
 
   async function apiGet(url) {
     const resp = await fetch(url, { credentials: 'same-origin' });
@@ -313,13 +333,15 @@
       const tr = document.createElement('tr');
       const when = r.created_at ? new Date(r.created_at * 1000).toLocaleString() : '-';
       const userText = r.user && r.user.user ? r.user.user : '-';
+      const requesterCount = Number(r.requester_count || 0);
+      const userLabel = requesterCount > 1 ? `${userText} (+${requesterCount - 1})` : userText;
       tr.innerHTML = `
         <td class="small text-muted">${escapeHtml(when)}</td>
         <td>
           <div class="fw-semibold">${escapeHtml(r.title_name || {{ _('Unrecognized')|tojson }})}</div>
           <div class="text-muted small">${escapeHtml(r.title_id || '')}</div>
         </td>
-        <td>${escapeHtml(userText)}</td>
+        <td>${escapeHtml(userLabel)}</td>
         <td><span class="badge text-bg-secondary">${escapeHtml(r.status || 'open')}</span></td>
         <td class="text-end">
           <div class="btn-group btn-group-sm" role="group">
@@ -329,11 +351,35 @@
             <button class="btn btn-outline-danger delete-request-btn" data-request-id="${escapeHtml(String(r.id || ''))}" title="${escapeHtml({{ _('Delete request')|tojson }})}">
               <i class="bi bi-trash"></i>
             </button>
+            <button class="btn btn-outline-secondary deny-request-btn" data-request-id="${escapeHtml(String(r.id || ''))}" title="Deny request">
+              <i class="bi bi-x-octagon"></i>
+            </button>
           </div>
         </td>
       `;
       tbody.appendChild(tr);
     });
+  }
+
+  function renderMyRequestsTable() {
+    const tbody = document.getElementById('myRequestsTableBody');
+    const status = document.getElementById('myRequestsStatus');
+    if (!tbody || !status) return;
+    tbody.innerHTML = '';
+    (myRequests || []).forEach(r => {
+      const tr = document.createElement('tr');
+      const when = r.created_at ? new Date(r.created_at * 1000).toLocaleString() : '-';
+      tr.innerHTML = `
+        <td class="small text-muted">${escapeHtml(when)}</td>
+        <td>
+          <div class="fw-semibold">${escapeHtml(r.title_name || 'Unrecognized')}</div>
+          <div class="text-muted small">${escapeHtml(r.title_id || '')}</div>
+        </td>
+        <td><span class="badge text-bg-secondary">${escapeHtml(r.user_status || r.status || 'open')}</span></td>
+      `;
+      tbody.appendChild(tr);
+    });
+    status.textContent = `Showing ${myRequests.length} request(s).`;
   }
 
   async function refreshAdminRequests() {
@@ -354,6 +400,19 @@
     } catch (e) {
       // ignore
     }
+  }
+
+  async function refreshMyRequests() {
+    const status = document.getElementById('myRequestsStatus');
+    if (!status) return;
+    status.textContent = 'Loading...';
+    const data = await apiGet('/api/requests');
+    if (!data || data.success !== true) {
+      status.textContent = (data && data.message) ? data.message : 'Failed to load.';
+      return;
+    }
+    myRequests = data.requests || [];
+    renderMyRequestsTable();
   }
 
   async function searchDownloadsForRequest(titleId, titleName) {
@@ -390,6 +449,26 @@
     const titleName = btn.getAttribute('data-title-name');
     if (!titleId) return;
     await searchDownloadsForRequest(titleId, titleName);
+  });
+
+  document.addEventListener('click', async (e) => {
+    if (!isAdmin) return;
+    const btn = e.target.closest('.deny-request-btn');
+    if (!btn) return;
+    const requestId = btn.getAttribute('data-request-id');
+    if (!requestId) return;
+    if (!confirm('Deny this request?')) return;
+    btn.setAttribute('disabled', 'true');
+    try {
+      const data = await apiPost('/api/requests/deny', { request_id: requestId });
+      if (!data || data.success !== true) {
+        alert((data && data.message) ? data.message : 'Deny failed.');
+        return;
+      }
+      await refreshAdminRequests();
+    } finally {
+      btn.removeAttribute('disabled');
+    }
   });
 
   document.addEventListener('click', async (e) => {
@@ -445,6 +524,9 @@
     document.getElementById('refreshRequestsBtn')?.addEventListener('click', refreshAdminRequests);
     document.getElementById('adminSearchBox')?.addEventListener('input', renderAdminRequestsTable);
     refreshAdminRequests();
+  } else {
+    document.getElementById('refreshMyRequestsBtn')?.addEventListener('click', refreshMyRequests);
+    refreshMyRequests();
   }
 </script>
 {% endblock %}

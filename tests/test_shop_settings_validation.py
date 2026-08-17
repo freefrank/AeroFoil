@@ -5,6 +5,12 @@ from app.shop import TINFOIL_PUBLIC_KEY
 
 
 class ShopSettingsValidationTests(unittest.TestCase):
+    def test_virtual_compressed_stream_defaults_to_enabled_and_coerces_values(self):
+        self.assertTrue(_normalize_shop_settings({})['cyberfoil_virtual_compressed_stream'])
+        self.assertFalse(_normalize_shop_settings({
+            'cyberfoil_virtual_compressed_stream': 'false',
+        })['cyberfoil_virtual_compressed_stream'])
+
     def test_tinfoil_only_mode_forces_encrypt(self):
         normalized = _normalize_shop_settings({
             'encrypt': False,

@@ -232,9 +232,15 @@
                             <div class="card-body d-flex flex-column">
                                 <div class="d-flex align-items-center justify-content-between mb-2">
                                     <h5 class="card-title mb-0">{{ _('Task output') }}</h5>
-                                    <div class="btn-group">
+                                    <div class="d-flex align-items-center gap-2">
+                                        <div class="form-check mb-0">
+                                            <input class="form-check-input" type="checkbox" id="manageHideSkippedOutputCheck">
+                                            <label class="form-check-label small" for="manageHideSkippedOutputCheck">{{ _('Hide skipped lines') }}</label>
+                                        </div>
+                                        <div class="btn-group">
                                         <button class="btn btn-outline-secondary btn-sm" type="button" onClick="showManageOutput([])">{{ _('Clear') }}</button>
                                         <button class="btn btn-outline-danger btn-sm" type="button" id="cancelJobBtn" onClick="promptCancelActiveJob()" disabled>{{ _('Cancel') }}</button>
+                                        </div>
                                     </div>
                                 </div>
                                 <div class="mb-2">
@@ -603,12 +609,35 @@
         });
     }
 
+    let manageOutputLines = [];
+
+    function _isSkippedOutputLine(line) {
+        const text = String(line || '').trim().toLowerCase();
+        if (!text) {
+            return false;
+        }
+        if (text.startsWith('skip ')) {
+            return true;
+        }
+        return text.includes(' skipped ') || text.includes('skip existing output');
+    }
+
+    function _filterManageOutputLines(lines) {
+        const hideSkipped = $('#manageHideSkippedOutputCheck').is(':checked');
+        if (!hideSkipped) {
+            return lines;
+        }
+        return (lines || []).filter(line => !_isSkippedOutputLine(line));
+    }
+
     function showManageOutput(details) {
-        if (!details || !details.length) {
+        manageOutputLines = Array.isArray(details) ? details.slice() : [];
+        if (!manageOutputLines.length) {
             $('#manageOutput').text('');
             return;
         }
-        $('#manageOutput').text(details.join('\n'));
+        const filtered = _filterManageOutputLines(manageOutputLines);
+        $('#manageOutput').text(filtered.join('\n'));
     }
 
     function formatFileSize(bytes) {
@@ -1120,6 +1149,9 @@
             } else if (!showVerboseOutput) {
                 $('#manageOutput').text('');
             }
+        });
+        $('#manageHideSkippedOutputCheck').on('change', function () {
+            showManageOutput(manageOutputLines);
         });
         $('#convertSingleVerbose').on('change', function () {
             showVerboseOutput = $(this).is(':checked');

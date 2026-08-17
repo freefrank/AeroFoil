@@ -240,21 +240,75 @@
 
 <!-- Details Modal -->
 <div class="modal fade" id="detailsModal" tabindex="-1" aria-labelledby="detailsModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
         <div class="modal-content">
             <div class="modal-header">
                 <h1 class="modal-title fs-5" id="detailsModalLabel">{{ _('Content details') }}</h1>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="{{ _('Close') }}"></button>
+                <div class="d-flex align-items-center">
+                    <button type="button" class="btn btn-link btn-modal-size-toggle me-3" id="detailsModalToggleSizeBtn" title="{{ _('Expand details card') }}" aria-label="{{ _('Expand details card') }}">
+                        <i class="bi bi-arrows-angle-expand" id="detailsModalToggleSizeIcon" style="font-size: 1.1rem; line-height: 1;"></i>
+                    </button>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="{{ _('Close') }}"></button>
+                </div>
             </div>
             <div class="modal-body">
-                <div class="mb-2">
-                    <div class="fw-semibold" id="detailsTitle"></div>
-                    <div class="text-muted" id="detailsSubtitle"></div>
+                <div class="btn-group btn-group-sm mb-3 align-self-start details-pane-toggles" role="group" aria-label="{{ _('Visible modal sections') }}">
+                    <button type="button" class="btn btn-outline-secondary active" id="detailsPaneToggleBtn" aria-pressed="true">
+                        <i class="bi bi-layout-sidebar"></i> {{ _('Details') }}
+                    </button>
+                    <button type="button" class="btn btn-outline-secondary active" id="gameInfoPaneToggleBtn" aria-pressed="true">
+                        <i class="bi bi-journal-text"></i> {{ _('Game info') }}
+                    </button>
                 </div>
-                <div class="mb-3" id="detailsMeta"></div>
-                <div id="detailsVersions"></div>
-                <div id="detailsDownloadStatus" class="small text-muted mt-2"></div>
+                <div class="row g-4" id="detailsModalPanes">
+                    <section class="col-lg-7" id="detailsLibraryPane">
+                        <div class="mb-2">
+                            <div class="fw-semibold" id="detailsTitle"></div>
+                            <div class="text-muted" id="detailsSubtitle"></div>
+                        </div>
+                        <div class="mb-3" id="detailsMeta"></div>
+                        <div id="detailsVersions"></div>
+                        <div id="detailsDownloadStatus" class="small text-muted mt-2"></div>
+                    </section>
+                    <section class="col-lg-5 details-game-info-pane" id="detailsGameInfoPane">
+                        <div class="mb-2">
+                            <div class="fw-semibold" id="gameInfoTitle"></div>
+                            <div class="text-muted small" id="gameInfoMeta"></div>
+                        </div>
+                        <div id="gameInfoStatus" class="text-muted small mb-2"></div>
+                        <div id="gameInfoBody" class="game-info-body"></div>
+                        {% if current_user.is_admin or admin_account_created == false %}
+                        <div id="manualTitleInfoEditor" class="border rounded p-3 mt-3 d-none">
+                            <div class="fw-semibold mb-2">{{ _('Manual metadata override') }}</div>
+                            <div class="text-muted small mb-2">{{ _('Use this when TitleDB does not identify the title correctly.') }}</div>
+                            <div class="row g-2">
+                                <div class="col-md-6">
+                                    <label for="manualTitleNameInput" class="form-label">{{ _('Title name') }}</label>
+                                    <input type="text" class="form-control form-control-sm" id="manualTitleNameInput">
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="manualTitleIconUrlInput" class="form-label">{{ _('Icon URL') }}</label>
+                                    <input type="text" class="form-control form-control-sm" id="manualTitleIconUrlInput" placeholder="https://...">
+                                </div>
+                                <div class="col-12">
+                                    <label for="manualTitleBannerUrlInput" class="form-label">{{ _('Banner URL') }}</label>
+                                    <input type="text" class="form-control form-control-sm" id="manualTitleBannerUrlInput" placeholder="https://...">
+                                </div>
+                                <div class="col-12">
+                                    <label for="manualTitleDescriptionInput" class="form-label">{{ _('Description') }}</label>
+                                    <textarea class="form-control form-control-sm" id="manualTitleDescriptionInput" rows="4"></textarea>
+                                </div>
+                            </div>
+                            <div class="d-flex align-items-center gap-2 mt-2">
+                                <button type="button" class="btn btn-sm btn-primary" id="saveManualTitleInfoBtn">{{ _('Save metadata') }}</button>
+                                <span id="manualTitleInfoStatus" class="small text-muted"></span>
+                            </div>
+                        </div>
+                        {% endif %}
+                    </section>
+                </div>
             </div>
+            <div class="details-modal-resize-handle" id="detailsModalResizeHandle" title="{{ _('Drag to resize') }}" aria-label="{{ _('Drag to resize') }}"></div>
         </div>
     </div>
 </div>
@@ -270,57 +324,6 @@
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ _('Cancel') }}</button>
                 <button type="button" class="btn btn-danger" id="detailsDeleteConfirmBtn">{{ _('Delete') }}</button>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Game Info Modal -->
-<div class="modal fade" id="gameInfoModal" tabindex="-1" aria-labelledby="gameInfoModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h1 class="modal-title fs-5" id="gameInfoModalLabel">{{ _('Game info') }}</h1>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="{{ _('Close') }}"></button>
-            </div>
-            <div class="modal-body">
-                <div class="mb-2">
-                    <div class="fw-semibold" id="gameInfoTitle"></div>
-                    <div class="text-muted small" id="gameInfoMeta"></div>
-                </div>
-                <div id="gameInfoStatus" class="text-muted small mb-2"></div>
-                <div id="gameInfoBody" class="game-info-body"></div>
-                {% if current_user.is_admin or admin_account_created == false %}
-                <div id="manualTitleInfoEditor" class="border rounded p-3 mt-3 d-none">
-                    <div class="fw-semibold mb-2">{{ _('Manual metadata override') }}</div>
-                    <div class="text-muted small mb-2">{{ _('Use this when TitleDB does not identify the title correctly.') }}</div>
-                    <div class="row g-2">
-                        <div class="col-md-6">
-                            <label for="manualTitleNameInput" class="form-label">{{ _('Title name') }}</label>
-                            <input type="text" class="form-control form-control-sm" id="manualTitleNameInput">
-                        </div>
-                        <div class="col-md-6">
-                            <label for="manualTitleIconUrlInput" class="form-label">{{ _('Icon URL') }}</label>
-                            <input type="text" class="form-control form-control-sm" id="manualTitleIconUrlInput" placeholder="https://...">
-                        </div>
-                        <div class="col-12">
-                            <label for="manualTitleBannerUrlInput" class="form-label">{{ _('Banner URL') }}</label>
-                            <input type="text" class="form-control form-control-sm" id="manualTitleBannerUrlInput" placeholder="https://...">
-                        </div>
-                        <div class="col-12">
-                            <label for="manualTitleDescriptionInput" class="form-label">{{ _('Description') }}</label>
-                            <textarea class="form-control form-control-sm" id="manualTitleDescriptionInput" rows="4"></textarea>
-                        </div>
-                    </div>
-                    <div class="d-flex align-items-center gap-2 mt-2">
-                        <button type="button" class="btn btn-sm btn-primary" id="saveManualTitleInfoBtn">{{ _('Save metadata') }}</button>
-                        <span id="manualTitleInfoStatus" class="small text-muted"></span>
-                    </div>
-                </div>
-                {% endif %}
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">{{ _('Close') }}</button>
             </div>
         </div>
     </div>
@@ -350,7 +353,7 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="{{ _('Close') }}"></button>
             </div>
             <div class="modal-body">
-                <div id="torrentSearchStatus" class="text-muted mb-2"></div>
+                <div id="torrentSearchStatus" class="alert alert-info d-none mb-3 py-2 px-3" role="alert"></div>
                 <div class="table-responsive">
                     <table class="table table-sm table-striped align-middle">
                         <thead>
@@ -892,6 +895,9 @@
         el.innerHTML = '';
 
         (items || []).forEach(game => {
+            const item = document.createElement('div');
+            item.className = 'discover-tile-item';
+
             const btn = document.createElement('button');
             btn.type = 'button';
             btn.className = 'discover-tile btn btn-link p-0 text-start';
@@ -925,7 +931,8 @@
                 });
             }
 
-            el.appendChild(btn);
+            item.appendChild(btn);
+            el.appendChild(item);
         });
     }
 
@@ -1063,14 +1070,6 @@
                 .html('<i class="bi bi-info-circle"></i> ' + {{ _('Details')|tojson }});
             actionButtons.append(detailsBtn);
 
-            const infoBtn = $('<button type="button" class="btn btn-outline-info btn-sm game-info-btn"></button>')
-                .attr('data-bs-toggle', 'modal')
-                .attr('data-bs-target', '#gameInfoModal')
-                .attr('data-title-id', game.title_id || '')
-                .attr('data-title', getGameTitle(game))
-                .html('<i class="bi bi-journal-text"></i> ' + {{ _('Game info')|tojson }});
-            actionButtons.append(infoBtn);
-
             tagsContainer.append(actionButtons);
 
             cardOverlay.append(tagsContainer);
@@ -1120,16 +1119,6 @@
             });
             const item = $('<div class="library-icon-item"></div>');
             item.append(iconBtn);
-
-            const infoBtn = $('<button type="button" class="btn btn-outline-info btn-sm game-info-btn library-icon-info-overlay"></button>')
-                .attr('aria-label', {{ _('Game info')|tojson }})
-                .attr('data-bs-toggle', 'modal')
-                .attr('data-bs-target', '#gameInfoModal')
-                .attr('data-title-id', game.title_id || '')
-                .attr('data-title', getGameTitle(game))
-                .html('<i class="bi bi-journal-text"></i>');
-            infoBtn.on('click', function (e) { e.stopPropagation(); });
-            item.append(infoBtn);
 
             gameGrid.append(item);
         });
@@ -1202,13 +1191,6 @@
                             data-bs-toggle="modal" data-bs-target="#detailsModal"
                             data-bs-app-id="${game.app_id}" data-bs-app-type="${game.app_type}">
                             <i class="bi bi-info-circle"></i> ${ {{ _('Details')|tojson }} }
-                        </button>
-
-                        <button type="button" class="btn btn-outline-info btn-sm ms-2 game-info-btn"
-                            data-bs-toggle="modal" data-bs-target="#gameInfoModal"
-                            data-title-id="${game.title_id || ''}"
-                            data-title="${escapeHtml(getGameTitle(game))}">
-                            <i class="bi bi-journal-text"></i> ${ {{ _('Game info')|tojson }} }
                         </button>
                     </td>
                 </tr>
@@ -1292,6 +1274,7 @@
         const actionCell = $('<td></td>');
         const button = $('<button type="button" class="btn btn-sm btn-warning queue-download-btn"></button>');
         button.text(actionLabel);
+        button.attr('data-action-label', String(actionLabel || 'Queue'));
         button.attr('data-download-url', String(item?.download_url || ''));
         button.attr('data-title', String(item?.title || ''));
         button.attr('data-protocol', String(item?.protocol || ''));
@@ -1310,23 +1293,35 @@
             .addClass(`text-${tone}`);
     }
 
+    function setTorrentSearchStatus(message, tone = 'info') {
+        const status = $('#torrentSearchStatus');
+        if (!message) {
+            status.addClass('d-none').text('');
+            return;
+        }
+        status
+            .text(message)
+            .removeClass('d-none alert-info alert-success alert-warning alert-danger')
+            .addClass(`alert-${tone}`);
+    }
+
     function showTorrentSearchModal(statusMessage = {{ _('Searching Prowlarr...')|tojson }}) {
-        $('#torrentSearchStatus').text(statusMessage);
+        setTorrentSearchStatus(statusMessage, 'info');
         $('#torrentSearchResults').empty();
         bootstrap.Modal.getOrCreateInstance(document.getElementById('torrentSearchModal')).show();
     }
 
     function renderDownloadSearchResults(result, actionLabel, buildExtraData) {
         if (!result['success']) {
-            $('#torrentSearchStatus').text(result['message'] || {{ _('Search failed.')|tojson }});
+            setTorrentSearchStatus(result['message'] || {{ _('Search failed.')|tojson }}, 'danger');
             return;
         }
         const results = result['results'] || [];
         if (!results.length) {
-            $('#torrentSearchStatus').text({{ _('No results found.')|tojson }});
+            setTorrentSearchStatus({{ _('No results found.')|tojson }}, 'warning');
             return;
         }
-        $('#torrentSearchStatus').text({{ _('Found {count} results.')|tojson }}.replace('{count}', results.length));
+        setTorrentSearchStatus({{ _('Found {count} results.')|tojson }}.replace('{count}', results.length), 'info');
         results.forEach(item => {
             const row = buildDownloadSearchRow(item, actionLabel, buildExtraData(item));
             $('#torrentSearchResults').append(row);
@@ -1856,21 +1851,21 @@
                 if (!query) {
                     return;
                 }
-                $('#torrentSearchStatus').text({{ _('Searching Prowlarr...')|tojson }});
+                setTorrentSearchStatus({{ _('Searching Prowlarr...')|tojson }}, 'info');
                 $('#torrentSearchResults').empty();
                 const modal = new bootstrap.Modal(document.getElementById('torrentSearchModal'));
                 modal.show();
                 $.getJSON(`/api/downloads/search?query=${encodeURIComponent(query)}&apply_settings=1`, function (result) {
                     if (!result['success']) {
-                        $('#torrentSearchStatus').text(result['message'] || {{ _('Search failed.')|tojson }});
+                        setTorrentSearchStatus(result['message'] || {{ _('Search failed.')|tojson }}, 'danger');
                         return;
                     }
                     const results = result['results'] || [];
                     if (!results.length) {
-                        $('#torrentSearchStatus').text({{ _('No results found.')|tojson }});
+                        setTorrentSearchStatus({{ _('No results found.')|tojson }}, 'warning');
                         return;
                     }
-                    $('#torrentSearchStatus').text({{ _('Found {count} results.')|tojson }}.replace('{count}', results.length));
+                    setTorrentSearchStatus({{ _('Found {count} results.')|tojson }}.replace('{count}', results.length), 'info');
                     results.forEach(item => {
                         const row = buildDownloadSearchRow(item, {{ _('Queue')|tojson }});
                         $('#torrentSearchResults').append(row);
@@ -1880,17 +1875,22 @@
 
         $(document).on('click', '.queue-download-btn', function () {
             const button = $(this);
+            if (button.prop('disabled') || button.data('queued') === true) {
+                return;
+            }
             const downloadUrl = button.data('download-url');
             const title = button.data('title');
             const titleId = button.data('title-id');
             const protocol = button.data('protocol');
             const updateOnly = button.data('update-only') === true || button.data('update-only') === 'true';
+            const dlcOnly = button.data('dlc-only') === true || button.data('dlc-only') === 'true';
             const expectedVersion = button.data('expected-version');
+            const originalLabel = String(button.attr('data-action-label') || button.text() || 'Queue');
             if (!downloadUrl) {
                 return;
             }
-            button.prop('disabled', true);
-            $('#torrentSearchStatus').text({{ _('Queuing download...')|tojson }});
+            button.prop('disabled', true).text({{ _('Queuing...')|tojson }});
+            setTorrentSearchStatus({{ _('Queuing download...')|tojson }}, 'info');
             $.ajax({
                 url: "/api/downloads/queue",
                 type: 'POST',
@@ -1900,18 +1900,36 @@
                     title_id: titleId,
                     protocol: protocol,
                     update_only: updateOnly,
+                    dlc_only: dlcOnly,
                     expected_version: expectedVersion
                 }),
                 contentType: "application/json",
                 success: function (result) {
                     const ok = result['success'];
-                        $('#torrentSearchStatus').text(result['message'] || (ok ? {{ _('Queued download.')|tojson }} : {{ _('Queue failed.')|tojson }}));
-                    },
-                    complete: function () {
+                    if (ok) {
+                        button
+                            .data('queued', true)
+                            .removeClass('btn-warning')
+                            .addClass('btn-success')
+                            .text({{ _('Queued')|tojson }})
+                            .prop('disabled', true);
+                        setTorrentSearchStatus(result['message'] || {{ _('Download queued successfully.')|tojson }}, 'success');
+                        return;
+                    }
+                    button.text(originalLabel);
+                    setTorrentSearchStatus(result['message'] || {{ _('Queue failed.')|tojson }}, 'danger');
+                },
+                error: function () {
+                    button.text(originalLabel);
+                    setTorrentSearchStatus({{ _('Queue failed.')|tojson }}, 'danger');
+                },
+                complete: function () {
+                    if (button.data('queued') !== true) {
                         button.prop('disabled', false);
                     }
-                });
+                }
             });
+        });
         }
 
         // Close popovers
@@ -1924,7 +1942,7 @@
         $(document).on('click', '.popover', function (e) {
             e.stopPropagation(); // Prevent the click event from bubbling up
         });
-    
+
     });
 
     function findGameByKey(appId, appType) {
@@ -2016,6 +2034,50 @@
 
     const detailsModalEl = document.getElementById('detailsModal');
     const detailsModalInstance = detailsModalEl ? bootstrap.Modal.getOrCreateInstance(detailsModalEl) : null;
+    const detailsPaneVisibilityKeys = {
+        library: 'aerofoilDetailsPaneLibraryVisible',
+        gameInfo: 'aerofoilDetailsPaneGameInfoVisible',
+    };
+
+    function getStoredDetailsPaneVisibility() {
+        const showLibraryDetails = localStorage.getItem(detailsPaneVisibilityKeys.library) !== 'false';
+        const showGameInfo = localStorage.getItem(detailsPaneVisibilityKeys.gameInfo) !== 'false';
+        return (showLibraryDetails || showGameInfo)
+            ? { showLibraryDetails, showGameInfo }
+            : { showLibraryDetails: true, showGameInfo: false };
+    }
+
+    function setDetailsPaneVisibility(showLibraryDetails, showGameInfo) {
+        const detailsPane = $('#detailsLibraryPane');
+        const gameInfoPane = $('#detailsGameInfoPane');
+        if (!detailsPane.length || !gameInfoPane.length || (!showLibraryDetails && !showGameInfo)) {
+            return;
+        }
+
+        detailsPane.toggleClass('d-none', !showLibraryDetails)
+            .removeClass('col-lg-5 col-lg-7 col-lg-12')
+            .addClass(showLibraryDetails && showGameInfo ? 'col-lg-7' : 'col-lg-12');
+        gameInfoPane.toggleClass('d-none', !showGameInfo)
+            .removeClass('col-lg-5 col-lg-7 col-lg-12')
+            .addClass(showLibraryDetails && showGameInfo ? 'col-lg-5' : 'col-lg-12');
+
+        $('#detailsPaneToggleBtn').toggleClass('active', showLibraryDetails).attr('aria-pressed', String(showLibraryDetails));
+        $('#gameInfoPaneToggleBtn').toggleClass('active', showGameInfo).attr('aria-pressed', String(showGameInfo));
+        localStorage.setItem(detailsPaneVisibilityKeys.library, String(showLibraryDetails));
+        localStorage.setItem(detailsPaneVisibilityKeys.gameInfo, String(showGameInfo));
+    }
+
+    $('#detailsPaneToggleBtn').on('click', function () {
+        const showLibraryDetails = $('#detailsLibraryPane').hasClass('d-none');
+        const showGameInfo = !$('#detailsGameInfoPane').hasClass('d-none');
+        setDetailsPaneVisibility(showLibraryDetails, showGameInfo);
+    });
+
+    $('#gameInfoPaneToggleBtn').on('click', function () {
+        const showLibraryDetails = !$('#detailsLibraryPane').hasClass('d-none');
+        const showGameInfo = $('#detailsGameInfoPane').hasClass('d-none');
+        setDetailsPaneVisibility(showLibraryDetails, showGameInfo);
+    });
 
     function handleSuccessfulDeleteCompletion(message, alertType = 'success') {
         if (detailsModalInstance) {
@@ -2127,18 +2189,35 @@
             return Number.isNaN(timestamp) ? Number.NEGATIVE_INFINITY : timestamp;
         };
         const sortedVersions = [...versions].sort((left, right) => {
+            const versionDiff = Number(right?.version || 0) - Number(left?.version || 0);
+            if (versionDiff !== 0) {
+                return versionDiff;
+            }
             const releaseDiff = parseReleaseDateValue(right?.release_date) - parseReleaseDateValue(left?.release_date);
             if (releaseDiff !== 0) {
                 return releaseDiff;
             }
-            return Number(right?.version || 0) - Number(left?.version || 0);
+            return Number(Boolean(right?.owned)) - Number(Boolean(left?.owned));
         });
-        const canDeleteRows = canManageDownloads && sortedVersions.some(version => version && version.deletable);
+        const buildLibraryDownloadLinks = (files) => (Array.isArray(files) ? files : [])
+            .filter(file => file && file.url)
+            .map(file => `
+                <a class="btn btn-outline-primary btn-sm" href="${escapeHtml(String(file.url))}" download
+                    title="Download ${escapeHtml(String(file.filename || 'library file'))}">
+                    <i class="bi bi-download"></i> Download
+                </a>
+            `).join('');
+        const currentFileDownloads = buildLibraryDownloadLinks(game.files);
+        const canVersionActions = canManageDownloads && sortedVersions.length > 0;
+        const hasVersionActions = canVersionActions || sortedVersions.some(version =>
+            Array.isArray(version.files) && version.files.some(file => file && file.url)
+        );
         const versionRows = sortedVersions.map(version => {
-            const actionCell = canDeleteRows
+            const actionCell = hasVersionActions
                 ? `
                     <td class="text-end">
-                        ${version.deletable
+                        ${buildLibraryDownloadLinks(version.files)}
+                        ${canManageDownloads && version.deletable
                             ? `<button type="button" class="btn btn-outline-danger btn-sm details-delete-version-btn"
                                     data-app-id="${escapeHtml(String(version.app_id || game.app_id || ''))}"
                                     data-app-type="${escapeHtml(String(version.app_type || game.app_type || ''))}"
@@ -2147,39 +2226,65 @@
                                     <i class="bi bi-trash"></i>
                                </button>`
                             : ''}
+                        ${canManageDownloads && !version.owned
+                            ? `<button type="button" class="btn btn-outline-secondary btn-sm details-ignore-content-btn"
+                                    title="${version.ignored ? 'Restore update to completeness checks' : 'Ignore update for completeness checks'}"
+                                    data-app-id="${escapeHtml(String(version.app_id || game.app_id || ''))}"
+                                    data-app-type="${escapeHtml(String(version.app_type || game.app_type || ''))}"
+                                    data-version="${escapeHtml(String(version.version ?? ''))}"
+                                    data-ignored="${version.ignored ? 'false' : 'true'}">
+                                    <i class="bi bi-${version.ignored ? 'arrow-counterclockwise' : 'eye-slash'}"></i>
+                               </button>`
+                            : ''}
                     </td>
                 `
                 : '';
             return `
                 <tr>
                     <td>v${version.version}</td>
-                    <td>${version.owned ? {{ _('Owned')|tojson }} : {{ _('Missing')|tojson }}}</td>
+                    <td>${version.owned ? {{ _('Owned')|tojson }} : (version.ignored ? {{ _('Ignored')|tojson }} : {{ _('Missing')|tojson }})}</td>
                     <td>${(version.size !== undefined && version.size !== null) ? formatBytes(version.size) : '-'}</td>
                     <td>${version.release_date || {{ _('Unknown')|tojson }}}</td>
                     ${actionCell}
                 </tr>
             `;
         }).join('');
-        const missingVersions = sortedVersions.filter(version => !version.owned);
+        const missingVersions = sortedVersions.filter(version => !version.owned && !version.ignored);
         const latestMissing = missingVersions.length ? missingVersions[0] : null;
         const latestKnownVersion = sortedVersions.length ? sortedVersions[0] : null;
         const updateSearchVersion = latestMissing?.version ?? latestKnownVersion?.version ?? null;
         const titleQuery = game.title_id_name || game.name || game.title_id || '';
         const updateButton = (canManageDownloads && game.title_id && updateSearchVersion !== null && updateSearchVersion !== undefined)
-            ? `
+            ? (game.has_latest_version
+                ? `
+                    <div class="d-inline-flex align-items-center gap-2 small text-success fw-semibold"
+                        role="status" aria-live="polite">
+                        <i class="bi bi-check-circle"></i>
+                        <span>Latest update already installed.</span>
+                    </div>
+                `
+                : `
                     <button type="button" class="btn btn-warning btn-sm manual-download-btn"
                         data-title-id="${game.title_id}" data-version="${updateSearchVersion}">
                         <i class="bi bi-cloud-arrow-down"></i> ${ {{ _('Search updates')|tojson }} }
                     </button>
-            `
+                `)
             : '';
         const baseButton = (canManageDownloads && titleQuery)
-            ? `
+            ? (game.has_base
+                ? `
+                    <div class="d-inline-flex align-items-center gap-2 small text-success fw-semibold"
+                        role="status" aria-live="polite">
+                        <i class="bi bi-check-circle"></i>
+                        <span>Base game already in library.</span>
+                    </div>
+                `
+                : `
                     <button type="button" class="btn btn-warning btn-sm manual-base-download-btn"
                         data-title-id="${game.title_id}" data-title-query="${titleQuery}">
                         <i class="bi bi-box-seam"></i> ${ {{ _('Search base game')|tojson }} }
                     </button>
-            `
+                `)
             : '';
         const cascadeDeleteButton = (canManageDownloads && game.app_type === 'BASE' && game.has_owned_content)
             ? `
@@ -2232,27 +2337,44 @@
                 </div>
             `
             : '';
-        const canSearchDlcRows = canManageDownloads && dlcList.some(dlc => {
-            const rawName = String((dlc && dlc.name) || game.title_id_name || game.title_id || '').trim();
-            return !(dlc && dlc.owned) && Boolean(rawName);
-        });
+        const libraryFilesRow = currentFileDownloads
+            ? `
+                <div class="mt-3">
+                    <div class="small text-muted mb-1">Library files</div>
+                    <div class="d-flex flex-wrap gap-2">${currentFileDownloads}</div>
+                </div>
+            `
+            : '';
+        const canDlcActions = (canManageDownloads || dlcList.some(dlc =>
+            Array.isArray(dlc.files) && dlc.files.some(file => file && file.url)
+        )) && dlcList.length > 0;
         const dlcRows = dlcList.map(dlc => {
             const name = escapeHtml(dlc.name || dlc.app_id || '-');
-            const status = dlc.owned ? {{ _('Owned')|tojson }} : {{ _('Missing')|tojson }};
-            const statusClass = dlc.owned ? 'text-bg-success' : 'text-bg-warning';
+            const status = dlc.owned ? {{ _('Owned')|tojson }} : (dlc.ignored ? {{ _('Ignored')|tojson }} : {{ _('Missing')|tojson }});
+            const statusClass = dlc.owned ? 'text-bg-success' : (dlc.ignored ? 'text-bg-secondary' : 'text-bg-warning');
             const latest = dlc.latest_version ? `v${dlc.latest_version}` : '-';
             const owned = dlc.owned_version ? `v${dlc.owned_version}` : '-';
             const rawName = String(dlc.name || game.title_id_name || game.title_id || '').trim();
             const dlcSearchQuery = rawName ? `${rawName} DLC` : '';
-            const actionCell = canSearchDlcRows
+            const actionCell = canDlcActions
                 ? `
                     <td class="text-end">
-                        ${!dlc.owned && dlcSearchQuery
+                        ${buildLibraryDownloadLinks(dlc.files)}
+                        ${canManageDownloads && !dlc.owned && !dlc.ignored && dlcSearchQuery
                             ? `<button type="button" class="btn btn-outline-warning btn-sm details-dlc-search-btn"
                                     data-title-id="${escapeHtml(String(game.title_id || ''))}"
                                     data-query="${escapeHtml(dlcSearchQuery)}"
                                     data-label="${escapeHtml(rawName || {{ _('DLC')|tojson }})}">
                                     <i class="bi bi-cloud-arrow-down"></i>
+                               </button>`
+                            : ''}
+                        ${canManageDownloads && !dlc.owned
+                            ? `<button type="button" class="btn btn-outline-secondary btn-sm details-ignore-content-btn ms-1"
+                                    title="${dlc.ignored ? 'Restore DLC to completeness checks' : 'Ignore DLC for completeness checks'}"
+                                    data-app-id="${escapeHtml(String(dlc.app_id || ''))}"
+                                    data-app-type="DLC"
+                                    data-ignored="${dlc.ignored ? 'false' : 'true'}">
+                                    <i class="bi bi-${dlc.ignored ? 'arrow-counterclockwise' : 'eye-slash'}"></i>
                                </button>`
                             : ''}
                     </td>
@@ -2280,7 +2402,7 @@
                                      <th scope="col">${ {{ _('Status')|tojson }} }</th>
                                      <th scope="col">${ {{ _('Size')|tojson }} }</th>
                                      <th scope="col">${ {{ _('Release date')|tojson }} }</th>
-                                     ${canDeleteRows ? '<th scope="col" class="text-end">' + {{ _('Actions')|tojson }} + '</th>' : ''}
+                                    ${hasVersionActions ? '<th scope="col" class="text-end">' + {{ _('Actions')|tojson }} + '</th>' : ''}
                                  </tr>
                              </thead>
                             <tbody>
@@ -2303,7 +2425,7 @@
                                     <th scope="col">${ {{ _('Status')|tojson }} }</th>
                                     <th scope="col">${ {{ _('Owned')|tojson }} }</th>
                                     <th scope="col">${ {{ _('Latest')|tojson }} }</th>
-                                    ${canSearchDlcRows ? '<th scope="col" class="text-end">' + {{ _('Actions')|tojson }} + '</th>' : ''}
+                                    ${canDlcActions ? '<th scope="col" class="text-end">' + {{ _('Actions')|tojson }} + '</th>' : ''}
                                 </tr>
                             </thead>
                             <tbody>
@@ -2315,11 +2437,44 @@
             `
             : '<div class="text-muted py-2">' + {{ _('No DLC entries available.')|tojson }} + '</div>';
 
-        const defaultToDlcTab = String(game.app_type || '').toUpperCase() === 'DLC';
+        const availableCheats = Array.isArray(game.cheats) ? game.cheats : [];
+        const cheatRows = availableCheats.map(cheat => `
+            <tr>
+                <td><code>${escapeHtml(String(cheat.build_id || ''))}</code></td>
+                <td>${escapeHtml(String(cheat.note || '—'))}</td>
+                <td>${formatBytes(cheat.size || 0)}</td>
+                <td class="text-end">
+                    <a class="btn btn-outline-primary btn-sm" href="${escapeHtml(String(cheat.url || ''))}" download>
+                        <i class="bi bi-download"></i> Download
+                    </a>
+                </td>
+            </tr>
+        `).join('');
+        const cheatsTabHtml = availableCheats.length
+            ? `
+                <div class="details-pane-stack">
+                    <div class="details-list-scroll">
+                        <table class="table table-sm table-striped mb-0">
+                            <thead>
+                                <tr>
+                                    <th scope="col">Build ID</th>
+                                    <th scope="col">Note</th>
+                                    <th scope="col">Size</th>
+                                    <th scope="col" class="text-end">Download</th>
+                                </tr>
+                            </thead>
+                            <tbody>${cheatRows}</tbody>
+                        </table>
+                    </div>
+                </div>
+            `
+            : '<div class="text-muted py-2">No cheats are available for this title.</div>';
+        const defaultToDlcTab = dlcList.length > 0 && String(game.app_type || '').toUpperCase() === 'DLC';
 
-        if (dlcList.length > 0) {
+        if (dlcList.length > 0 || availableCheats.length > 0) {
             $('#detailsVersions').html(`
-                ${actionRow}
+                        ${actionRow}
+                        ${libraryFilesRow}
                 ${customSearchRow}
                 <ul class="nav nav-tabs mb-2 ${actionRow ? 'mt-3' : ''}" id="detailsListTabs" role="tablist">
                     <li class="nav-item" role="presentation">
@@ -2329,11 +2484,20 @@
                             ${ {{ _('Updates')|tojson }} } <span class="badge rounded-pill text-bg-secondary ms-1">${versions.length}</span>
                         </button>
                     </li>
+                    ${dlcList.length ? `
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link ${defaultToDlcTab ? 'active' : ''}" id="details-dlc-tab" data-bs-toggle="tab"
+                                data-bs-target="#details-dlc-pane" type="button" role="tab"
+                                aria-controls="details-dlc-pane" aria-selected="${defaultToDlcTab ? 'true' : 'false'}">
+                                DLC <span class="badge rounded-pill text-bg-secondary ms-1">${dlcList.length}</span>
+                            </button>
+                        </li>
+                    ` : ''}
                     <li class="nav-item" role="presentation">
-                        <button class="nav-link ${defaultToDlcTab ? 'active' : ''}" id="details-dlc-tab" data-bs-toggle="tab"
-                            data-bs-target="#details-dlc-pane" type="button" role="tab"
-                            aria-controls="details-dlc-pane" aria-selected="${defaultToDlcTab ? 'true' : 'false'}">
-                            ${ {{ _('DLC')|tojson }} } <span class="badge rounded-pill text-bg-secondary ms-1">${dlcList.length}</span>
+                        <button class="nav-link" id="details-cheats-tab" data-bs-toggle="tab"
+                            data-bs-target="#details-cheats-pane" type="button" role="tab"
+                            aria-controls="details-cheats-pane" aria-selected="false">
+                            ${ {{ _('Cheats')|tojson }} } <span class="badge rounded-pill text-bg-secondary ms-1">${availableCheats.length}</span>
                         </button>
                     </li>
                 </ul>
@@ -2341,14 +2505,20 @@
                     <div class="tab-pane fade ${defaultToDlcTab ? '' : 'show active'} details-tab-pane" id="details-updates-pane" role="tabpanel" aria-labelledby="details-updates-tab">
                         ${updatesTabHtml}
                     </div>
-                    <div class="tab-pane fade ${defaultToDlcTab ? 'show active' : ''} details-tab-pane" id="details-dlc-pane" role="tabpanel" aria-labelledby="details-dlc-tab">
-                        ${dlcTabHtml}
+                    ${dlcList.length ? `
+                        <div class="tab-pane fade ${defaultToDlcTab ? 'show active' : ''} details-tab-pane" id="details-dlc-pane" role="tabpanel" aria-labelledby="details-dlc-tab">
+                            ${dlcTabHtml}
+                        </div>
+                    ` : ''}
+                    <div class="tab-pane fade details-tab-pane" id="details-cheats-pane" role="tabpanel" aria-labelledby="details-cheats-tab">
+                        ${cheatsTabHtml}
                     </div>
                 </div>
             `);
         } else {
             $('#detailsVersions').html(`
                 ${actionRow}
+                ${libraryFilesRow}
                 ${customSearchRow}
                 <div class="tab-content" id="detailsTabContent">
                     <div class="tab-pane show active details-tab-pane" id="details-updates-pane" role="tabpanel">
@@ -2391,8 +2561,133 @@
         setDetailsStatus('', 'muted');
     }
 
+    function setDetailsModalSize(size) {
+        const $dialog = $('#detailsModal').find('.modal-dialog');
+        const $btn = $('#detailsModalToggleSizeBtn');
+        const $icon = $('#detailsModalToggleSizeIcon');
+
+        if (size === 'expanded') {
+            $dialog.css('max-width', '90vw');
+            $dialog.removeClass('modal-lg modal-xl');
+            $icon.removeClass('bi-arrows-angle-expand').addClass('bi-arrows-angle-contract');
+            $btn.attr('title', 'Contract details card').attr('aria-label', 'Contract details card');
+            sessionStorage.setItem('detailsModalSize', 'expanded');
+        } else {
+            $dialog.css('max-width', '');
+            $dialog.removeClass('modal-lg').addClass('modal-xl');
+            $icon.removeClass('bi-arrows-angle-contract').addClass('bi-arrows-angle-expand');
+            $btn.attr('title', 'Expand details card').attr('aria-label', 'Expand details card');
+            sessionStorage.setItem('detailsModalSize', 'small');
+        }
+    }
+
+    function clearDetailsModalResize() {
+        $('#detailsModal').find('.modal-dialog').css({ width: '', maxWidth: '' });
+        $('#detailsModal').find('.modal-content').css('height', '');
+    }
+
+    const detailsModalResizeStorageKey = 'aerofoilDetailsModalCustomSize';
+
+    function applyStoredDetailsModalResize() {
+        let storedSize;
+        try {
+            storedSize = JSON.parse(localStorage.getItem(detailsModalResizeStorageKey) || 'null');
+        } catch (_) {
+            storedSize = null;
+        }
+        if (!storedSize || !Number.isFinite(storedSize.width) || !Number.isFinite(storedSize.height)) {
+            return false;
+        }
+
+        const maxWidth = Math.max(320, window.innerWidth - 32);
+        const maxHeight = Math.max(320, window.innerHeight - 32);
+        const width = Math.max(Math.min(560, maxWidth), Math.min(maxWidth, storedSize.width));
+        const height = Math.max(Math.min(420, maxHeight), Math.min(maxHeight, storedSize.height));
+        const $dialog = $('#detailsModal').find('.modal-dialog');
+        $dialog.removeClass('modal-lg modal-xl').css({ width: `${width}px`, maxWidth: `${width}px` });
+        $('#detailsModal').find('.modal-content').css('height', `${height}px`);
+        return true;
+    }
+
+    $(document).on('click', '#detailsModalToggleSizeBtn', function () {
+        clearDetailsModalResize();
+        localStorage.removeItem(detailsModalResizeStorageKey);
+        const currentSize = sessionStorage.getItem('detailsModalSize') || 'small';
+        const newSize = currentSize === 'expanded' ? 'small' : 'expanded';
+        setDetailsModalSize(newSize);
+    });
+
+    const detailsModalResizeHandle = document.getElementById('detailsModalResizeHandle');
+    if (detailsModalResizeHandle && detailsModalEl) {
+        let resizeStart = null;
+
+        detailsModalResizeHandle.addEventListener('pointerdown', event => {
+            const dialog = detailsModalEl.querySelector('.modal-dialog');
+            const content = detailsModalEl.querySelector('.modal-content');
+            if (!dialog || !content) return;
+
+            const rect = content.getBoundingClientRect();
+            resizeStart = {
+                x: event.clientX,
+                y: event.clientY,
+                width: rect.width,
+                height: rect.height,
+                dialog,
+                content,
+            };
+            detailsModalResizeHandle.setPointerCapture(event.pointerId);
+            event.preventDefault();
+        });
+
+        detailsModalResizeHandle.addEventListener('pointermove', event => {
+            if (!resizeStart) return;
+
+            const maxWidth = Math.max(320, window.innerWidth - 32);
+            const maxHeight = Math.max(320, window.innerHeight - 32);
+            const minWidth = Math.min(560, maxWidth);
+            const minHeight = Math.min(420, maxHeight);
+            const width = Math.max(minWidth, Math.min(maxWidth, resizeStart.width + event.clientX - resizeStart.x));
+            const height = Math.max(minHeight, Math.min(maxHeight, resizeStart.height + event.clientY - resizeStart.y));
+
+            resizeStart.dialog.classList.remove('modal-lg', 'modal-xl');
+            resizeStart.dialog.style.width = `${width}px`;
+            resizeStart.dialog.style.maxWidth = `${width}px`;
+            resizeStart.content.style.height = `${height}px`;
+        });
+
+        detailsModalResizeHandle.addEventListener('pointerup', event => {
+            const completedResize = resizeStart;
+            if (detailsModalResizeHandle.hasPointerCapture(event.pointerId)) {
+                detailsModalResizeHandle.releasePointerCapture(event.pointerId);
+            }
+            resizeStart = null;
+            if (completedResize) {
+                const width = parseFloat(completedResize.dialog.style.width);
+                const height = parseFloat(completedResize.content.style.height);
+                if (Number.isFinite(width) && Number.isFinite(height)) {
+                    localStorage.setItem(detailsModalResizeStorageKey, JSON.stringify({
+                        width: Math.round(width),
+                        height: Math.round(height),
+                    }));
+                }
+            }
+        });
+
+        detailsModalResizeHandle.addEventListener('pointercancel', () => {
+            resizeStart = null;
+        });
+    }
+
     if (detailsModalEl) {
         detailsModalEl.addEventListener('show.bs.modal', event => {
+            clearDetailsModalResize();
+            if (!applyStoredDetailsModalResize()) {
+                const savedSize = sessionStorage.getItem('detailsModalSize') || 'small';
+                setDetailsModalSize(savedSize);
+            }
+            const paneVisibility = getStoredDetailsPaneVisibility();
+            setDetailsPaneVisibility(paneVisibility.showLibraryDetails, paneVisibility.showGameInfo);
+
             const button = event.relatedTarget;
             const appId = button.getAttribute('data-bs-app-id');
             const appType = button.getAttribute('data-bs-app-type');
@@ -2400,12 +2695,20 @@
             const initial = findGameByKey(appId, appType);
             if (initial) {
                 renderDetails(initial);
+                renderGameInfoModalFromTitleDb(initial, initial.title_id, getGameTitle(initial));
             } else {
                 showDetailsLoading();
+                renderGameInfoModalFromTitleDb(null, '', 'Loading game info...');
             }
             fetchGameDetails(appId, appType)
-                .then(game => renderDetails(game))
-                .catch(() => renderDetails(null));
+                .then(game => {
+                    renderDetails(game);
+                    renderGameInfoModalFromTitleDb(game, game.title_id, getGameTitle(game));
+                })
+                .catch(() => {
+                    renderDetails(null);
+                    renderGameInfoModalFromTitleDb(null, '', 'Game info unavailable');
+                });
         });
         detailsModalEl.addEventListener('hidden.bs.modal', () => {
             currentDetailsContext = null;
@@ -2546,22 +2849,6 @@
         }
     }
 
-    const gameInfoModal = document.getElementById('gameInfoModal');
-    if (gameInfoModal) {
-        gameInfoModal.addEventListener('show.bs.modal', event => {
-            const button = event.relatedTarget;
-            const titleId = (button.getAttribute('data-title-id') || '').trim().toUpperCase();
-            const title = button.getAttribute('data-title') || '';
-            if (!titleId) {
-                renderGameInfoModalFromTitleDb(null, titleId, title);
-                $('#gameInfoStatus').text({{ _('This item has no Title ID.')|tojson }}).removeClass('text-muted').addClass('text-danger');
-                return;
-            }
-
-            const game = findGameByTitleId(titleId);
-            renderGameInfoModalFromTitleDb(game, titleId, title);
-        });
-    }
 
     $('#saveManualTitleInfoBtn').on('click', function () {
         if (!canManageManualTitleInfo) return;
@@ -2731,8 +3018,46 @@
                 return {
                     'title-id': titleId || '',
                     'update-only': 'false',
+                    'dlc-only': 'true',
                 };
             },
+        });
+    });
+
+    $(document).on('click', '.details-ignore-content-btn', function () {
+        const button = $(this);
+        const appId = String(button.data('app-id') || '').trim();
+        const appType = String(button.data('app-type') || '').trim().toUpperCase();
+        const ignored = String(button.data('ignored')) === 'true';
+        const version = button.data('version');
+        if (!appId || !appType) {
+            return;
+        }
+
+        button.prop('disabled', true);
+        $.ajax({
+            url: '/api/library/ignored-content',
+            type: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify({ app_id: appId, app_type: appType, version, ignored }),
+        }).done(function (response) {
+            if (!response || response.success !== true) {
+                setDetailsStatus('Unable to update ignored content.', 'danger');
+                return;
+            }
+            gameDetailsCache.clear();
+            fetchGames().then(() => {
+                recomputeFilteredGames();
+                renderGenresDropdown();
+            }).catch(() => {});
+            const context = currentDetailsContext || {};
+            $.getJSON(`/api/title-details?app_id=${encodeURIComponent(context.appId || appId)}&app_type=${encodeURIComponent(context.appType || appType)}`)
+                .done(data => renderDetails(data && data.game ? data.game : null))
+                .fail(() => setDetailsStatus('Saved, but refreshing title details failed.', 'danger'));
+        }).fail(function () {
+            setDetailsStatus('Unable to update ignored content.', 'danger');
+        }).always(function () {
+            button.prop('disabled', false);
         });
     });
 

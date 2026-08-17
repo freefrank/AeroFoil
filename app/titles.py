@@ -9,6 +9,7 @@ import unicodedata
 import requests
 import threading
 import time
+import shutil
 from contextlib import contextmanager
 
 from app import titledb
@@ -96,6 +97,7 @@ def keys_loaded():
 
 app_id_regex = r"\[([0-9A-Fa-f]{16})\]"
 version_regex = r"\[v(\d+)\]"
+update_tag_regex = r"\[UPDATE\]"
 
 # Global variables for TitleDB data
 identification_in_progress_count = 0
@@ -135,6 +137,9 @@ _english_title_lookup_cache = {}
 _english_title_lookup_cache_lock = threading.Lock()
 _TITLE_LOOKUP_CACHE_MAX = 32768
 _english_titles_index_ready = False
+_local_file_metadata_cache = {}
+_local_file_metadata_cache_lock = threading.Lock()
+_LOCAL_FILE_METADATA_CACHE_MAX = 2048
 
 try:
     _libc = ctypes.CDLL("libc.so.6")
@@ -189,6 +194,8 @@ def _reset_titledb_state():
     with _identify_app_cache_lock:
         _identify_app_cache.clear()
     _bump_index_conn_generation()
+    with _local_file_metadata_cache_lock:
+        _local_file_metadata_cache.clear()
 
 def _load_json_file(path, label):
     try:
@@ -203,7 +210,9 @@ def _versions_source_signature(path):
     return f"{int(stat.st_size)}:{int(mtime_ns)}"
 
 def _titles_sources_signature(paths):
-    parts = []
+    # Prefix with the index schema version so a column change forces a one-time
+    # rebuild even when the underlying source files are unchanged.
+    parts = [f"schema:{TITLES_INDEX_SCHEMA_VERSION}"]
     for path in (paths or []):
         parts.append(f"{os.path.basename(path)}:{_versions_source_signature(path)}")
     return "|".join(parts)
@@ -276,6 +285,20 @@ def _release_process_memory():
             _malloc_trim(0)
         except Exception:
             pass
+
+def _coerce_rating(value):
+    """Coerce a TitleDB `rating` value to an int age, or None if unknown.
+
+    TitleDB stores the eShop minimum-age recommendation as an integer. Negative
+    sentinels (e.g. -1) and blanks are treated as "unrated".
+    """
+    if value is None:
+        return None
+    try:
+        rating = int(value)
+    except (TypeError, ValueError):
+        return None
+    return rating if rating >= 0 else None
 
 def _normalize_title_search_text(value):
     text = str(value or '')
@@ -561,6 +584,7 @@ def _ensure_titles_index_from_sources(source_files, index_file, log_label='title
                 "category TEXT, "
                 "nsu_id TEXT, "
                 "description TEXT, "
+                "rating INTEGER, "
                 "search_hay TEXT, "
                 "sort_order INTEGER NOT NULL)"
             )
@@ -599,6 +623,7 @@ def _ensure_titles_index_from_sources(source_files, index_file, log_label='title
                 "category TEXT, "
                 "nsu_id TEXT, "
                 "description TEXT, "
+                "rating INTEGER, "
                 "search_hay TEXT, "
                 "sort_order INTEGER NOT NULL)"
             )
@@ -627,6 +652,7 @@ def _ensure_titles_index_from_sources(source_files, index_file, log_label='title
                     nsu_id_raw = item.get('nsuId')
                     nsu_id = None if nsu_id_raw is None else str(nsu_id_raw)
                     description = str(item.get('description') or '').strip() or None
+                    rating = _coerce_rating(item.get('rating'))
                     search_hay = _normalize_title_search_text(f"{title_id} {name}")
                     batch.append((
                         title_id,
@@ -636,22 +662,23 @@ def _ensure_titles_index_from_sources(source_files, index_file, log_label='title
                         category,
                         nsu_id,
                         description,
+                        rating,
                         search_hay,
                         int(order),
                     ))
                     if len(batch) >= batch_size:
                         conn.executemany(
                             "INSERT OR REPLACE INTO titles "
-                            "(title_id, name, banner_url, icon_url, category, nsu_id, description, search_hay, sort_order) "
-                            "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                            "(title_id, name, banner_url, icon_url, category, nsu_id, description, rating, search_hay, sort_order) "
+                            "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
                             batch,
                         )
                         batch.clear()
             if batch:
                 conn.executemany(
                     "INSERT OR REPLACE INTO titles "
-                    "(title_id, name, banner_url, icon_url, category, nsu_id, description, search_hay, sort_order) "
-                    "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                    "(title_id, name, banner_url, icon_url, category, nsu_id, description, rating, search_hay, sort_order) "
+                    "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
                     batch,
                 )
 
@@ -974,12 +1001,27 @@ def load_titledb():
     global _missing_files_recovery_in_progress
     global _titledb_data_signature
     with _titledb_lock:
+        app_settings = load_settings()
+        required_files = _required_titledb_files(app_settings)
+
         if _titles_db_loaded:
-            identification_in_progress_count += 1
-            return True
+            # Refresh in-memory indexes when TitleDB files changed on disk so
+            # previously unresolved titles can pick up new metadata.
+            missing_files = _missing_titledb_files(required_files)
+            if missing_files:
+                identification_in_progress_count += 1
+                return True
+            current_signature = _build_titledb_data_signature(required_files)
+            if (
+                current_signature == str(_titledb_data_signature or '')
+                or identification_in_progress_count > 0
+            ):
+                identification_in_progress_count += 1
+                return True
+            logger.info("Detected updated TitleDB files on disk. Reloading indexes.")
+            _reset_titledb_state()
 
         logger.info("Loading TitleDBs into memory...")
-        app_settings = load_settings()
 
         # Ensure directory exists before any recovery attempt.
         if not os.path.isdir(TITLEDB_DIR):
@@ -988,7 +1030,6 @@ def load_titledb():
             except Exception:
                 pass
 
-        required_files = _required_titledb_files(app_settings)
         missing_files = _missing_titledb_files(required_files)
         if missing_files:
             missing_parts = [f"{label}:{os.path.basename(path)}" for label, path in missing_files]
@@ -1202,6 +1243,8 @@ def unload_titledb():
         with _identify_app_cache_lock:
             _identify_app_cache.clear()
         _bump_index_conn_generation()
+        with _local_file_metadata_cache_lock:
+            _local_file_metadata_cache.clear()
         logger.info("TitleDBs unloaded.")
 
 def identify_file_from_filename(filename):
@@ -1216,6 +1259,15 @@ def identify_file_from_filename(filename):
         errors.append('Could not determine App ID from filename, pattern [APPID] not found. Title ID and Type cannot be derived.')
     else:
         title_id, app_type = identify_appId(app_id)
+        # Legacy update names sometimes contain the base title ID (ending in
+        # 000) together with an explicit [UPDATE] tag. An Update app ID is the
+        # only type that can be derived safely from that base ID: it ends in 800.
+        # Do not infer DLC IDs from tags because a base title ID does not contain
+        # enough information to identify a specific DLC package.
+        if app_type == APP_TYPE_BASE and re.search(update_tag_regex, filename, re.IGNORECASE):
+            app_id = f'{app_id[:-3]}800'
+            title_id = f'{app_id[:-3]}000'
+            app_type = APP_TYPE_UPD
 
     version = get_version_from_filename(filename)
     if version is None:
@@ -1284,6 +1336,34 @@ def identify_file_from_cnmt(filepath):
 
     return contents
 
+def _identify_file_from_local_metadata(filepath):
+    try:
+        from app import local_file_metadata
+    except Exception:
+        return []
+
+    try:
+        parsed = local_file_metadata.extract_local_metadata(filepath)
+    except Exception:
+        return []
+    if not isinstance(parsed, dict) or not parsed:
+        return []
+
+    app_id = str(parsed.get('title_id') or '').strip().upper()
+    if not app_id:
+        return []
+    try:
+        version = int(parsed.get('version') or 0)
+    except Exception:
+        version = 0
+
+    title_id, app_type = identify_appId(app_id)
+    if not title_id:
+        title_id = app_id
+    if app_type is None:
+        app_type = APP_TYPE_BASE
+    return [(title_id, app_type, app_id, version)]
+
 def identify_file(filepath):
     filename = os.path.split(filepath)[-1]
     contents = []
@@ -1294,8 +1374,12 @@ def identify_file(filepath):
         try:
             cnmt_contents = identify_file_from_cnmt(filepath)
             if not cnmt_contents:
-                error = 'No content found in NCA containers.'
-                success = False
+                local_contents = _identify_file_from_local_metadata(filepath)
+                if local_contents:
+                    contents += local_contents
+                else:
+                    error = 'No content found in NCA containers.'
+                    success = False
             else:
                 for content in cnmt_contents:
                     app_type, app_id, version = content
@@ -1307,8 +1391,12 @@ def identify_file(filepath):
                     contents.append((title_id, app_type, app_id, version))
         except Exception as e:
             logger.error(f'Could not identify file {filepath} from metadata: {e}')
-            error = str(e)
-            success = False
+            local_contents = _identify_file_from_local_metadata(filepath)
+            if local_contents:
+                contents += local_contents
+            else:
+                error = str(e)
+                success = False
 
     else:
         identification = 'filename'
@@ -1330,7 +1418,20 @@ def identify_file(filepath):
 def _get_manual_title_override(title_id):
     try:
         settings = load_settings()
-        overrides = (settings.get('titles') or {}).get('manual_overrides') or {}
+        title_settings = settings.get('titles') or {}
+        overrides = title_settings.get('effective_manual_overrides')
+        if not isinstance(overrides, dict):
+            overrides = {}
+            for raw_overrides in (
+                BUILTIN_TITLE_MANUAL_OVERRIDES,
+                title_settings.get('manual_overrides') or {},
+            ):
+                if not isinstance(raw_overrides, dict):
+                    continue
+                for key, value in raw_overrides.items():
+                    normalized_key = str(key or '').strip().upper()
+                    if normalized_key and isinstance(value, dict):
+                        overrides[normalized_key] = value
         return overrides.get(str(title_id or '').strip().upper()) or {}
     except Exception:
         return {}
@@ -1363,7 +1464,7 @@ def _get_title_info_from_index_file(title_key, index_file, cache_store, cache_lo
     try:
         conn = _get_read_index_connection(index_file)
         row = conn.execute(
-            "SELECT name, banner_url, icon_url, title_id, category, nsu_id, description "
+            "SELECT name, banner_url, icon_url, title_id, category, nsu_id, description, rating "
             "FROM titles WHERE title_id = ? LIMIT 1",
             (title_key,),
         ).fetchone()
@@ -1389,6 +1490,7 @@ def _get_title_info_from_index_file(title_key, index_file, cache_store, cache_lo
         'category': row[4] or '',
         'nsuId': row[5],
         'description': row[6],
+        'rating': row[7],
     }
     with cache_lock:
         cache_store[title_key] = info
@@ -1419,7 +1521,7 @@ def _merge_preferred_title_info(base_info, preferred_info):
     merged = dict(base_info or {})
     if not isinstance(preferred_info, dict):
         return merged
-    for key in ('name', 'bannerUrl', 'iconUrl', 'id', 'category', 'nsuId', 'description'):
+    for key in ('name', 'bannerUrl', 'iconUrl', 'id', 'category', 'nsuId', 'description', 'rating'):
         value = preferred_info.get(key)
         if value is None:
             continue
@@ -1428,6 +1530,275 @@ def _merge_preferred_title_info(base_info, preferred_info):
         merged[key] = value
     return merged
 
+
+def _set_local_file_metadata_cache(cache_key, value):
+    with _local_file_metadata_cache_lock:
+        _local_file_metadata_cache[cache_key] = value
+        if len(_local_file_metadata_cache) > _LOCAL_FILE_METADATA_CACHE_MAX:
+            try:
+                _local_file_metadata_cache.pop(next(iter(_local_file_metadata_cache)))
+            except Exception:
+                _local_file_metadata_cache.clear()
+
+
+def _get_local_metadata_language_preferences(app_settings=None):
+    settings = app_settings or load_settings()
+    titles_settings = (settings or {}).get("titles") or {}
+    language = str(titles_settings.get("language") or "en").strip().lower()
+    region = str(titles_settings.get("region") or "US").strip().upper()
+    return language, region
+
+
+def _candidate_paths_for_local_metadata_lookup(lookup_id):
+    key = str(lookup_id or "").strip().upper()
+    if not key:
+        return []
+    try:
+        from sqlalchemy import or_
+        from app.db import db, Titles, Apps, Files, app_files
+    except Exception:
+        return []
+
+    try:
+        rows = (
+            db.session.query(Files.filepath, Files.extension, Files.id)
+            .join(app_files, app_files.c.file_id == Files.id)
+            .join(Apps, Apps.id == app_files.c.app_id)
+            .join(Titles, Titles.id == Apps.title_id)
+            .filter(or_(Titles.title_id == key, Apps.app_id == key))
+            .order_by(Files.id.desc())
+            .limit(12)
+            .all()
+        )
+    except Exception:
+        return []
+
+    seen = set()
+    out = []
+    preferred_exts = {".nsp", ".xci", ".nsz", ".xcz"}
+    for row in rows:
+        filepath = str(getattr(row, "filepath", "") or "").strip()
+        if not filepath or filepath in seen:
+            continue
+        seen.add(filepath)
+        ext = str(getattr(row, "extension", "") or "").strip().lower()
+        if not ext:
+            ext = Path(filepath).suffix.lower().lstrip(".")
+        if ext and f".{ext}" not in preferred_exts:
+            continue
+        if os.path.isfile(filepath):
+            out.append(filepath)
+    return out
+
+
+def _related_title_ids_for_lookup(lookup_id):
+    key = str(lookup_id or "").strip().upper()
+    if not key:
+        return []
+    try:
+        from app.db import db, Titles, Apps
+    except Exception:
+        return []
+    try:
+        rows = (
+            db.session.query(Titles.title_id)
+            .join(Apps, Apps.title_id == Titles.id)
+            .filter(Apps.app_id == key)
+            .distinct()
+            .all()
+        )
+    except Exception:
+        return []
+    out = []
+    for row in rows:
+        tid = str(getattr(row, "title_id", "") or "").strip().upper()
+        if tid and tid != key and tid not in out:
+            out.append(tid)
+    return out
+
+
+def _cache_local_media(title_key, icon_bytes):
+    if not icon_bytes:
+        return False, False
+    icon_cached = False
+    safe_key = str(title_key or "").strip().upper()
+    if not safe_key:
+        return False, False
+
+    try:
+        icon_dir = os.path.join(CACHE_DIR, "icons")
+        os.makedirs(icon_dir, exist_ok=True)
+        icon_path = os.path.join(icon_dir, f"{safe_key}.jpg")
+        with open(icon_path, "wb") as handle:
+            handle.write(icon_bytes)
+        icon_cached = True
+    except Exception:
+        icon_cached = False
+
+    # control.nacp exposes per-language icon assets; there is no reliable
+    # equivalent local "banner" image in package metadata for most titles.
+    return icon_cached, False
+
+
+def _find_cached_media_path(title_key, media_kind):
+    key = str(title_key or "").strip().upper()
+    if not key:
+        return None
+    cache_dir = os.path.join(CACHE_DIR, media_kind)
+    try:
+        for name in os.listdir(cache_dir):
+            if str(name).upper().startswith(f"{key}."):
+                path = os.path.join(cache_dir, name)
+                if os.path.isfile(path):
+                    return path
+    except Exception:
+        return None
+    return None
+
+
+def _alias_cached_media(source_key, target_key):
+    src = str(source_key or "").strip().upper()
+    dst = str(target_key or "").strip().upper()
+    if not src or not dst or src == dst:
+        return False, False
+
+    icon_ok = False
+    banner_ok = False
+    for media_kind in ("icons", "banners"):
+        source_path = _find_cached_media_path(src, media_kind)
+        if not source_path:
+            continue
+        _, ext = os.path.splitext(source_path)
+        ext = ext or ".jpg"
+        cache_dir = os.path.join(CACHE_DIR, media_kind)
+        target_path = os.path.join(cache_dir, f"{dst}{ext}")
+        try:
+            os.makedirs(cache_dir, exist_ok=True)
+            if os.path.abspath(source_path) != os.path.abspath(target_path):
+                shutil.copy2(source_path, target_path)
+            if media_kind == "icons":
+                icon_ok = True
+            else:
+                banner_ok = True
+        except Exception:
+            continue
+    return icon_ok, banner_ok
+
+
+def _build_local_fallback_info(lookup_id, _seen=None, preferred_language=None, preferred_region=None):
+    key = str(lookup_id or "").strip().upper()
+    if not key:
+        return None
+    language = str(preferred_language or "").strip().lower()
+    region = str(preferred_region or "").strip().upper()
+    if not language or not region:
+        settings_language, settings_region = _get_local_metadata_language_preferences()
+        if not language:
+            language = settings_language
+        if not region:
+            region = settings_region
+    seen = set(_seen or set())
+    if key in seen:
+        return None
+    seen.add(key)
+    cache_key = f"local_fallback:{key}:{region}:{language}"
+    with _local_file_metadata_cache_lock:
+        cached = _local_file_metadata_cache.get(cache_key)
+    if cached is not None:
+        if isinstance(cached, dict) and cached:
+            return dict(cached)
+        return None
+
+    metadata = None
+    try:
+        from app import local_file_metadata
+        for filepath in _candidate_paths_for_local_metadata_lookup(key):
+            parsed = local_file_metadata.extract_local_metadata(
+                filepath,
+                preferred_language=language,
+                preferred_region=region,
+            )
+            if isinstance(parsed, dict) and parsed:
+                metadata = parsed
+                break
+    except Exception as e:
+        logger.debug("Local fallback metadata extraction failed for %s: %s", key, e)
+
+    if not isinstance(metadata, dict) or not metadata:
+        for related_title_id in _related_title_ids_for_lookup(key):
+            related_info = None
+            related_info = _build_local_fallback_info(
+                related_title_id,
+                _seen=seen,
+                preferred_language=language,
+                preferred_region=region,
+            )
+            if not related_info:
+                try:
+                    related_info = _get_title_info_from_index(related_title_id) if _titles_index_ready else None
+                except Exception:
+                    related_info = None
+            if not isinstance(related_info, dict) or not related_info:
+                continue
+            _alias_cached_media(related_title_id, key)
+            bridged = {
+                "name": str(related_info.get("name") or "Unrecognized"),
+                "bannerUrl": f"/api/shop/banner/{key}",
+                "iconUrl": f"/api/shop/icon/{key}",
+                "id": key,
+                "category": str(related_info.get("category") or ""),
+                "nsuId": related_info.get("nsuId"),
+                "description": related_info.get("description"),
+                "screenshots": list(related_info.get("screenshots") or []),
+            }
+            _set_local_file_metadata_cache(cache_key, bridged)
+            return dict(bridged)
+        return None
+
+    title_name = str(metadata.get("name") or "").strip()
+    publisher = str(metadata.get("publisher") or "").strip()
+    display_version = str(metadata.get("display_version") or "").strip()
+    icon_bytes = metadata.get("icon_bytes")
+    extracted_title_key = str(metadata.get("title_id") or "").strip().upper()
+    extracted_keys = [key]
+    if extracted_title_key and extracted_title_key not in extracted_keys:
+        extracted_keys.append(extracted_title_key)
+
+    icon_cached = False
+    banner_cached = False
+    for media_key in extracted_keys:
+        i_ok, b_ok = _cache_local_media(media_key, icon_bytes)
+        if media_key == key:
+            icon_cached = i_ok
+            banner_cached = b_ok
+    if (not icon_cached or not banner_cached) and len(extracted_keys) > 1:
+        for media_key in extracted_keys:
+            if media_key == key:
+                continue
+            i_ok, b_ok = _alias_cached_media(media_key, key)
+            icon_cached = icon_cached or i_ok
+            banner_cached = banner_cached or b_ok
+
+    description_parts = []
+    if publisher:
+        description_parts.append(f"Publisher: {publisher}")
+    if display_version:
+        description_parts.append(f"Display Version: {display_version}")
+    description = "\n".join(description_parts) if description_parts else None
+
+    info = {
+        "name": title_name or "Unrecognized",
+        "bannerUrl": f"/api/shop/banner/{key}" if banner_cached else "//placehold.it/400x200",
+        "iconUrl": f"/api/shop/icon/{key}" if icon_cached else "",
+        "id": key,
+        "category": "",
+        "nsuId": None,
+        "description": description,
+        "screenshots": [],
+    }
+    _set_local_file_metadata_cache(cache_key, info)
+    return dict(info)
+
 def get_game_info(title_id):
     global _titles_db
     global _titles_by_title_id
@@ -1435,8 +1806,12 @@ def get_game_info(title_id):
     global _english_titles_index_ready
     global _titles_desc_by_title_id
     global _titles_images_by_title_id
+    title_key = str(title_id or '').strip().upper()
     if not _titles_index_ready and _titles_db is None and _titles_by_title_id is None:
         _warn_titledb_state_once('titles_not_loaded', "titles index is not loaded. Call load_titledb first.")
+        local_info = _build_local_fallback_info(title_key)
+        if isinstance(local_info, dict) and local_info:
+            return _apply_manual_title_override(title_id, local_info)
         # Return default structure so games can still be displayed
         return _apply_manual_title_override(title_id, {
             'name': 'Unrecognized',
@@ -1446,11 +1821,11 @@ def get_game_info(title_id):
             'category': '',
             'nsuId': None,
             'description': None,
+            'rating': None,
             'screenshots': [],
         })
 
     try:
-        title_key = str(title_id or '').strip().upper()
         title_info = _get_title_info_from_index(title_key) if _titles_index_ready else (_titles_by_title_id or {}).get(title_key)
         if title_info is None and isinstance(_titles_db, dict):
             for item in _titles_db.values():
@@ -1480,14 +1855,41 @@ def get_game_info(title_id):
                 screenshots = _titles_images_by_title_id.get(title_key) or []
             except Exception:
                 screenshots = []
+        merged_title_info = dict(resolved_title_info or {})
+        needs_local_backfill = not str(merged_title_info.get('name') or '').strip()
+        if needs_local_backfill:
+            local_info = _build_local_fallback_info(title_key)
+            if isinstance(local_info, dict) and local_info:
+                for key in ('name', 'bannerUrl', 'iconUrl', 'category', 'nsuId'):
+                    current_value = merged_title_info.get(key)
+                    if isinstance(current_value, str):
+                        if current_value.strip():
+                            continue
+                    elif current_value is not None:
+                        continue
+                    fallback_value = local_info.get(key)
+                    if isinstance(fallback_value, str):
+                        if fallback_value.strip():
+                            merged_title_info[key] = fallback_value
+                    elif fallback_value is not None:
+                        merged_title_info[key] = fallback_value
+                if not description:
+                    fallback_description = local_info.get('description')
+                    if isinstance(fallback_description, str) and fallback_description.strip():
+                        description = fallback_description
+                if not screenshots:
+                    fallback_screenshots = local_info.get('screenshots')
+                    if isinstance(fallback_screenshots, list):
+                        screenshots = [str(u).strip() for u in fallback_screenshots if str(u or '').strip()][:12]
         return _apply_manual_title_override(title_id, {
-            'name': resolved_title_info.get('name') or 'Unrecognized',
-            'bannerUrl': resolved_title_info.get('bannerUrl') or '//placehold.it/400x200',
-            'iconUrl': resolved_title_info.get('iconUrl') or '',
-            'id': resolved_title_info.get('id') or title_key,
-            'category': resolved_title_info.get('category') or '',
-            'nsuId': resolved_title_info.get('nsuId'),
+            'name': merged_title_info.get('name') or 'Unrecognized',
+            'bannerUrl': merged_title_info.get('bannerUrl') or '//placehold.it/400x200',
+            'iconUrl': merged_title_info.get('iconUrl') or '',
+            'id': merged_title_info.get('id') or title_key,
+            'category': merged_title_info.get('category') or '',
+            'nsuId': merged_title_info.get('nsuId'),
             'description': description,
+            'rating': resolved_title_info.get('rating'),
             'screenshots': screenshots,
         })
     except Exception:
@@ -1514,6 +1916,9 @@ def get_game_info(title_id):
                     _missing_titledb_last_log.pop(key, None)
         if should_log:
             logger.warning("Title ID not found in titledb: %s", normalized_title_id or title_id)
+        local_info = _build_local_fallback_info(title_key)
+        if isinstance(local_info, dict) and local_info:
+            return _apply_manual_title_override(title_id, local_info)
         return _apply_manual_title_override(title_id, {
             'name': 'Unrecognized',
             'bannerUrl': '//placehold.it/400x200',
@@ -1522,6 +1927,7 @@ def get_game_info(title_id):
             'category': '',
             'nsuId': None,
             'description': None,
+            'rating': None,
             'screenshots': [],
         })
 

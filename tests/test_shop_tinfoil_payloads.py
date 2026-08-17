@@ -1,6 +1,7 @@
 import copy
 import time
 import unittest
+from types import SimpleNamespace
 from unittest.mock import patch
 
 
@@ -10,9 +11,10 @@ index = None
 shop_sections_api = None
 shop_sections_cache = None
 shop_sections_cache_lock = None
+tinfoil_access = None
 try:
     from app.app import app as flask_app
-    from app.app import index, shop_sections_api, shop_sections_cache, shop_sections_cache_lock
+    from app.app import index, shop_sections_api, shop_sections_cache, shop_sections_cache_lock, tinfoil_access
 except ModuleNotFoundError as exc:
     _IMPORT_ERROR = exc
 
@@ -101,6 +103,43 @@ class ShopTinfoilPayloadTests(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.mimetype, 'application/octet-stream')
         self.assertTrue(response.get_data().startswith(b'TINFOIL'))
+
+    def test_frozen_account_uses_error_field_in_shop_payload(self):
+        shop_settings = dict(self.base_shop_settings)
+        shop_settings['public'] = False
+        shop_settings['encrypt'] = False
+        frozen_user = SimpleNamespace(frozen=True, frozen_message='Account frozen by admin.')
+        fake_user_model = SimpleNamespace(
+            query=SimpleNamespace(
+                filter_by=lambda **kwargs: SimpleNamespace(first=lambda: frozen_user)
+            )
+        )
+
+        @tinfoil_access
+        def protected_endpoint():
+            return 'unreachable'
+
+        with flask_app.test_request_context(
+            '/',
+            method='GET',
+            headers={
+                'Authorization': 'Basic ZXhhbXBsZS11c2VyOmV4YW1wbGUtcGFzc3dvcmQ=',
+                'User-Agent': 'Tinfoil/1.0',
+            },
+        ):
+            with (
+                patch('app.app._maybe_sync_request_settings', return_value=None),
+                patch('app.app.app_settings', {'shop': shop_settings}),
+                patch('app.app.basic_auth', return_value=(False, 'Account frozen by admin.', False)),
+                patch('app.app.User', fake_user_model),
+            ):
+                response = protected_endpoint()
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.get_json(), {
+            'error': 'Account frozen by admin.',
+            'files': [{'url': '/api/frozen/notice#frozen.txt', 'size': 1}],
+        })
 
 
 if __name__ == '__main__':

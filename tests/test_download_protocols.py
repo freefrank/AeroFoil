@@ -3,6 +3,7 @@ from unittest.mock import patch
 
 from app.downloads.manager import _extract_update_version_from_name, _get_import_extension, _infer_protocol
 from app.downloads.prowlarr import ProwlarrClient, _normalize_result, filter_results, pick_best_result
+from app.downloads.versioning import select_dlc_file_indices, select_update_file_indices
 from app.settings import _normalize_download_settings
 
 
@@ -72,8 +73,23 @@ class DownloadProtocolTests(unittest.TestCase):
         self.assertEqual(normalized["torrent_client"]["category"], "shared-tag")
         self.assertEqual(normalized["usenet_client"]["category"], "shared-tag")
         self.assertEqual(normalized["torrent_client"]["min_seeders"], 7)
+        self.assertTrue(normalized["torrent_client"]["remove_completed_torrents_on_finish"])
         self.assertEqual(normalized["usenet_client"]["min_age_minutes"], 0)
         self.assertEqual(normalized["prowlarr"]["search_limit"], 100)
+        self.assertEqual(normalized["required_terms_match"], "all")
+
+    def test_download_settings_reject_invalid_required_terms_match_mode(self):
+        normalized = _normalize_download_settings({"required_terms_match": "unsupported"})
+
+        self.assertEqual(normalized["required_terms_match"], "all")
+
+    def test_download_settings_allow_disabling_torrent_cleanup(self):
+        normalized = _normalize_download_settings({
+            "torrent_client": {
+                "remove_completed_torrents_on_finish": False,
+            },
+        })
+        self.assertFalse(normalized["torrent_client"]["remove_completed_torrents_on_finish"])
 
     @patch.object(ProwlarrClient, "_get")
     def test_prowlarr_search_sends_type_and_nonzero_limit(self, get_mock):
@@ -117,6 +133,59 @@ class DownloadProtocolTests(unittest.TestCase):
         ]
         filtered = filter_results(results, blacklist_terms=["update"])
         self.assertEqual([item["title"] for item in filtered], ["Sample Base Game"])
+
+    def test_filter_results_matches_any_required_term_when_configured(self):
+        results = [
+            {"title": "Example alpha release", "protocol": "torrent", "seeders": 10},
+            {"title": "Example beta release", "protocol": "torrent", "seeders": 10},
+            {"title": "Example other release", "protocol": "torrent", "seeders": 10},
+        ]
+
+        filtered = filter_results(results, required_terms=["alpha", "beta"], required_terms_match="any")
+
+        self.assertEqual([item["title"] for item in filtered], ["Example alpha release", "Example beta release"])
+
+    def test_filter_results_requires_all_terms_by_default(self):
+        results = [
+            {"title": "Example alpha release", "protocol": "torrent", "seeders": 10},
+            {"title": "Example alpha beta release", "protocol": "torrent", "seeders": 10},
+        ]
+
+        filtered = filter_results(results, required_terms=["alpha", "beta"])
+
+        self.assertEqual([item["title"] for item in filtered], ["Example alpha beta release"])
+
+    def test_select_dlc_file_indices_prefers_dlc_named_files(self):
+        file_names = [
+            "Example Game [0100AAAA00000000] [BASE].nsp",
+            "Example Game [0100AAAA00000001] [DLC][v0].nsp",
+            "Example Game bonus.dat",
+        ]
+
+        self.assertEqual(select_dlc_file_indices(file_names), [1])
+
+    def test_select_dlc_file_indices_matches_dlc_app_id_suffix(self):
+        file_names = [
+            "0100AAAA00000000.nsp",
+            "0100AAAA00000001.nsp",
+        ]
+
+        self.assertEqual(select_dlc_file_indices(file_names), [1])
+
+    def test_select_update_file_indices_ignores_base_app_id_with_zero_version(self):
+        file_names = [
+            "Generic Base Game [010096500EA94000][v0].nsp",
+        ]
+
+        self.assertEqual(select_update_file_indices(file_names), [])
+
+    def test_select_update_file_indices_prefers_real_update_over_base_file(self):
+        file_names = [
+            "Generic Base Game [010096500EA94000][v0].nsp",
+            "Generic Update [010096500EA94800][v65536].nsp",
+        ]
+
+        self.assertEqual(select_update_file_indices(file_names), [1])
 
     def test_extract_update_version_prefers_bracketed_token(self):
         self.assertEqual(_extract_update_version_from_name("Game [v1245184] v999.nsp"), 1245184)

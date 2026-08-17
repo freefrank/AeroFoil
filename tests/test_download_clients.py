@@ -6,7 +6,14 @@ import unittest
 from unittest.mock import patch
 
 import app.downloads.manager as downloads_manager
-from app.downloads.client import queue_download, remove_active_download, remove_completed_download
+from app.downloads.client import (
+    get_download_client_diagnostics,
+    get_download_client_capabilities,
+    get_supported_download_clients,
+    queue_download,
+    remove_active_download,
+    remove_completed_download,
+)
 from app.downloads.manager import (
     _check_completed,
     _adopt_untracked_completed_item,
@@ -17,6 +24,7 @@ from app.downloads.manager import (
     _iter_importable_download_files,
     _move_completed_with_reason,
     _normalize_imported_wrapped_files,
+    _select_completed_update_candidate,
     _search_and_queue,
     filter_download_search_results,
     get_download_ui_visibility,
@@ -24,12 +32,14 @@ from app.downloads.manager import (
     get_downloads_state,
     manual_search_update,
     queue_download_url,
+    dismiss_duplicate_download,
     remove_pending_download,
+    remove_duplicate_download,
     search_update_options,
     sort_download_search_results,
 )
 from app.downloads.prowlarr import _normalize_result
-from app.downloads.usenet_client import add_nzb, list_active, list_completed, remove_history, remove_queue_item
+from app.downloads.usenet_client import add_nzb, list_active, list_completed, list_history, remove_history, remove_queue_item
 from app.downloads.usenet_client import _restrict_job_to_matching_update_files
 
 
@@ -80,6 +90,53 @@ class ProwlarrProtocolTests(unittest.TestCase):
 
 
 class QueueRoutingTests(unittest.TestCase):
+    def test_supported_download_clients_includes_torrent_and_usenet(self):
+        supported = get_supported_download_clients()
+        keys = {(item.get("protocol"), item.get("type")) for item in supported}
+        self.assertIn(("torrent", "qbittorrent"), keys)
+        self.assertIn(("torrent", "transmission"), keys)
+        self.assertIn(("torrent", "deluge"), keys)
+        self.assertIn(("torrent", "rtorrent"), keys)
+        self.assertIn(("usenet", "sabnzbd"), keys)
+        self.assertIn(("usenet", "nzbget"), keys)
+
+    def test_get_download_client_capabilities_resolves_by_type_when_protocol_missing(self):
+        caps = get_download_client_capabilities("", {"type": "rtorrent"})
+        self.assertIsNotNone(caps)
+        self.assertEqual(caps["protocol"], "torrent")
+        self.assertEqual(caps["type"], "rtorrent")
+        self.assertTrue(caps["supports_categories"])
+        self.assertTrue(caps["supports_download_path"])
+        self.assertTrue(caps["supports_live_status"])
+
+    def test_get_download_client_capabilities_marks_pneumatic_without_live_status(self):
+        caps = get_download_client_capabilities("usenet", {"type": "pneumatic"})
+        self.assertIsNotNone(caps)
+        self.assertEqual(caps["protocol"], "usenet")
+        self.assertEqual(caps["type"], "pneumatic")
+        self.assertFalse(caps["supports_live_status"])
+
+    def test_get_download_client_diagnostics_reports_missing_required_fields(self):
+        diag = get_download_client_diagnostics("", {"type": "rtorrent", "url": ""})
+        self.assertTrue(diag["supported"])
+        self.assertEqual(diag["protocol"], "torrent")
+        self.assertEqual(diag["type"], "rtorrent")
+        self.assertIn("url", diag["missing"])
+        self.assertIn("username", diag["missing"])
+        self.assertIn("password", diag["missing"])
+
+    def test_get_download_client_diagnostics_for_deluge_does_not_require_username(self):
+        diag = get_download_client_diagnostics("", {"type": "deluge", "url": "http://deluge.local", "password": "x"})
+        self.assertTrue(diag["supported"])
+        self.assertEqual(diag["missing"], [])
+
+    def test_get_download_client_diagnostics_for_nzbget_requires_username_and_password(self):
+        diag = get_download_client_diagnostics("", {"type": "nzbget", "url": "http://nzbget.local"})
+        self.assertTrue(diag["supported"])
+        self.assertEqual(diag["protocol"], "usenet")
+        self.assertIn("username", diag["missing"])
+        self.assertIn("password", diag["missing"])
+
     def test_get_download_ui_visibility_handles_all_protocol_configurations(self):
         cases = [
             (
@@ -221,6 +278,56 @@ class QueueRoutingTests(unittest.TestCase):
 
     @patch("app.downloads.manager.queue_download")
     @patch("app.downloads.manager.load_settings")
+    def test_queue_download_url_forwards_dlc_only_flag(self, load_settings_mock, queue_download_mock):
+        load_settings_mock.return_value = {
+            "downloads": {
+                "torrent_client": {
+                    "type": "rtorrent",
+                    "url": "http://rtorrent.local",
+                    "username": "user",
+                    "password": "pass",
+                },
+            }
+        }
+        queue_download_mock.return_value = (True, "ok", "abc123")
+
+        ok, message = queue_download_url(
+            "magnet:?xt=urn:btih:abcdef",
+            expected_name="Example DLC",
+            dlc_only=True,
+        )
+
+        self.assertTrue(ok)
+        self.assertEqual(message, "Queued download.")
+        queue_download_mock.assert_called_once()
+        self.assertTrue(queue_download_mock.call_args.kwargs["dlc_only"])
+
+    @patch("app.downloads.client.add_torrent")
+    @patch("app.downloads.client.resolve_download_url")
+    def test_queue_download_forwards_resolved_torrent_content(self, resolve_download_url_mock, add_torrent_mock):
+        resolve_download_url_mock.return_value = ("torrent_content", b"d8:announce5:testee")
+        add_torrent_mock.return_value = (True, "ok", "abc123")
+
+        ok, message, item_id = queue_download(
+            "torrent",
+            {
+                "type": "qbittorrent",
+                "url": "http://torrent.local",
+                "username": "user",
+                "password": "pass",
+                "category": "aerofoil",
+                "download_path": "X:\\fixture-root\\downloads",
+            },
+            "https://indexer.example/download/123",
+        )
+
+        self.assertTrue(ok)
+        self.assertEqual(message, "ok")
+        self.assertEqual(item_id, "abc123")
+        self.assertEqual(add_torrent_mock.call_args.kwargs["torrent_content"], b"d8:announce5:testee")
+
+    @patch("app.downloads.manager.queue_download")
+    @patch("app.downloads.manager.load_settings")
     def test_manual_usenet_update_queue_does_not_use_update_only(self, load_settings_mock, queue_download_mock):
         load_settings_mock.return_value = {
             "downloads": {
@@ -249,6 +356,69 @@ class QueueRoutingTests(unittest.TestCase):
         self.assertEqual(queue_download_mock.call_args.args[0], "usenet")
         self.assertFalse(queue_download_mock.call_args.kwargs["update_only"])
         self.assertEqual(queue_download_mock.call_args.kwargs["expected_version"], 123)
+
+    @patch("app.downloads.usenet_client._delete_job")
+    @patch("app.downloads.usenet_client._resume_job", return_value=False)
+    @patch("app.downloads.usenet_client._restrict_job_to_matching_dlc_files", return_value=(True, None))
+    @patch("app.downloads.usenet_client._sab_request")
+    def test_add_nzb_fails_when_resume_fails_for_dlc_only(
+        self,
+        sab_request_mock,
+        restrict_mock,
+        resume_mock,
+        delete_job_mock,
+    ):
+        sab_request_mock.return_value = {"status": True, "nzo_ids": ["nzo123"]}
+
+        ok, message, item_id = add_nzb(
+            "http://sab.local",
+            "secret",
+            "https://indexer.example/file.nzb",
+            dlc_only=True,
+        )
+
+        self.assertFalse(ok)
+        self.assertIn("failed to resume", message.lower())
+        self.assertIsNone(item_id)
+        restrict_mock.assert_called_once()
+        resume_mock.assert_called_once()
+        delete_job_mock.assert_called_once_with("http://sab.local", "secret", "nzo123", timeout_seconds=15)
+
+    @patch("app.downloads.manager.queue_download")
+    @patch("app.downloads.manager.load_settings")
+    @patch("app.downloads.manager._get_local_known_update_version", return_value=196608)
+    @patch("app.downloads.manager._get_highest_owned_update_version", return_value=196608)
+    def test_queue_download_url_rejects_duplicate_update_before_queueing(
+        self,
+        highest_owned_mock,
+        local_known_mock,
+        load_settings_mock,
+        queue_download_mock,
+    ):
+        load_settings_mock.return_value = {
+            "downloads": {
+                "torrent_client": {
+                    "type": "rtorrent",
+                    "url": "http://rtorrent.local",
+                    "username": "user",
+                    "password": "pass",
+                },
+            }
+        }
+
+        ok, message = queue_download_url(
+            "magnet:?xt=urn:btih:abcdef",
+            expected_name="Example Title Update",
+            update_only=True,
+            expected_version=196608,
+            title_id="0100EXAMPLE000000",
+        )
+
+        self.assertFalse(ok)
+        self.assertEqual(message, "duplicate update: 0100EXAMPLE000000 v196608 already known (latest v196608)")
+        queue_download_mock.assert_not_called()
+        highest_owned_mock.assert_called_once_with("0100EXAMPLE000000")
+        local_known_mock.assert_called_once_with("0100EXAMPLE000000")
 
     @patch("app.downloads.manager.pick_best_result")
     @patch("app.downloads.manager.ProwlarrClient")
@@ -433,6 +603,35 @@ class QueueRoutingTests(unittest.TestCase):
         self.assertFalse(ok)
         self.assertEqual(message, "No matching results found.")
 
+    @patch("app.downloads.manager.queue_download")
+    @patch("app.downloads.manager._get_local_known_update_version", return_value=196608)
+    @patch("app.downloads.manager._get_highest_owned_update_version", return_value=196608)
+    def test_search_and_queue_rejects_duplicate_update_before_searching(
+        self,
+        highest_owned_mock,
+        local_known_mock,
+        queue_download_mock,
+    ):
+        ok, message = _search_and_queue(
+            client=object(),
+            update={"title_id": "0100EXAMPLE000000", "title_name": "Example Title", "version": 196608},
+            downloads={},
+            indexer_ids=[],
+            categories=[],
+            required_terms=[],
+            blacklist_terms=[],
+            min_seeders=0,
+            min_age_minutes=0,
+            search_limit=10,
+            allowed_protocols=["usenet"],
+        )
+
+        self.assertFalse(ok)
+        self.assertEqual(message, "duplicate update: 0100EXAMPLE000000 v196608 already known (latest v196608)")
+        queue_download_mock.assert_not_called()
+        highest_owned_mock.assert_called_once_with("0100EXAMPLE000000")
+        local_known_mock.assert_called_once_with("0100EXAMPLE000000")
+
     def test_filter_download_search_results_excludes_unconfigured_protocols(self):
         results = [
             {"title": "Example Torrent", "protocol": "torrent", "seeders": 50},
@@ -576,7 +775,7 @@ class QueueRoutingTests(unittest.TestCase):
         self.assertEqual(state["pending"][0]["protocol"], "torrent")
 
     @patch("app.downloads.manager._infer_pending_info_from_queue_item")
-    @patch("app.downloads.manager.list_completed_downloads")
+    @patch("app.downloads.manager.list_history_downloads")
     @patch("app.downloads.manager.list_active_downloads", return_value=[])
     @patch("app.downloads.manager._get_completed_poll_targets")
     @patch("app.downloads.manager.load_settings")
@@ -593,7 +792,7 @@ class QueueRoutingTests(unittest.TestCase):
         load_settings_mock,
         poll_targets_mock,
         list_active_mock,
-        list_completed_mock,
+        list_history_mock,
         infer_pending_mock,
     ):
         load_settings_mock.return_value = {
@@ -607,7 +806,7 @@ class QueueRoutingTests(unittest.TestCase):
             }
         }
         poll_targets_mock.return_value = [("usenet", {"type": "sabnzbd", "category": "aerofoil"})]
-        list_completed_mock.return_value = [{
+        list_history_mock.return_value = [{
             "id": "nzo123",
             "hash": "nzo123",
             "protocol": "usenet",
@@ -659,7 +858,7 @@ class QueueRoutingTests(unittest.TestCase):
         load_settings_mock,
         poll_targets_mock,
         list_active_mock,
-        list_completed_mock,
+        list_history_mock,
         infer_pending_mock,
     ):
         load_settings_mock.return_value = {
@@ -672,7 +871,7 @@ class QueueRoutingTests(unittest.TestCase):
             }
         }
         poll_targets_mock.return_value = [("torrent", {"type": "qbittorrent", "category": "aerofoil"})]
-        list_completed_mock.return_value = [{
+        list_history_mock.return_value = [{
             "id": "ABC123",
             "hash": "ABC123",
             "protocol": "torrent",
@@ -687,7 +886,7 @@ class QueueRoutingTests(unittest.TestCase):
         infer_pending_mock.assert_not_called()
 
     @patch("app.downloads.manager._infer_pending_info_from_queue_item")
-    @patch("app.downloads.manager.list_completed_downloads")
+    @patch("app.downloads.manager.list_history_downloads")
     @patch("app.downloads.manager.list_active_downloads", return_value=[])
     @patch("app.downloads.manager._get_completed_poll_targets")
     @patch("app.downloads.manager.load_settings")
@@ -705,7 +904,7 @@ class QueueRoutingTests(unittest.TestCase):
         load_settings_mock,
         poll_targets_mock,
         list_active_mock,
-        list_completed_mock,
+        list_history_mock,
         infer_pending_mock,
     ):
         load_settings_mock.return_value = {
@@ -719,7 +918,7 @@ class QueueRoutingTests(unittest.TestCase):
             }
         }
         poll_targets_mock.return_value = [("usenet", {"type": "sabnzbd", "category": "aerofoil"})]
-        list_completed_mock.return_value = [{
+        list_history_mock.return_value = [{
             "id": "nzo123",
             "hash": "nzo123",
             "protocol": "usenet",
@@ -733,7 +932,7 @@ class QueueRoutingTests(unittest.TestCase):
         self.assertEqual(state["pending"], [])
         infer_pending_mock.assert_not_called()
 
-    @patch("app.downloads.manager.list_completed_downloads")
+    @patch("app.downloads.manager.list_history_downloads")
     @patch("app.downloads.manager.list_active_downloads", return_value=[])
     @patch("app.downloads.manager._get_completed_poll_targets")
     @patch("app.downloads.manager.load_settings")
@@ -765,7 +964,7 @@ class QueueRoutingTests(unittest.TestCase):
         load_settings_mock,
         poll_targets_mock,
         list_active_mock,
-        list_completed_mock,
+        list_history_mock,
     ):
         load_settings_mock.return_value = {
             "downloads": {
@@ -778,7 +977,7 @@ class QueueRoutingTests(unittest.TestCase):
             }
         }
         poll_targets_mock.return_value = [("usenet", {"type": "sabnzbd", "category": "aerofoil"})]
-        list_completed_mock.return_value = [{
+        list_history_mock.return_value = [{
             "id": "nzo123",
             "hash": "nzo123",
             "protocol": "usenet",
@@ -791,7 +990,70 @@ class QueueRoutingTests(unittest.TestCase):
 
         self.assertEqual(state["pending"][0]["label"], "Example Release NSW-GRP")
 
-    @patch("app.downloads.manager.list_completed_downloads", return_value=[])
+    @patch("app.downloads.manager.list_history_downloads")
+    @patch("app.downloads.manager.list_active_downloads", return_value=[])
+    @patch("app.downloads.manager._get_completed_poll_targets")
+    @patch("app.downloads.manager.load_settings")
+    @patch("app.downloads.manager._state_lock")
+    @patch("app.downloads.manager._state", {
+        "running": False,
+        "last_run": 123.0,
+        "pending": {
+            "0100000000010000:123": {
+                "title_id": "0100000000010000",
+                "version": 123,
+                "hash": "nzo123",
+                "id": "nzo123",
+                "expected_name": "Example Failed Release",
+                "title_name": "Example Title",
+                "protocol": "usenet",
+                "client_type": "sabnzbd",
+                "state": "queued",
+                "state_reason": None,
+                "last_seen_status": None,
+                "last_seen_path": None,
+            }
+        },
+        "completed": set(),
+    })
+    def test_get_downloads_state_marks_sab_failed_history_items_as_failed(
+        self,
+        _state_lock_mock,
+        load_settings_mock,
+        poll_targets_mock,
+        list_active_mock,
+        list_history_mock,
+    ):
+        load_settings_mock.return_value = {
+            "downloads": {
+                "usenet_client": {
+                    "type": "sabnzbd",
+                    "url": "http://sab.local",
+                    "api_key": "secret",
+                    "category": "aerofoil",
+                }
+            }
+        }
+        poll_targets_mock.return_value = [("usenet", {"type": "sabnzbd", "category": "aerofoil"})]
+        list_history_mock.return_value = [{
+            "id": "nzo123",
+            "hash": "nzo123",
+            "protocol": "usenet",
+            "client_type": "sabnzbd",
+            "name": "Example Failed Release",
+            "status": "Failed",
+            "state": "failed",
+            "state_reason": "Unpack failed",
+            "path": "",
+        }]
+
+        state = get_downloads_state()
+
+        self.assertEqual(state["pending"][0]["state"], "failed")
+        self.assertEqual(state["pending"][0]["state_reason"], "Unpack failed")
+        self.assertEqual(state["pending"][0]["label"], "Example Failed Release")
+
+    @patch("app.downloads.manager.list_history_downloads", return_value=[])
     @patch("app.downloads.manager.list_active_downloads", return_value=[])
     @patch("app.downloads.manager._get_completed_poll_targets")
     @patch("app.downloads.manager.load_settings")
@@ -823,7 +1085,7 @@ class QueueRoutingTests(unittest.TestCase):
         load_settings_mock,
         poll_targets_mock,
         list_active_mock,
-        list_completed_mock,
+        list_history_mock,
     ):
         load_settings_mock.return_value = {
             "downloads": {
@@ -920,6 +1182,56 @@ class QueueRoutingTests(unittest.TestCase):
         self.assertTrue(add_nzb_mock.call_args.kwargs["exclude_russian"])
         self.assertEqual(add_nzb_mock.call_args.kwargs["expected_version"], 123)
 
+    @patch("app.downloads.client.add_torrent")
+    def test_queue_download_routes_by_client_type_when_protocol_missing(self, add_torrent_mock):
+        add_torrent_mock.return_value = (True, "ok", "abc123")
+
+        ok, message, item_id = queue_download(
+            "",
+            {
+                "type": "qbittorrent",
+                "url": "http://torrent.local",
+                "username": "user",
+                "password": "pass",
+                "category": "aerofoil",
+                "download_path": "X:\\fixture-root\\downloads",
+            },
+            "magnet:?xt=urn:btih:abcdef",
+            expected_name="Game Update",
+            update_only=True,
+            exclude_russian=True,
+            expected_version=123,
+        )
+
+        self.assertTrue(ok)
+        self.assertEqual(message, "ok")
+        self.assertEqual(item_id, "abc123")
+        add_torrent_mock.assert_called_once()
+        self.assertEqual(add_torrent_mock.call_args.kwargs["client_type"], "qbittorrent")
+
+    @patch("app.downloads.client.add_nzbget")
+    def test_queue_download_routes_to_nzbget_when_client_type_is_nzbget(self, add_nzbget_mock):
+        add_nzbget_mock.return_value = (True, "ok", "42")
+
+        ok, message, item_id = queue_download(
+            protocol="",
+            client_cfg={
+                "type": "nzbget",
+                "url": "http://nzbget.local",
+                "username": "user",
+                "password": "pass",
+                "category": "aerofoil",
+            },
+            download_url="https://indexer.example/file.nzb",
+        )
+
+        self.assertTrue(ok)
+        self.assertEqual(message, "ok")
+        self.assertEqual(item_id, "42")
+        add_nzbget_mock.assert_called_once()
+        self.assertNotIn("download_path", add_nzbget_mock.call_args.kwargs)
+        self.assertFalse(add_nzbget_mock.call_args.kwargs["update_only"])
+
 
 class SabSelectionTests(unittest.TestCase):
     @patch("app.downloads.usenet_client.time.sleep")
@@ -944,6 +1256,26 @@ class SabSelectionTests(unittest.TestCase):
         self.assertTrue(ok)
         self.assertIsNone(message)
         sleep_mock.assert_called_once_with(1)
+        delete_job_files_mock.assert_called_once()
+        self.assertEqual(delete_job_files_mock.call_args.args[3], ["1"])
+
+    @patch("app.downloads.usenet_client._delete_job_files", return_value=True)
+    @patch("app.downloads.usenet_client._get_job_files")
+    def test_restrict_job_matches_semantic_version_when_internal_tag_missing(self, get_job_files_mock, delete_job_files_mock):
+        get_job_files_mock.return_value = [
+            {"filename": "Game Update 1.0.0.nsp", "nzf_id": "1"},
+            {"filename": "Game Update 1.1.0.nsp", "nzf_id": "2"},
+        ]
+
+        ok, message = _restrict_job_to_matching_update_files(
+            "http://sab.local",
+            "secret",
+            "nzo123",
+            expected_version=65792,
+        )
+
+        self.assertTrue(ok)
+        self.assertIsNone(message)
         delete_job_files_mock.assert_called_once()
         self.assertEqual(delete_job_files_mock.call_args.args[3], ["1"])
 
@@ -1079,6 +1411,55 @@ class SabSelectionTests(unittest.TestCase):
 
         self.assertEqual(len(items), 1)
         self.assertEqual(items[0]["path"], "D:\\Downloads\\Complete\\Example Release")
+
+    @patch("app.downloads.usenet_client._sab_request")
+    def test_list_completed_can_include_failed_history_rows_for_queue_state(self, sab_request_mock):
+        sab_request_mock.return_value = {
+            "history": {
+                "completed_dir": "D:\\Downloads\\Complete",
+                "slots": [
+                    {
+                        "nzo_id": "nzo789",
+                        "status": "Failed",
+                        "category": "aerofoil",
+                        "storage": "",
+                        "name": "Example Failed Release",
+                        "fail_message": "Unpack failed",
+                    }
+                ],
+            }
+        }
+
+        items = list_history(
+            "http://sab.local",
+            "secret",
+            category="aerofoil",
+        )
+
+        self.assertEqual(len(items), 1)
+        self.assertEqual(items[0]["id"], "nzo789")
+        self.assertEqual(items[0]["state"], "failed")
+        self.assertEqual(items[0]["state_reason"], "Unpack failed")
+
+    @patch("app.downloads.usenet_client._sab_request")
+    def test_list_completed_excludes_failed_history_rows_by_default(self, sab_request_mock):
+        sab_request_mock.return_value = {
+            "history": {
+                "completed_dir": "D:\\Downloads\\Complete",
+                "slots": [
+                    {
+                        "nzo_id": "nzo789",
+                        "status": "Failed",
+                        "category": "aerofoil",
+                        "name": "Example Failed Release",
+                    }
+                ],
+            }
+        }
+
+        items = list_completed("http://sab.local", "secret", category="aerofoil")
+
+        self.assertEqual(items, [])
 
 
 class DownloadRemovalRoutingTests(unittest.TestCase):
@@ -1469,6 +1850,83 @@ class CompletedAdoptionTests(unittest.TestCase):
 
     @patch("app.downloads.manager.enqueue_organize_paths")
     @patch("app.downloads.manager.enqueue_cleanup_roots")
+    @patch("app.downloads.manager.remove_completed_download")
+    @patch("app.downloads.manager._move_completed_with_reason", return_value=("X:\\fixture-root\\Example Title [0100]\\Example Base.nsp", None))
+    @patch("app.downloads.manager.list_active_downloads")
+    @patch("app.downloads.manager.list_completed_downloads")
+    @patch("app.downloads.manager._get_completed_poll_targets")
+    @patch("app.downloads.manager._state_lock")
+    @patch("app.downloads.manager._state", {
+        "running": False,
+        "last_run": 0.0,
+        "pending": {},
+        "completed": set(),
+    })
+    def test_check_completed_keeps_torrent_seeding_when_configured(
+        self,
+        _state_lock_mock,
+        poll_targets_mock,
+        list_completed_mock,
+        list_active_mock,
+        move_completed_mock,
+        remove_completed_mock,
+        enqueue_cleanup_roots_mock,
+        enqueue_paths_mock,
+    ):
+        poll_targets_mock.return_value = [("torrent", {"type": "qbittorrent", "category": "aerofoil", "remove_completed_torrents_on_finish": False})]
+        list_active_mock.return_value = [ {
+            "id": "ABC123",
+            "hash": "ABC123",
+            "protocol": "torrent",
+            "client_type": "qbittorrent",
+            "name": "Example Release NSW-GRP",
+        } ]
+        list_completed_mock.return_value = [ {
+            "id": "ABC123",
+            "hash": "abc123",
+            "protocol": "torrent",
+            "client_type": "qbittorrent",
+            "name": "Example Release NSW-GRP",
+            "path": "X:\\fixture-root\\incoming\\Example Release NSW-GRP",
+        } ]
+
+        _check_completed({})
+
+        move_completed_mock.assert_called_once()
+        self.assertTrue(move_completed_mock.call_args.kwargs["copy_files"])
+        remove_completed_mock.assert_not_called()
+        enqueue_paths_mock.assert_called_once_with(["X:\\fixture-root\\Example Title [0100]\\Example Base.nsp"])
+        enqueue_cleanup_roots_mock.assert_called_once_with([])
+
+    @patch("app.downloads.manager._cleanup_download_path")
+    @patch("app.downloads.manager._normalize_imported_wrapped_files", side_effect=lambda path: path)
+    @patch("app.downloads.manager._build_generic_import_destination", return_value="X:\\library\\Example Base.nsp")
+    @patch("app.downloads.manager.shutil.copy2")
+    @patch("app.downloads.manager.shutil.move")
+    @patch("app.downloads.manager._iter_importable_download_files", return_value=["C:\\tests\\completed\\Example Base.nsp"])
+    def test_retained_torrent_import_copies_files_without_cleaning_source(
+        self,
+        importable_files_mock,
+        move_mock,
+        copy_mock,
+        build_destination_mock,
+        normalize_mock,
+        cleanup_mock,
+    ):
+        moved_path, reason = downloads_manager._move_generic_importable_files(
+            "C:\\tests\\completed\\Example Release",
+            "X:\\library",
+            copy_files=True,
+        )
+
+        self.assertEqual(moved_path, "X:\\library\\Example Base.nsp")
+        self.assertIsNone(reason)
+        copy_mock.assert_called_once_with("C:\\tests\\completed\\Example Base.nsp", "X:\\library\\Example Base.nsp")
+        move_mock.assert_not_called()
+        cleanup_mock.assert_not_called()
+
+    @patch("app.downloads.manager.enqueue_organize_paths")
+    @patch("app.downloads.manager.enqueue_cleanup_roots")
     @patch("app.downloads.manager.remove_completed_download", return_value=(True, "ok"))
     @patch("app.downloads.manager._move_completed_with_reason", return_value=("X:\\fixture-root\\Example Title [0100]\\Updates\\v1245184\\Example Title.nsp", None))
     @patch("app.downloads.manager._infer_update_info_from_completed_item")
@@ -1644,6 +2102,22 @@ class CompletedAdoptionTests(unittest.TestCase):
 
 
 class ManagedCompletionStateTests(unittest.TestCase):
+    @patch("app.downloads.manager.os.path.getsize", return_value=100)
+    @patch("app.downloads.manager._iter_completed_files")
+    def test_select_completed_update_candidate_ignores_rar_archives(
+        self,
+        completed_files_mock,
+        getsize_mock,
+    ):
+        archive_path = "C:\\tests\\completed\\Example Update v65536.rar"
+        payload_path = "C:\\tests\\completed\\Example Update v65536.nsp"
+        completed_files_mock.return_value = [archive_path, payload_path]
+
+        path, version = _select_completed_update_candidate("C:\\tests\\completed")
+
+        self.assertEqual(path, payload_path)
+        self.assertEqual(version, 65536)
+
     @patch("app.downloads.manager._select_completed_update_candidate")
     @patch("app.downloads.manager._move_generic_importable_files", return_value=("X:\\library\\Example Title [BASE].nsp", None))
     @patch("app.downloads.manager.get_libraries_path", return_value=["X:\\library"])
@@ -1676,12 +2150,14 @@ class ManagedCompletionStateTests(unittest.TestCase):
     @patch("app.downloads.manager._ensure_unique_path", side_effect=lambda path: path)
     @patch("app.downloads.manager.get_libraries_path", return_value=["X:\\library"])
     @patch("app.downloads.manager.os.path.exists", return_value=True)
+    @patch("app.downloads.manager._get_local_known_update_version", return_value=0)
     @patch("app.downloads.manager._get_highest_owned_update_version", return_value=655360)
     @patch("app.downloads.manager._select_completed_update_candidate", return_value=("C:\\tests\\completed\\sample_v983040.nsp.hdf", 983040))
     def test_move_completed_imports_newer_fallback_update_version(
         self,
         select_candidate_mock,
         highest_owned_mock,
+        _get_local_known_update_version_mock,
         exists_mock,
         get_libraries_path_mock,
         ensure_unique_path_mock,
@@ -1693,6 +2169,7 @@ class ManagedCompletionStateTests(unittest.TestCase):
             {"path": "C:\\tests\\completed\\Sample Release"},
             {
                 "title_id": "0100C62011050000",
+                "app_id": "0100C62011050800",
                 "title_name": "Sample Game",
                 "version": 1376256,
             },
@@ -1700,7 +2177,7 @@ class ManagedCompletionStateTests(unittest.TestCase):
 
         self.assertIsNone(reason)
         self.assertIn("Updates\\v983040", _normalize_fixture_path(moved_path))
-        self.assertIn("[UPDATE][v983040].nsp", _normalize_fixture_path(moved_path))
+        self.assertIn("Sample Game [0100C62011050800] [UPDATE][v983040].nsp", _normalize_fixture_path(moved_path))
         move_mock.assert_called_once_with(
             "C:\\tests\\completed\\sample_v983040.nsp.hdf",
             moved_path,
@@ -1710,12 +2187,14 @@ class ManagedCompletionStateTests(unittest.TestCase):
     @patch("app.downloads.manager.shutil.move")
     @patch("app.downloads.manager.get_libraries_path", return_value=["X:\\library"])
     @patch("app.downloads.manager.os.path.exists", return_value=True)
+    @patch("app.downloads.manager._get_local_known_update_version", return_value=0)
     @patch("app.downloads.manager._get_highest_owned_update_version", return_value=1376256)
     @patch("app.downloads.manager._select_completed_update_candidate", return_value=("C:\\tests\\completed\\sample_v983040.nsp.hdf", 983040))
     def test_move_completed_rejects_non_newer_update_version(
         self,
         select_candidate_mock,
         highest_owned_mock,
+        _get_local_known_update_version_mock,
         exists_mock,
         get_libraries_path_mock,
         move_mock,
@@ -1730,7 +2209,7 @@ class ManagedCompletionStateTests(unittest.TestCase):
         )
 
         self.assertIsNone(moved_path)
-        self.assertEqual(reason, "downloaded v983040 is not newer than owned v1376256")
+        self.assertEqual(reason, "duplicate update: downloaded v983040 is not newer than known v1376256")
         move_mock.assert_not_called()
 
     @patch("app.downloads.manager._cleanup_download_path")
@@ -1746,12 +2225,14 @@ class ManagedCompletionStateTests(unittest.TestCase):
     )
     @patch("app.downloads.manager.get_libraries_path", return_value=["X:\\library"])
     @patch("app.downloads.manager.os.path.exists", return_value=True)
+    @patch("app.downloads.manager._get_local_known_update_version", return_value=0)
     @patch("app.downloads.manager._get_highest_owned_update_version", return_value=1376256)
     @patch("app.downloads.manager._select_completed_update_candidate", return_value=("C:\\tests\\completed\\sample_v983040.nsp.hdf", 983040))
     def test_move_completed_imports_other_files_when_update_is_not_newer(
         self,
         select_candidate_mock,
         highest_owned_mock,
+        _get_local_known_update_version_mock,
         exists_mock,
         get_libraries_path_mock,
         importable_files_mock,
@@ -1871,6 +2352,60 @@ class ManagedCompletionStateTests(unittest.TestCase):
         _check_completed({})
 
         adopt_untracked_mock.assert_not_called()
+
+    @patch("app.downloads.manager.remove_completed_download", return_value=(True, "ok"))
+    @patch("app.downloads.manager.list_completed_downloads")
+    @patch("app.downloads.manager._get_completed_poll_targets")
+    @patch("app.downloads.manager._state_lock")
+    @patch("app.downloads.manager._state", {
+        "running": False,
+        "last_run": 0.0,
+        "pending": {
+            "0100C62011050000:1376256": {
+                "title_id": "0100C62011050000",
+                "version": 1376256,
+                "hash": "nzo123",
+                "id": "nzo123",
+                "expected_name": "Sample Release",
+                "title_name": "Sample Game",
+                "protocol": "usenet",
+                "client_type": "sabnzbd",
+                "state": "queued",
+                "state_reason": None,
+                "last_seen_status": None,
+                "last_seen_path": None,
+            }
+        },
+        "completed": set(),
+        "completed_identities": set(),
+        "duplicates": [],
+    })
+    @patch("app.downloads.manager._move_completed_with_reason", return_value=(None, "duplicate update: 0100C62011050000 v1376256 already known"))
+    def test_check_completed_marks_duplicate_and_removes_pending_item(
+        self,
+        _move_completed_mock,
+        _state_lock_mock,
+        poll_targets_mock,
+        list_completed_mock,
+        remove_completed_mock,
+    ):
+        poll_targets_mock.return_value = [("usenet", {"type": "sabnzbd"})]
+        list_completed_mock.return_value = [{
+            "id": "nzo123",
+            "hash": "nzo123",
+            "name": "Sample Release",
+            "path": "C:\\tests\\completed\\Sample Release",
+            "protocol": "usenet",
+            "client_type": "sabnzbd",
+        }]
+
+        _check_completed({})
+
+        self.assertEqual(downloads_manager._state["pending"], {})
+        self.assertIn("0100C62011050000:1376256", downloads_manager._state["completed"])
+        self.assertEqual(len(downloads_manager._state.get("duplicates") or []), 1)
+        self.assertIn("duplicate update", downloads_manager._state["duplicates"][0]["reason"])
+        remove_completed_mock.assert_called_once()
 
     @patch("app.downloads.manager._delete_download_payload", return_value=(True, None))
     @patch("app.downloads.manager.remove_active_download", return_value=(True, "ok"))
@@ -2108,6 +2643,217 @@ class ManagedCompletionStateTests(unittest.TestCase):
             "delete failed: could not verify downloader state",
         )
         delete_payload_mock.assert_not_called()
+
+    @patch("app.downloads.manager._delete_download_payload", return_value=(True, None))
+    @patch("app.downloads.manager._state_lock")
+    @patch("app.downloads.manager._state", {
+        "running": False,
+        "last_run": 0.0,
+        "pending": {},
+        "completed": set(),
+        "duplicates": [{
+            "id": "dup-1",
+            "label": "Example Release NSW-GRP",
+            "path": "X:\\fixture-root\\downloads\\Example Release",
+            "reason": "duplicate basegame: 0100EXAMPLE000000 already exists in library",
+        }],
+    })
+    def test_remove_duplicate_download_deletes_file_and_removes_entry(
+        self,
+        _state_lock_mock,
+        delete_payload_mock,
+    ):
+        ok, message = remove_duplicate_download("dup-1")
+
+        self.assertTrue(ok)
+        self.assertEqual(message, "Deleted rejected duplicate file.")
+        self.assertEqual(downloads_manager._state.get("duplicates"), [])
+        delete_payload_mock.assert_called_once_with("X:\\fixture-root\\downloads\\Example Release")
+
+    @patch("app.downloads.manager._state_lock")
+    @patch("app.downloads.manager._state", {
+        "running": False,
+        "last_run": 0.0,
+        "pending": {},
+        "completed": set(),
+        "duplicates": [{
+            "id": "dup-2",
+            "label": "Example Release NSW-GRP",
+            "path": None,
+            "reason": "duplicate update: 0100EXAMPLE000000 v65536 already known",
+        }],
+    })
+    def test_remove_duplicate_download_rejects_when_path_missing(
+        self,
+        _state_lock_mock,
+    ):
+        ok, message = remove_duplicate_download("dup-2")
+
+        self.assertFalse(ok)
+        self.assertEqual(message, "Duplicate entry has no deletable path.")
+        self.assertEqual(len(downloads_manager._state.get("duplicates") or []), 1)
+
+    @patch("app.downloads.manager._state_lock")
+    @patch("app.downloads.manager._state", {
+        "running": False,
+        "last_run": 0.0,
+        "pending": {},
+        "completed": set(),
+        "duplicates": [{
+            "id": "dup-3",
+            "label": "Example Release NSW-GRP",
+            "path": None,
+            "reason": "duplicate update: 0100EXAMPLE000000 v65536 already known",
+        }],
+    })
+    def test_dismiss_duplicate_download_removes_entry_without_path(
+        self,
+        _state_lock_mock,
+    ):
+        ok, message = dismiss_duplicate_download("dup-3")
+
+        self.assertTrue(ok)
+        self.assertEqual(message, "Removed duplicate entry.")
+        self.assertEqual(downloads_manager._state.get("duplicates"), [])
+
+    @patch("app.downloads.manager._state_lock")
+    @patch("app.downloads.manager._state", {
+        "running": False,
+        "last_run": 0.0,
+        "pending": {},
+        "completed": set(),
+        "duplicates": [{
+            "id": None,
+            "timestamp": 1234567890,
+            "label": "Legacy Entry",
+            "reason": "duplicate basegame: already exists",
+            "protocol": "torrent",
+            "path": None,
+        }],
+    })
+    def test_dismiss_duplicate_download_removes_legacy_entry_by_fingerprint(
+        self,
+        _state_lock_mock,
+    ):
+        ok, message = dismiss_duplicate_download(
+            "",
+            fingerprint={
+                "timestamp": 1234567890,
+                "label": "Legacy Entry",
+                "reason": "duplicate basegame: already exists",
+                "protocol": "torrent",
+            },
+        )
+
+        self.assertTrue(ok)
+        self.assertEqual(message, "Removed duplicate entry.")
+        self.assertEqual(downloads_manager._state.get("duplicates"), [])
+
+class PendingQueueReconciliationTests(unittest.TestCase):
+    def test_restored_sab_job_blocks_automatic_search_for_same_update(self):
+        state = {
+            "running": False,
+            "last_run": 0.0,
+            "pending": {
+                "restored:usenet:sabnzbd:nzo123": {
+                    "title_id": None,
+                    "version": None,
+                    "expected_name": "Example Title Update [v196608] NSW-GRP",
+                    "title_name": "Example Title Update [v196608] NSW-GRP",
+                    "protocol": "usenet",
+                    "client_type": "sabnzbd",
+                },
+            },
+            "completed": set(),
+            "completed_identities": set(),
+            "duplicates": [],
+        }
+        with patch("app.downloads.manager._state", state):
+            self.assertTrue(downloads_manager._already_tracked(
+                "0100EXAMPLE000000:196608",
+                update={
+                    "title_id": "0100EXAMPLE000000",
+                    "title_name": "Example Title",
+                    "version": 196608,
+                },
+            ))
+
+    @patch("app.downloads.manager._persist_downloads_state_locked")
+    @patch("app.downloads.manager._is_protocol_client_configured", return_value=True)
+    @patch("app.downloads.manager.time.time", return_value=200.0)
+    def test_reconcile_removes_job_absent_from_sab_after_grace_period(
+        self,
+        time_mock,
+        configured_mock,
+        persist_mock,
+    ):
+        state = {
+            "running": False,
+            "last_run": 0.0,
+            "pending": {
+                "0100EXAMPLE000000:196608": {
+                    "title_id": "0100EXAMPLE000000",
+                    "version": 196608,
+                    "id": "nzo123",
+                    "hash": "nzo123",
+                    "protocol": "usenet",
+                    "client_type": "sabnzbd",
+                    "missing_since": 100.0,
+                },
+            },
+            "completed": set(),
+            "completed_identities": set(),
+            "duplicates": [],
+        }
+        snapshot = {
+            "active_by_protocol": {"usenet": {"items": []}},
+            "completed_by_protocol": {"usenet": {"items": []}},
+            "errors_by_protocol": {},
+        }
+        with patch("app.downloads.manager._state", state):
+            removed = downloads_manager._reconcile_missing_pending_downloads({}, snapshot)
+
+        self.assertEqual(removed, 1)
+        self.assertEqual(state["pending"], {})
+        configured_mock.assert_called_once_with({}, "usenet")
+        persist_mock.assert_called_once()
+
+    @patch("app.downloads.manager._persist_downloads_state_locked")
+    @patch("app.downloads.manager._is_protocol_client_configured", return_value=True)
+    @patch("app.downloads.manager.time.time", return_value=200.0)
+    def test_reconcile_keeps_job_when_sab_poll_failed(
+        self,
+        time_mock,
+        configured_mock,
+        persist_mock,
+    ):
+        state = {
+            "running": False,
+            "last_run": 0.0,
+            "pending": {
+                "0100EXAMPLE000000:196608": {
+                    "id": "nzo123",
+                    "hash": "nzo123",
+                    "protocol": "usenet",
+                    "missing_since": 100.0,
+                },
+            },
+            "completed": set(),
+            "completed_identities": set(),
+            "duplicates": [],
+        }
+        snapshot = {
+            "active_by_protocol": {"usenet": {"items": []}},
+            "completed_by_protocol": {"usenet": {"items": []}},
+            "errors_by_protocol": {"usenet": ["active: unavailable"]},
+        }
+        with patch("app.downloads.manager._state", state):
+            removed = downloads_manager._reconcile_missing_pending_downloads({}, snapshot)
+
+        self.assertEqual(removed, 0)
+        self.assertIn("0100EXAMPLE000000:196608", state["pending"])
+        configured_mock.assert_not_called()
+        persist_mock.assert_not_called()
 
 
 if __name__ == "__main__":

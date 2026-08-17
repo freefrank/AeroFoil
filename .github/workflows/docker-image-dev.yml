@@ -1,15 +1,21 @@
-name: Build and Push Docker Image (dev)
+name: Docker Build (Branch Cache) and Push
 
 on:
   push:
-    branches: [dev]
+    branches:
+      - dev
+      - dev2
+  workflow_dispatch:
 
 concurrency:
   group: docker-dev
   cancel-in-progress: true
 
+permissions:
+  contents: read
+
 jobs:
-  build-and-push:
+  docker-build-branch-cache:
     runs-on: ubuntu-latest
     timeout-minutes: 30  # Add timeout to prevent hanging jobs
     permissions:
@@ -39,7 +45,7 @@ jobs:
           VERSION=$(git describe --tags --always)
           echo "aerofoil_version=${VERSION}-dev" >> "$GITHUB_OUTPUT"
 
-      - name: Build and push (multi-arch)
+      - name: Build and push Docker image with branch-scoped cache
         uses: docker/build-push-action@v6
         with:
           context: .
@@ -51,12 +57,10 @@ jobs:
           tags: |
             luketanti/aerofoil:dev
             luketanti/aerofoil:sha-${{ steps.meta.outputs.sha_tag }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
-          # Add retry logic for transient failures
-          provenance: false  # Reduces potential authentication issues
-          
-      # Optional: Add a notification step for failures
+          cache-from: type=gha,scope=${{ github.ref_name }}
+          cache-to: type=gha,mode=max,scope=${{ github.ref_name }}
+          provenance: false
+
       - name: Job failed
         if: failure()
         run: echo "Build failed - check if it's a transient GitHub issue"

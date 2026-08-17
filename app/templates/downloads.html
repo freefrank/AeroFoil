@@ -15,7 +15,7 @@
                 <div class="d-flex align-items-center justify-content-between gap-3 flex-wrap">
                     <div>
                         <h2 class="pb-2">{{ _('Downloads') }}</h2>
-                        <p class="text-muted">{{ _('Live torrent and usenet status plus the pending AeroFoil download queue.') }}</p>
+                        <p class="text-muted">{{ _('Live torrent and usenet download status plus the pending AeroFoil queue.') }}</p>
                     </div>
                 </div>
 
@@ -73,6 +73,7 @@
                                     <button type="button" id="checkDownloadsBtn" class="btn btn-outline-primary btn-sm" onclick="checkCompletedDownloads()">{{ _('Check completed') }}</button>
                                 </div>
                                 <div class="small text-muted mb-2" id="downloadsQueueStatus">{{ _('Loading...') }}</div>
+                                <div id="downloadsCapabilityNotice" class="alert alert-warning d-none py-2 px-3 small mb-2" role="alert"></div>
                                 <div class="table-responsive mb-3">
                                     <table class="table table-dark table-sm align-middle mb-0">
                                         <thead>
@@ -100,11 +101,14 @@
 
 <script>
     let downloadsPollTimer = null;
+    let hasLoadedQueueState = false;
+    let hasLoadedActiveDownloads = false;
     const downloadUiVisibility = {{ download_ui_visibility|tojson }};
     const activeDownloadsColumnCount = 7
         + (downloadUiVisibility.show_protocol_column ? 1 : 0)
         + (downloadUiVisibility.show_torrent_columns ? 5 : 0);
     const queueColumnCount = 5;
+    const duplicatesColumnCount = 5;
 
     function showDownloadsAlert(message, type = 'info') {
         const alertBox = $('#downloadsAlert');
@@ -146,25 +150,48 @@
         const state = String(item?.state || 'queued');
         const reason = String(item?.state_reason || '');
         if (state === 'stuck' && reason) {
-            return {{ _('stuck: {reason}')|tojson }}.replace('{reason}', reason);
+            return {{ _('Stuck: {reason}')|tojson }}.replace('{reason}', reason);
         }
-        return state;
+        return formatStatusLabel(state);
+    }
+
+    function formatStatusLabel(value) {
+        const text = String(value || '').trim();
+        if (!text) {
+            return '-';
+        }
+        return text
+            .replace(/_/g, ' ')
+            .replace(/\b\w/g, function (match) {
+                return match.toUpperCase();
+            });
     }
 
     function loadQueueState() {
         const body = $('#downloadsQueueBody');
-        body.html(`<tr><td colspan="${queueColumnCount}" class="text-muted">${ {{ _('Loading...')|tojson }} }</td></tr>`);
+        const capabilityNotice = $('#downloadsCapabilityNotice');
+        if (!hasLoadedQueueState) {
+            body.html(`<tr><td colspan="${queueColumnCount}" class="text-muted">${ {{ _('Loading...')|tojson }} }</td></tr>`);
+        }
         $.getJSON('/api/downloads/queue', function (result) {
             if (!result['success']) {
                 $('#downloadsQueueStatus').text({{ _('Failed to load queue state.')|tojson }});
                 body.html(`<tr><td colspan="${queueColumnCount}" class="text-danger">${ {{ _('Failed to load queue state.')|tojson }} }</td></tr>`);
+                capabilityNotice.addClass('d-none').text('');
                 return;
             }
             const state = result['state'] || {};
             const pending = state['pending'] || [];
+            const duplicates = state['duplicates'] || [];
+            const warnings = state['warnings'] || [];
             const running = state['running'] ? {{ _('running')|tojson }} : {{ _('idle')|tojson }};
             const lastRun = state['last_run'] ? new Date(state['last_run'] * 1000).toLocaleString() : {{ _('never')|tojson }};
-            $('#downloadsQueueStatus').text({{ _('Status: {status}. Last check: {last_run}. Pending: {count}.')|tojson }}.replace('{status}', running).replace('{last_run}', lastRun).replace('{count}', pending.length));
+            $('#downloadsQueueStatus').text({{ _('Queue state: {status}. Last check: {last_run}. Pending: {count}.')|tojson }}.replace('{status}', formatStatusLabel(running)).replace('{last_run}', lastRun).replace('{count}', pending.length));
+            if (Array.isArray(warnings) && warnings.length) {
+                capabilityNotice.removeClass('d-none').text(warnings.join(' '));
+            } else {
+                capabilityNotice.addClass('d-none').text('');
+            }
             body.empty();
             if (!pending.length) {
                 body.html(`<tr><td colspan="${queueColumnCount}" class="text-muted">${ {{ _('No pending downloads.')|tojson }} }</td></tr>`);
@@ -175,7 +202,15 @@
                 row.append($('<td class="small"></td>').text((item['label'] || {{ _('Manual download')|tojson }}).toString()));
                 row.append($('<td class="small text-muted"></td>').text((item['protocol'] || '-').toString()));
                 row.append($('<td class="small text-muted"></td>').text((item['client_type'] || '-').toString()));
-                row.append($('<td class="small"></td>').text(formatQueueState(item)));
+                const stateText = formatQueueState(item);
+                const stateCell = $('<td class="small"></td>').text(stateText);
+                const stateReason = String(item?.state_reason || '').replace(/\s+/g, ' ').trim();
+                if (stateReason) {
+                    stateCell.attr('title', stateReason);
+                    stateCell.attr('aria-label', `${stateText}: ${stateReason}`);
+                    stateCell.css('cursor', 'help');
+                }
+                row.append(stateCell);
                 const actionCell = $('<td class="small"></td>');
                 const deleteButton = $('<button type="button" class="btn btn-outline-danger btn-sm"></button>').text({{ _('Delete')|tojson }});
                 deleteButton.prop('disabled', !item['deletable']);
@@ -187,6 +222,67 @@
                 row.append(actionCell);
                 body.append(row);
             });
+            renderDuplicates(duplicates);
+            hasLoadedQueueState = true;
+        });
+    }
+
+    function renderDuplicates(duplicates) {
+        let card = $('#downloadsDuplicatesCard');
+        if (!card.length) {
+            const container = $('.downloads-queue-card .card-body');
+            container.append(`
+                <hr class="my-3" />
+                <h6 class="mb-2">Duplicates</h6>
+                <div class="small text-muted mb-2">Rejected imports with reason.</div>
+                <div class="table-responsive" id="downloadsDuplicatesCard">
+                    <table class="table table-dark table-sm align-middle mb-0">
+                        <thead>
+                            <tr>
+                                <th>Title</th>
+                                <th>Reason</th>
+                                <th>Protocol</th>
+                                <th>When</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="downloadsDuplicatesBody"></tbody>
+                    </table>
+                </div>
+            `);
+            card = $('#downloadsDuplicatesCard');
+        }
+        const body = $('#downloadsDuplicatesBody');
+        body.empty();
+        if (!duplicates.length) {
+            body.html(`<tr><td colspan="${duplicatesColumnCount}" class="text-muted">No duplicates rejected.</td></tr>`);
+            return;
+        }
+        duplicates.slice().reverse().forEach(item => {
+            const row = $('<tr></tr>');
+            row.append($('<td class="small"></td>').text(String(item?.label || '-')));
+            row.append($('<td class="small text-warning"></td>').text(String(item?.reason || 'duplicate')));
+            row.append($('<td class="small text-muted"></td>').text(String(item?.protocol || '-')));
+            const whenText = item?.timestamp ? new Date(Number(item.timestamp) * 1000).toLocaleString() : '-';
+            row.append($('<td class="small text-muted"></td>').text(whenText));
+            const actionCell = $('<td class="small"></td>');
+            const removeButton = $('<button type="button" class="btn btn-outline-secondary btn-sm me-2"></button>').text('Remove');
+            const deleteButton = $('<button type="button" class="btn btn-outline-danger btn-sm"></button>').text('Delete file');
+            const duplicateId = String(item?.id || '');
+            removeButton.prop('disabled', !duplicateId && !item);
+            deleteButton.prop('disabled', !duplicateId || !item?.path);
+            removeButton.attr('data-id', duplicateId);
+            deleteButton.attr('data-id', duplicateId);
+            removeButton.on('click', function () {
+                dismissDuplicateDownload(duplicateId, item, removeButton);
+            });
+            deleteButton.on('click', function () {
+                deleteDuplicateDownload(duplicateId, deleteButton);
+            });
+            actionCell.append(removeButton);
+            actionCell.append(deleteButton);
+            row.append(actionCell);
+            body.append(row);
         });
     }
 
@@ -195,7 +291,7 @@
             showDownloadsAlert({{ _('Missing queue key.')|tojson }}, 'danger');
             return;
         }
-        if (!window.confirm({{ _('Delete this queued download and remove downloader files if possible?')|tojson }})) {
+        if (!window.confirm({{ _('Delete this queued download and remove its downloader files if possible?')|tojson }})) {
             return;
         }
         button.prop('disabled', true);
@@ -224,10 +320,90 @@
         });
     }
 
+    function deleteDuplicateDownload(duplicateId, button) {
+        if (!duplicateId) {
+            showDownloadsAlert('Missing duplicate key.', 'danger');
+            return;
+        }
+        if (!window.confirm('Delete this rejected duplicate file from disk?')) {
+            return;
+        }
+        button.prop('disabled', true);
+        $.ajax({
+            url: '/api/downloads/duplicates/delete',
+            type: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify({ id: duplicateId }),
+            success: function (result) {
+                if (result['success']) {
+                    showDownloadsAlert(result['message'] || 'Deleted rejected duplicate file.', 'success');
+                } else {
+                    showDownloadsAlert(result['message'] || 'Failed to delete rejected duplicate file.', 'danger');
+                }
+                loadQueueState();
+                loadActiveDownloads();
+            },
+            error: function () {
+                showDownloadsAlert('Failed to delete rejected duplicate file.', 'danger');
+                loadQueueState();
+                loadActiveDownloads();
+            },
+            complete: function () {
+                button.prop('disabled', false);
+            }
+        });
+    }
+
+    function dismissDuplicateDownload(duplicateId, duplicateItem, button) {
+        const hasId = !!String(duplicateId || '').trim();
+        const hasFingerprint = !!duplicateItem;
+        if (!hasId && !hasFingerprint) {
+            showDownloadsAlert('Missing duplicate identifier.', 'danger');
+            return;
+        }
+        button.prop('disabled', true);
+        const payload = hasId
+            ? { id: duplicateId }
+            : {
+                id: '',
+                fingerprint: {
+                    timestamp: duplicateItem?.timestamp ?? '',
+                    label: duplicateItem?.label ?? '',
+                    reason: duplicateItem?.reason ?? '',
+                    protocol: duplicateItem?.protocol ?? '',
+                }
+            };
+        $.ajax({
+            url: '/api/downloads/duplicates/dismiss',
+            type: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify(payload),
+            success: function (result) {
+                if (result['success']) {
+                    showDownloadsAlert(result['message'] || 'Removed duplicate entry.', 'success');
+                } else {
+                    showDownloadsAlert(result['message'] || 'Failed to remove duplicate entry.', 'danger');
+                }
+                loadQueueState();
+                loadActiveDownloads();
+            },
+            error: function () {
+                showDownloadsAlert('Failed to remove duplicate entry.', 'danger');
+                loadQueueState();
+                loadActiveDownloads();
+            },
+            complete: function () {
+                button.prop('disabled', false);
+            }
+        });
+    }
+
     function loadActiveDownloads() {
         const body = $('#activeDownloadsBody');
-        $('#activeDownloadsSummary').text({{ _('Current download speed: {speed}')|tojson }}.replace('{speed}', '-'));
-        body.html(`<tr><td colspan="${activeDownloadsColumnCount}" class="text-muted">${ {{ _('Loading...')|tojson }} }</td></tr>`);
+        if (!hasLoadedActiveDownloads) {
+            $('#activeDownloadsSummary').text({{ _('Current download speed: {speed}')|tojson }}.replace('{speed}', '-'));
+            body.html(`<tr><td colspan="${activeDownloadsColumnCount}" class="text-muted">${ {{ _('Loading...')|tojson }} }</td></tr>`);
+        }
         $.getJSON('/api/downloads/active', function (result) {
             if (!result['success']) {
                 const msg = result['message'] || {{ _('Failed to load active downloads.')|tojson }};
@@ -253,7 +429,7 @@
                     row.append($('<td class="small text-muted"></td>').text((item['protocol'] || '').toString() || '-'));
                 }
                 row.append($('<td class="small text-muted"></td>').text((item['client_type'] || '').toString() || '-'));
-                row.append($('<td class="small text-muted"></td>').text((item['status'] || '').toString()));
+                row.append($('<td class="small text-muted"></td>').text(formatStatusLabel(item['status'])));
                 row.append($('<td class="small"></td>').text(`${progress.toFixed(1)}%`));
                 if (downloadUiVisibility.show_torrent_columns) {
                     row.append($('<td class="small"></td>').text(formatSpeed(item['down_speed'])));
@@ -267,6 +443,7 @@
                 row.append($('<td class="small"></td>').text(formatBytes(item['downloaded'])));
                 body.append(row);
             });
+            hasLoadedActiveDownloads = true;
         });
     }
 

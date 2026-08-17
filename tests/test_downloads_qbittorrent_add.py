@@ -21,22 +21,37 @@ class _FakeResponse:
 
 
 class _FakeSession:
-    def __init__(self, add_text="Ok.", info_by_hash=None, managed_items=None):
+    def __init__(
+        self,
+        add_text="Ok.",
+        add_status_code=200,
+        login_status_code=200,
+        login_text="Ok.",
+        info_by_hash=None,
+        managed_items=None,
+        files_by_hash=None,
+    ):
         self.headers = {}
         self._add_text = add_text
+        self._add_status_code = add_status_code
+        self._login_status_code = login_status_code
+        self._login_text = login_text
         self._info_by_hash = dict(info_by_hash or {})
         self._managed_items = list(managed_items or [])
+        self._files_by_hash = dict(files_by_hash or {})
+        self.file_prio_calls = []
 
-    def post(self, url, data=None, timeout=None):
+    def post(self, url, data=None, timeout=None, files=None):
         if url.endswith("/api/v2/auth/login"):
-            return _FakeResponse(status_code=200, text="Ok.")
+            return _FakeResponse(status_code=self._login_status_code, text=self._login_text)
         if url.endswith("/api/v2/torrents/add"):
-            return _FakeResponse(status_code=200, text=self._add_text)
+            return _FakeResponse(status_code=self._add_status_code, text=self._add_text)
         if url.endswith("/api/v2/torrents/removeTags"):
             return _FakeResponse(status_code=200, text="")
         if url.endswith("/api/v2/torrents/resume"):
             return _FakeResponse(status_code=200, text="")
         if url.endswith("/api/v2/torrents/filePrio"):
+            self.file_prio_calls.append(dict(data or {}))
             return _FakeResponse(status_code=200, text="")
         if url.endswith("/api/v2/torrents/delete"):
             return _FakeResponse(status_code=200, text="")
@@ -52,7 +67,8 @@ class _FakeSession:
                 return _FakeResponse(status_code=200, json_data=[])
             return _FakeResponse(status_code=200, json_data=list(self._managed_items))
         if url.endswith("/api/v2/torrents/files"):
-            return _FakeResponse(status_code=200, json_data=[])
+            lookup = str((params or {}).get("hash") or "").lower()
+            return _FakeResponse(status_code=200, json_data=list(self._files_by_hash.get(lookup, [])))
         return _FakeResponse(status_code=404, json_data=[])
 
 
@@ -72,6 +88,7 @@ class QBittorrentAddTests(unittest.TestCase):
                 username="admin",
                 password="admin",
                 download_url=self.magnet_url,
+                torrent_content=None,
                 category="aerofoil",
                 download_path="",
                 timeout_seconds=1,
@@ -107,6 +124,7 @@ class QBittorrentAddTests(unittest.TestCase):
                 username="admin",
                 password="admin",
                 download_url=self.magnet_url,
+                torrent_content=None,
                 category="aerofoil",
                 download_path="",
                 timeout_seconds=1,
@@ -131,6 +149,7 @@ class QBittorrentAddTests(unittest.TestCase):
                 username="admin",
                 password="admin",
                 download_url=self.magnet_url,
+                torrent_content=None,
                 category="aerofoil",
                 download_path="",
                 timeout_seconds=1,
@@ -144,6 +163,131 @@ class QBittorrentAddTests(unittest.TestCase):
         self.assertFalse(ok)
         self.assertIn("rejected", message.lower())
         self.assertIsNone(torrent_hash)
+
+    def test_add_accepts_json_success_response_body(self):
+        fake_session = _FakeSession(
+            add_text='{"added_torrent_ids":["73df2afe59383c76ef9edb736273058afdf46ec1"],"failure_count":0,"pending_count":0,"success_count":1}',
+            info_by_hash={
+                self.magnet_hash: {
+                    "hash": self.magnet_hash,
+                    "name": "Test Title",
+                    "tags": "aerofoil",
+                    "added_on": 123,
+                }
+            },
+            managed_items=[],
+        )
+        with patch.object(torrent_client.requests, "Session", return_value=fake_session), patch.object(
+            torrent_client.time, "sleep", lambda _seconds: None
+        ):
+            ok, message, torrent_hash = torrent_client._add_qbittorrent(
+                url=self.base_url,
+                username="admin",
+                password="admin",
+                download_url=self.magnet_url,
+                torrent_content=None,
+                category="aerofoil",
+                download_path="",
+                timeout_seconds=1,
+                expected_name="Test Title",
+                update_only=False,
+                exclude_russian=False,
+                expected_update_number=None,
+                expected_version=None,
+            )
+
+        self.assertTrue(ok)
+        self.assertIn("accepted", message.lower())
+        self.assertEqual(torrent_hash, self.magnet_hash)
+
+    def test_add_accepts_http_202_response(self):
+        fake_session = _FakeSession(
+            add_status_code=202,
+            add_text="",
+            info_by_hash={
+                self.magnet_hash: {
+                    "hash": self.magnet_hash,
+                    "name": "Test Title",
+                    "tags": "aerofoil",
+                    "added_on": 123,
+                }
+            },
+            managed_items=[],
+        )
+        with patch.object(torrent_client.requests, "Session", return_value=fake_session), patch.object(
+            torrent_client.time, "sleep", lambda _seconds: None
+        ):
+            ok, message, torrent_hash = torrent_client._add_qbittorrent(
+                url=self.base_url,
+                username="admin",
+                password="admin",
+                download_url=self.magnet_url,
+                torrent_content=None,
+                category="aerofoil",
+                download_path="",
+                timeout_seconds=1,
+                expected_name="Test Title",
+                update_only=False,
+                exclude_russian=False,
+                expected_update_number=None,
+                expected_version=None,
+            )
+
+        self.assertTrue(ok)
+        self.assertIn("accepted", message.lower())
+        self.assertEqual(torrent_hash, self.magnet_hash)
+
+    def test_login_accepts_http_204_and_sets_referer_headers(self):
+        fake_session = _FakeSession(login_status_code=204, login_text="")
+
+        ok = torrent_client._login_qbittorrent(
+            fake_session,
+            self.base_url,
+            username="admin",
+            password="bad",
+            timeout_seconds=1,
+        )
+
+        self.assertTrue(ok)
+        self.assertEqual(fake_session.headers.get("Referer"), "http://qbittorrent.local/")
+        self.assertEqual(fake_session.headers.get("Origin"), "http://qbittorrent.local")
+
+    def test_select_update_file_indices_matches_semantic_version_when_internal_tag_missing(self):
+        selected = torrent_client._select_update_file_indices(
+            [
+                "Example Title Update 1.0.0.nsp",
+                "Example Title Update 1.1.0.nsp",
+            ],
+            expected_version=65792,
+        )
+
+        self.assertEqual(selected, [1])
+
+    def test_select_qbittorrent_highest_version_matches_semantic_version_when_internal_tag_missing(self):
+        torrent_hash = "abc123"
+        fake_session = _FakeSession(
+            files_by_hash={
+                torrent_hash: [
+                    {"index": 0, "name": "Example Title Update 1.0.0.nsp", "priority": 1},
+                    {"index": 1, "name": "Example Title Update 1.1.0.nsp", "priority": 1},
+                ]
+            }
+        )
+
+        ok = torrent_client._select_qbittorrent_highest_version(
+            fake_session,
+            self.base_url,
+            torrent_hash,
+            timeout_seconds=1,
+            exclude_russian=False,
+            expected_version=65792,
+        )
+
+        self.assertTrue(ok)
+        self.assertEqual(fake_session.file_prio_calls[0]["id"], "0|1")
+        self.assertEqual(fake_session.file_prio_calls[0]["priority"], 0)
+        self.assertEqual(fake_session.file_prio_calls[1]["id"], "1")
+        self.assertEqual(fake_session.file_prio_calls[1]["priority"], 1)
 
 
 if __name__ == "__main__":

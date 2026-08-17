@@ -27,6 +27,30 @@
                 </div>
 
                 <div id="savesAlert" class="alert alert-info d-none mb-3" role="alert"></div>
+                <div class="card mb-3 save-upload-card">
+                    <div class="card-body">
+                        <div class="row g-2 align-items-end">
+                            <div class="col-12 col-lg-4 position-relative">
+                                <label for="saveUploadTitleSearch" class="form-label mb-1">Title</label>
+                                <input type="text" class="form-control" id="saveUploadTitleSearch" placeholder="Search title name or id">
+                                <div class="list-group save-upload-search-results" id="saveUploadTitleSearchResults"></div>
+                            </div>
+                            <div class="col-12 col-lg-3">
+                                <label for="saveUploadNote" class="form-label mb-1">Note (optional)</label>
+                                <input type="text" class="form-control" id="saveUploadNote" placeholder="Example: before chapter 4">
+                            </div>
+                            <div class="col-12 col-lg-3">
+                                <label for="saveUploadFile" class="form-label mb-1">Save ZIP</label>
+                                <input type="file" class="form-control" id="saveUploadFile" accept=".zip,application/zip">
+                            </div>
+                            <div class="col-12 col-lg-2">
+                                <button type="button" id="uploadSaveBtn" class="btn btn-warning w-100">
+                                    <i class="bi bi-upload"></i> Upload
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
 
                 <div class="card">
                     <div class="card-body">
@@ -88,10 +112,31 @@
     .save-note-text {
         max-width: 22rem;
     }
+
+    .save-upload-search-results {
+        position: absolute;
+        top: calc(100% + 0.25rem);
+        left: 0;
+        right: 0;
+        z-index: 1200;
+        max-height: 16rem;
+        overflow-y: auto;
+        background: var(--bs-body-bg);
+        border: 1px solid var(--bs-border-color);
+        border-radius: 0.5rem;
+        box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.25);
+    }
+
+    .save-upload-card,
+    .save-upload-card .card-body {
+        overflow: visible;
+    }
 </style>
 
 <script>
     let currentViewMode = 'list';
+    let selectedUploadTitle = null;
+    let saveUploadTitleSearchTimer = null;
 
     function formatBytes(bytes) {
         const n = Number(bytes || 0);
@@ -147,6 +192,9 @@
     }
 
     function getDeleteUrl(item, titleId) {
+        if (item['latest_directory'] === true || item['latestDirectory'] === true) {
+            return '';
+        }
         let deleteUrl = (item['delete_url'] || item['deleteUrl'] || '').toString();
         const saveId = (item['save_id'] || item['saveId'] || '').toString();
         if (!deleteUrl && titleId) {
@@ -172,6 +220,9 @@
     }
 
     function getSaveNote(item) {
+        if (item['latest_directory'] === true || item['latestDirectory'] === true) {
+            return 'latest directory';
+        }
         return (
             item['note']
             || item['save_note']
@@ -186,6 +237,10 @@
             || item['createdAt']
             || ''
         ).toString();
+    }
+
+    function isLatestSaveVersion(item) {
+        return item['is_latest'] === true || item['isLatest'] === true;
     }
 
     function formatSaveDate(value) {
@@ -298,6 +353,7 @@
             const titleName = getTitleName(item, titleId);
             const note = getSaveNote(item);
             const createdAt = formatSaveDate(getSaveCreatedAt(item));
+            const latestLabel = isLatestSaveVersion(item) ? ' <span class="badge text-bg-success">latest</span>' : '';
             const sizeText = formatBytes(item['size']);
             const downloadUrl = getDownloadUrl(item, titleId);
             const deleteUrl = getDeleteUrl(item, titleId);
@@ -315,7 +371,7 @@
                             </div>
                         </div>
                     </td>
-                    <td class="small text-nowrap">${escapeHtml(createdAt)}</td>
+                    <td class="small text-nowrap">${escapeHtml(createdAt)}${latestLabel}</td>
                     <td class="small text-muted save-note-text text-truncate" title="${escapeHtml(note || '-')}">${escapeHtml(note || '-')}</td>
                     <td class="small">${escapeHtml(sizeText)}</td>
                     <td class="text-end">
@@ -344,6 +400,7 @@
             const titleName = getTitleName(item, titleId);
             const note = getSaveNote(item);
             const createdAt = formatSaveDate(getSaveCreatedAt(item));
+            const latestLabel = isLatestSaveVersion(item) ? ' <span class="badge text-bg-success">latest</span>' : '';
             const sizeText = formatBytes(item['size']);
             const downloadUrl = getDownloadUrl(item, titleId);
             const deleteUrl = getDeleteUrl(item, titleId);
@@ -357,7 +414,7 @@
                         <div class="card-body p-2">
                             <div class="small fw-semibold text-truncate" title="${escapeHtml(titleName)}">${escapeHtml(titleName)}</div>
                             <div class="small text-muted font-monospace text-truncate mb-1" title="${escapeHtml(titleId || '-')}">${escapeHtml(titleId || '-')}</div>
-                            <div class="small text-muted text-truncate" title="${escapeHtml(createdAt)}">${escapeHtml(createdAt)}</div>
+                            <div class="small text-muted text-truncate" title="${escapeHtml(createdAt)}">${escapeHtml(createdAt)}${latestLabel}</div>
                             <div class="small text-muted text-truncate" title="${escapeHtml(note || '-')}">${escapeHtml(note || '-')}</div>
                             <div class="small text-muted">${escapeHtml(sizeText)}</div>
                         </div>
@@ -419,6 +476,114 @@
         });
     }
 
+    function normalizeTitleIdInput(rawValue) {
+        return String(rawValue || '').trim().toUpperCase();
+    }
+
+    function uploadSaveArchive() {
+        const uploadBtn = $('#uploadSaveBtn');
+        const titleId = normalizeTitleIdInput(selectedUploadTitle && selectedUploadTitle.id ? selectedUploadTitle.id : '');
+        const note = ($('#saveUploadNote').val() || '').toString().trim();
+        const input = document.getElementById('saveUploadFile');
+        const file = input && input.files && input.files.length ? input.files[0] : null;
+
+        if (!titleId) {
+            showSavesAlert('Select a title before upload.', 'warning');
+            return;
+        }
+        if (!file) {
+            showSavesAlert('Select a save ZIP file to upload.', 'warning');
+            return;
+        }
+
+        const formData = new FormData();
+        formData.append('file', file);
+        if (note) {
+            formData.append('note', note);
+        }
+
+        uploadBtn.prop('disabled', true);
+        $.ajax({
+            url: `/api/saves/upload/${encodeURIComponent(titleId)}`,
+            method: 'POST',
+            data: formData,
+            processData: false,
+            contentType: false,
+            dataType: 'json',
+        }).done(function (result) {
+            if (!result || result['success'] === false) {
+                const message = (result && result['message']) ? result['message'] : 'Save upload failed.';
+                showSavesAlert(message, 'danger');
+                return;
+            }
+            showSavesAlert((result && result['message']) ? result['message'] : 'Save uploaded successfully.', 'success');
+            $('#saveUploadFile').val('');
+            $('#saveUploadNote').val('');
+            loadSaves();
+        }).fail(function (xhr) {
+            let message = 'Save upload failed.';
+            try {
+                if (xhr && xhr.responseJSON && xhr.responseJSON.message) {
+                    message = xhr.responseJSON.message;
+                }
+            } catch (e) {
+                // Keep default message.
+            }
+            showSavesAlert(message, 'danger');
+        }).always(function () {
+            uploadBtn.prop('disabled', false);
+        });
+    }
+
+    async function fetchSaveUploadSearchResults(query) {
+        const response = await fetch(`/api/titledb/search?q=${encodeURIComponent(query)}&limit=25`, { credentials: 'same-origin' });
+        const data = await response.json();
+        if (!data || data.success !== true) return [];
+        return Array.isArray(data.results) ? data.results : [];
+    }
+
+    function renderSaveUploadSearchResults(items) {
+        const box = document.getElementById('saveUploadTitleSearchResults');
+        if (!box) return;
+        box.innerHTML = '';
+        (items || []).forEach((item) => {
+            const button = document.createElement('button');
+            button.type = 'button';
+            button.className = 'list-group-item list-group-item-action';
+            button.innerHTML = `
+                <div class="d-flex justify-content-between align-items-start gap-2">
+                    <div>
+                        <div class="fw-semibold">${escapeHtml(item.name || 'Unrecognized')}</div>
+                        <div class="text-muted small">${escapeHtml(item.id || '')}</div>
+                    </div>
+                </div>
+            `;
+            button.addEventListener('click', () => {
+                selectedUploadTitle = item;
+                const inputEl = document.getElementById('saveUploadTitleSearch');
+                if (inputEl) inputEl.value = String(item.name || item.id || '').trim();
+                box.innerHTML = '';
+            });
+            box.appendChild(button);
+        });
+    }
+
+    function handleSaveUploadTitleSearchInput() {
+        const inputEl = document.getElementById('saveUploadTitleSearch');
+        if (!inputEl) return;
+        const query = String(inputEl.value || '').trim();
+        if (saveUploadTitleSearchTimer) clearTimeout(saveUploadTitleSearchTimer);
+        saveUploadTitleSearchTimer = setTimeout(async () => {
+            if (!query) {
+                renderSaveUploadSearchResults([]);
+                selectedUploadTitle = null;
+                return;
+            }
+            const results = await fetchSaveUploadSearchResults(query);
+            renderSaveUploadSearchResults(results);
+        }, 250);
+    }
+
     $(document).ready(function () {
         $('#refreshSavesBtn').on('click', loadSaves);
         $('#viewListBtn').on('click', function () {
@@ -435,6 +600,8 @@
             const note = (btn.data('save-note') || '').toString();
             deleteSaveBackup(deleteUrl, titleName, createdAt, note, btn);
         });
+        $('#uploadSaveBtn').on('click', uploadSaveArchive);
+        $('#saveUploadTitleSearch').on('input', handleSaveUploadTitleSearchInput);
 
         let savedView = 'list';
         try {

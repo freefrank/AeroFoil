@@ -700,23 +700,42 @@ auth_blueprint = Blueprint('auth', __name__)
 login_manager = LoginManager()
 login_manager.login_view = 'auth.login'
 
-def create_or_update_user(username, password, admin_access=False, shop_access=False, backup_access=False):
+def normalize_max_rating(value):
+    """Coerce an incoming max_rating to a valid ESRB age int, or None.
+
+    None / blank means unrestricted. Unknown values fall back to None.
+    """
+    if value is None:
+        return None
+    if isinstance(value, str) and not value.strip():
+        return None
+    try:
+        rating = int(value)
+    except (TypeError, ValueError):
+        return None
+    return rating if rating in ESRB_VALID_AGES else None
+
+
+def create_or_update_user(username, password, admin_access=False, shop_access=False, backup_access=False, cheat_access=True, max_rating=None):
     """
     Create a new user or update an existing user with the given credentials and access rights.
     """
+    max_rating = normalize_max_rating(max_rating)
     user = User.query.filter_by(user=username).first()
     if user:
         logger.info(f'Updating existing user {username}')
         user.admin_access = admin_access
         user.shop_access = shop_access
         user.backup_access = backup_access
+        user.cheat_access = cheat_access
+        user.max_rating = max_rating
         if getattr(user, 'frozen', False) and admin_access:
             user.frozen = False
             user.frozen_message = None
         user.password = generate_password_hash(password, method='scrypt')
     else:
         logger.info(f'Creating new user {username}')
-        new_user = User(user=username, password=generate_password_hash(password, method='scrypt'), admin_access=admin_access, shop_access=shop_access, backup_access=backup_access)
+        new_user = User(user=username, password=generate_password_hash(password, method='scrypt'), admin_access=admin_access, shop_access=shop_access, backup_access=backup_access, cheat_access=cheat_access, max_rating=max_rating)
         db.session.add(new_user)
     db.session.commit()
     _invalidate_admin_exists_cache()
@@ -733,11 +752,13 @@ def init_user_from_environment(environment_name, admin=False):
             admin_access = True
             shop_access = True
             backup_access = True
+            cheat_access = True
         else:
             logger.info('Initializing a regular user from environment variable...')
             admin_access = False
             shop_access = True
             backup_access = False
+            cheat_access = True
 
         if not admin:
             existing_admin = admin_account_created()
@@ -745,7 +766,7 @@ def init_user_from_environment(environment_name, admin=False):
                 logger.error(f'Error creating user {username}, first account created must be admin')
                 return
 
-        create_or_update_user(username, password, admin_access, shop_access, backup_access)
+        create_or_update_user(username, password, admin_access, shop_access, backup_access, cheat_access)
 
 def init_users(app):
     with app.app_context():
@@ -835,9 +856,8 @@ def login():
 
 @auth_blueprint.route('/profile')
 @login_required
-@access_required('backup')
 def profile():
-    return render_template('profile.html')
+    return render_template('profile.html', title='Profile')
 
 @auth_blueprint.route('/api/users')
 @access_required('admin')
@@ -850,8 +870,10 @@ def get_users():
             User.admin_access,
             User.shop_access,
             User.backup_access,
+            User.cheat_access,
             User.frozen,
             User.frozen_message,
+            User.max_rating,
             User.client_uid,
             User.last_login_at,
             User.last_login_ip,
@@ -1051,12 +1073,14 @@ def update_user():
     admin_access = data.get('admin_access')
     shop_access = data.get('shop_access')
     backup_access = data.get('backup_access')
+    cheat_access = data.get('cheat_access')
+    max_rating = normalize_max_rating(data.get('max_rating'))
 
     if not user_id:
         errors.append(_('Missing user id.'))
     if not username:
         errors.append(_('Username is required.'))
-    if admin_access is None or shop_access is None or backup_access is None:
+    if admin_access is None or shop_access is None or backup_access is None or cheat_access is None:
         errors.append(_('Missing access configuration.'))
 
     user = User.query.filter_by(id=user_id).first() if not errors else None
@@ -1079,10 +1103,13 @@ def update_user():
         if admin_access:
             shop_access = True
             backup_access = True
+            cheat_access = True
         user.user = username
         user.admin_access = admin_access
         user.shop_access = shop_access
         user.backup_access = backup_access
+        user.cheat_access = cheat_access
+        user.max_rating = max_rating
         if getattr(user, 'frozen', False) and admin_access:
             user.frozen = False
             user.frozen_message = None
@@ -1100,29 +1127,43 @@ def update_user():
 
 @auth_blueprint.route('/api/user/password', methods=['PATCH'])
 @login_required
-@access_required('admin')
 def reset_user_password():
     success = True
     errors = []
     data = request.json or {}
-    user_id = data.get('user_id')
+    requested_user_id = data.get('user_id')
     password = data.get('password')
+    current_password = data.get('current_password')
 
-    if not user_id:
+    requester_id = getattr(current_user, 'id', None)
+    requester_is_admin = bool(getattr(current_user, 'is_admin', False))
+    target_user_id = requested_user_id if requested_user_id not in (None, '') else requester_id
+
+    if not target_user_id:
         errors.append(_('Missing user id.'))
     if not password:
         errors.append(_('Password is required.'))
 
-    user = User.query.filter_by(id=user_id).first() if not errors else None
+    user = User.query.filter_by(id=target_user_id).first() if not errors else None
     if not user:
         errors.append(_('User not found.'))
+    if not requester_is_admin:
+        if user and int(getattr(user, 'id', 0) or 0) != int(requester_id or 0):
+            errors.append(_('You can only change your own password.'))
+        if not current_password:
+            errors.append(_('Current password is required.'))
+        elif user and not check_password_hash(user.password, current_password):
+            errors.append(_('Current password is incorrect.'))
 
     if errors:
         success = False
     else:
         user.password = generate_password_hash(password, method='scrypt')
         db.session.commit()
-        logger.info(f'Successfully reset password for user {user.id} ({user.user}).')
+        if requester_is_admin and int(getattr(user, 'id', 0) or 0) != int(requester_id or 0):
+            logger.info(f'Successfully reset password for user {user.id} ({user.user}).')
+        else:
+            logger.info(f'User {user.id} ({user.user}) changed their password.')
 
     resp = {
         'success': success,
@@ -1139,12 +1180,15 @@ def signup_post():
     username = data['user']
     password = data['password']
     admin_access = data['admin_access']
+    max_rating = normalize_max_rating(data.get('max_rating'))
     if admin_access:
         shop_access = True
         backup_access = True
+        cheat_access = True
     else:
         shop_access = data['shop_access']
         backup_access = data['backup_access']
+        cheat_access = data.get('cheat_access', True)
 
     user = User.query.filter_by(user=username).first() # if this returns a user, then the user already exists in database
     
@@ -1164,7 +1208,7 @@ def signup_post():
         return jsonify(resp)
 
     # create a new user with the form data. Hash the password so the plaintext version isn't saved.
-    create_or_update_user(username, password, admin_access, shop_access, backup_access)
+    create_or_update_user(username, password, admin_access, shop_access, backup_access, cheat_access, max_rating=max_rating)
     
     logger.info(f'Successfully created user {username}.')
 

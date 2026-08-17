@@ -212,6 +212,27 @@ class TitleDBResilienceTests(unittest.TestCase):
         self.assertNotIn("missing", after)
         titles.release_titledb()
 
+    def test_load_titledb_reloads_when_signature_changes(self):
+        self._write_core_files('{"key":{"id":"0100000000001000","name":"Game v1","bannerUrl":"","iconUrl":"","category":""}}')
+
+        with self._patch_titles_env(), \
+            patch("app.titles.load_settings", return_value=self.settings), \
+            patch("app.titles.titledb.get_region_titles_file", return_value="titles.US.en.json"), \
+            patch("app.titles.titledb.get_descriptions_url", return_value=("https://example.invalid/US.en.json", "US.en.json")), \
+            patch("app.titles._ensure_titledb_descriptions_file", return_value=None), \
+            patch("app.titles._build_titledb_data_signature", side_effect=["sig-v1", "sig-v2", "sig-v2"]):
+            first_loaded = titles.load_titledb()
+            self.assertTrue(first_loaded)
+            titles.release_titledb()
+
+            with patch("app.titles._ensure_titles_index", wraps=titles._ensure_titles_index) as ensure_titles_index_mock:
+                second_loaded = titles.load_titledb()
+
+            self.assertTrue(second_loaded)
+            self.assertGreaterEqual(ensure_titles_index_mock.call_count, 1)
+
+        titles.release_titledb()
+
     def test_required_titledb_files_prefers_fixed_cnmts_when_present(self):
         self._write_core_files('{"0100000000001000":{"id":"0100000000001000","name":"Example Title","bannerUrl":"","iconUrl":"","category":""}}')
         fixed_path = os.path.join(self.titledb_dir, "cnmts-fixed.json")

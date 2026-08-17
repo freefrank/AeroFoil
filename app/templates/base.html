@@ -18,7 +18,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
 
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css', v=static_asset_version) if static_asset_version is defined else url_for('static', filename='style.css') }}">
     <link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}" type="image/x-icon">
     <link rel="preload" as="image" href="{{ url_for('static', filename='banner-400.webp') }}" type="image/webp" fetchpriority="high">
     <link rel="preload" as="image" href="{{ url_for('static', filename='banner-400.png') }}" type="image/png" fetchpriority="high">

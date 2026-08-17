@@ -7,10 +7,12 @@ _IMPORT_ERROR = None
 flask_app = None
 create_title_request_api = None
 list_requests_api = None
+admin_deny_request_api = None
 try:
     from app.app import app as flask_app
     from app.app import create_title_request_api
     from app.app import list_requests_api
+    from app.app import admin_deny_request_api
 except ModuleNotFoundError as exc:
     _IMPORT_ERROR = exc
 
@@ -147,6 +149,35 @@ class RequestListApiTests(unittest.TestCase):
         self.assertEqual(len(payload["requests"]), 1)
         self.assertEqual(payload["requests"][0]["status"], "closed")
         self.assertEqual(payload["requests"][0]["user"]["user"], "alice")
+        commit_mock.assert_called_once()
+
+
+class RequestAdminActionTests(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        if _IMPORT_ERROR is not None:
+            raise unittest.SkipTest(f"Missing dependency for request tests: {_IMPORT_ERROR}")
+
+    def test_admin_deny_request_api_updates_status(self):
+        fake_user = _FakeUser(user_id=1, is_admin=True)
+        request_row = SimpleNamespace(id=17, status="open")
+        fake_query = SimpleNamespace(filter_by=lambda **kwargs: SimpleNamespace(first=lambda: request_row))
+
+        with flask_app.test_request_context("/api/requests/deny", method="POST", json={"request_id": 17}):
+            with (
+                patch("app.auth.admin_account_created", return_value=True),
+                patch("app.auth.current_user", fake_user),
+                patch("app.app.current_user", fake_user),
+                patch("app.app.TitleRequests.query", fake_query),
+                patch("app.app.db.session.commit") as commit_mock,
+            ):
+                response = admin_deny_request_api()
+
+        if isinstance(response, tuple):
+            response, _ = response
+        payload = response.get_json()
+        self.assertTrue(payload["success"])
+        self.assertEqual(request_row.status, "denied")
         commit_mock.assert_called_once()
 
 

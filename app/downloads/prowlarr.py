@@ -5,6 +5,8 @@ from urllib.parse import urljoin
 
 import requests
 
+from app.downloads.versioning import extract_internal_update_version
+
 logger = logging.getLogger("downloads.prowlarr")
 
 
@@ -192,19 +194,10 @@ def _has_version(text, version):
 
 
 def _extract_internal_version_token(text):
-    raw = str(text or "")
-    match = re.search(r"\[v(\d+)\]", raw, re.IGNORECASE)
-    if not match:
-        match = re.search(r"(?<![a-z0-9])v(\d+)(?!\.\d)", raw, re.IGNORECASE)
-    if not match:
-        return None
-    try:
-        return int(match.group(1))
-    except Exception:
-        return None
+    return extract_internal_update_version(text)
 
 
-def filter_results(results, min_seeders=0, min_age_minutes=0, required_terms=None, blacklist_terms=None):
+def filter_results(results, min_seeders=0, min_age_minutes=0, required_terms=None, required_terms_match="all", blacklist_terms=None):
     required_terms = [_normalize_text(t) for t in (required_terms or []) if t]
     blacklist_terms = [_normalize_text(t) for t in (blacklist_terms or []) if t]
     filtered = []
@@ -217,8 +210,13 @@ def filter_results(results, min_seeders=0, min_age_minutes=0, required_terms=Non
             age_minutes = result.get("age_minutes")
             if age_minutes is None or int(age_minutes) < int(min_age_minutes):
                 continue
-        if required_terms and not all(term in title for term in required_terms):
-            continue
+        if required_terms:
+            matches_required_terms = [term in title for term in required_terms]
+            if required_terms_match == "any":
+                if not any(matches_required_terms):
+                    continue
+            elif not all(matches_required_terms):
+                continue
         if blacklist_terms and any(term in title for term in blacklist_terms):
             continue
         filtered.append(result)
@@ -252,12 +250,13 @@ def _score_result(result, title_id=None, version=None):
     return score
 
 
-def pick_best_result(results, title_id=None, version=None, min_seeders=0, min_age_minutes=0, required_terms=None, blacklist_terms=None, allowed_protocols=None, require_exact_version=False):
+def pick_best_result(results, title_id=None, version=None, min_seeders=0, min_age_minutes=0, required_terms=None, required_terms_match="all", blacklist_terms=None, allowed_protocols=None, require_exact_version=False):
     filtered = filter_results(
         results,
         min_seeders=min_seeders,
         min_age_minutes=min_age_minutes,
         required_terms=required_terms,
+        required_terms_match=required_terms_match,
         blacklist_terms=blacklist_terms,
     )
     allowed = {str(item or "").strip().lower() for item in (allowed_protocols or []) if str(item or "").strip()}
@@ -265,9 +264,14 @@ def pick_best_result(results, title_id=None, version=None, min_seeders=0, min_ag
         filtered = [item for item in filtered if str(item.get("protocol") or "").strip().lower() in allowed]
     if require_exact_version and version is not None:
         expected_version = int(version)
+        # Only drop results whose title advertises a *different* internal version
+        # token. Releases whose title carries no parseable internal version (the
+        # common case for scene names that use a marketing version like "v1.2.0")
+        # are kept here; the exact update file is enforced later at download time
+        # via versioning.select_update_entry_ids(expected_version=...).
         filtered = [
             item for item in filtered
-            if _extract_internal_version_token(item.get("title")) == expected_version
+            if _extract_internal_version_token(item.get("title")) in (None, expected_version)
         ]
     if not filtered:
         return None

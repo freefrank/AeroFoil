@@ -31,7 +31,7 @@
             aria-controls="navbarNav" aria-expanded="false" aria-label="{{ _('Toggle navigation') }}">
             <span class="navbar-toggler-icon"></span>
         </button>
-        {% set content_titles = ['Downloads', 'Upload', 'Manage'] %}
+        {% set content_titles = ['Downloads', 'Upload', 'Manage', 'Cheats'] %}
         {% set backups_titles = ['Save Data Backups'] %}
         {% set admin_titles = ['Activity', 'Users'] %}
         <div class="collapse navbar-collapse" id="navbarNav">
@@ -49,6 +49,9 @@
                         {% endif %}
                     </a>
                 </li>
+                <li class="nav-item">
+                    <a class="nav-link{% if title == 'Profile' %} active" aria-current="page"{% else %}"{% endif %}" href="/profile">Profile</a>
+                </li>
                 {% endif %}
                 {% if current_user.is_admin or admin_account_created == false %}
                 <li class="nav-item dropdown">
@@ -57,6 +60,7 @@
                     <ul class="dropdown-menu">
                         <li><a class="dropdown-item{% if title == 'Downloads' %} active{% endif %}" href="/downloads">{{ _('Downloads') }}</a></li>
                         <li><a class="dropdown-item{% if title == 'Upload' %} active{% endif %}" href="/upload">{{ _('Upload') }}</a></li>
+                        <li><a class="dropdown-item{% if title == 'Cheats' %} active{% endif %}" href="/cheats">{{ _('Cheats') }}</a></li>
                         <li><a class="dropdown-item{% if title == 'Manage' %} active{% endif %}" href="/manage">{{ _('Manage') }}</a></li>
                     </ul>
                 </li>

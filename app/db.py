@@ -147,6 +147,10 @@ class Apps(db.Model):
     app_version_num = db.Column(db.Integer, default=0)
     app_type = db.Column(db.String)
     owned = db.Column(db.Boolean, default=False)
+    # Ignored add-ons and update versions do not contribute to library
+    # completeness checks, but remain in the database so the choice can be
+    # reversed from the title details view.
+    ignored = db.Column(db.Boolean, default=False, nullable=False)
 
     title = db.relationship('Titles', backref=db.backref('apps', lazy=True, cascade="all, delete-orphan"))
     files = db.relationship('Files', secondary=app_files, backref=db.backref('apps', lazy='select'))
@@ -178,8 +182,11 @@ class User(UserMixin, db.Model):
     admin_access = db.Column(db.Boolean)
     shop_access = db.Column(db.Boolean)
     backup_access = db.Column(db.Boolean)
+    cheat_access = db.Column(db.Boolean, nullable=False, default=True)
     frozen = db.Column(db.Boolean, default=False)
     frozen_message = db.Column(db.String)
+    # ESRB age cap (TitleDB minimum-age int). NULL = unrestricted.
+    max_rating = db.Column(db.Integer)
     client_uid = db.Column(db.String)
     last_login_at = db.Column(db.DateTime)
     last_login_ip = db.Column(db.String)
@@ -195,6 +202,9 @@ class User(UserMixin, db.Model):
 
     def has_backup_access(self):
         return self.backup_access
+
+    def has_cheat_access(self):
+        return bool(self.cheat_access) and self.has_shop_access()
     
     def has_admin_access(self):
         return self.admin_access
@@ -206,6 +216,8 @@ class User(UserMixin, db.Model):
             return self.has_shop_access()
         elif access == 'backup':
             return self.has_backup_access()
+        elif access == 'cheats':
+            return self.has_cheat_access()
 
 
 class TitleRequests(db.Model):
@@ -217,6 +229,18 @@ class TitleRequests(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey('user.id', ondelete='CASCADE'), nullable=False)
 
     user = db.relationship('User', backref=db.backref('title_requests', lazy=True, cascade="all, delete-orphan"))
+
+
+class TitleRequestUsers(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id', ondelete='CASCADE'), nullable=False)
+    request_id = db.Column(db.Integer, db.ForeignKey('title_requests.id', ondelete='CASCADE'), nullable=False)
+    created_at = db.Column(db.DateTime, nullable=False, default=utc_now)
+
+    __table_args__ = (db.UniqueConstraint('user_id', 'request_id', name='uq_title_request_users_user_request'),)
+
+    user = db.relationship('User', backref=db.backref('title_request_links', lazy=True, cascade="all, delete-orphan"))
+    request = db.relationship('TitleRequests', backref=db.backref('request_users', lazy=True, cascade="all, delete-orphan"))
 
 
 class TitleRequestViews(db.Model):
@@ -600,6 +624,11 @@ def ensure_performance_schema():
             db.session.commit()
             added_column = True
 
+        if not _sqlite_column_exists('apps', 'ignored'):
+            db.session.execute(text("ALTER TABLE apps ADD COLUMN ignored BOOLEAN NOT NULL DEFAULT 0"))
+            db.session.commit()
+            added_column = True
+
         db.session.execute(text("""
             UPDATE apps
             SET app_version_num = CAST(COALESCE(NULLIF(app_version, ''), '0') AS INTEGER)
@@ -696,6 +725,7 @@ def ensure_user_client_schema():
         ('last_login_ip', 'TEXT'),
         ('last_login_country', 'TEXT'),
         ('last_login_country_code', 'TEXT'),
+        ('max_rating', 'INTEGER'),
     ]
 
     try:

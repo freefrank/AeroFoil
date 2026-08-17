@@ -1,37 +1,68 @@
-FROM python:3.11-alpine
+FROM python:3.11-slim AS builder
 
-# Install platform-specific build dependencies
-ARG TARGETPLATFORM
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    PIP_NO_CACHE_DIR=1
+
+# Build dependencies for Python packages with native extensions.
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends \
+        git \
+        build-essential \
+        gcc \
+        libc6-dev \
+        libjpeg62-turbo-dev \
+        zlib1g-dev \
+        libffi-dev \
+        libcairo2-dev \
+        libpango1.0-dev \
+        libgdk-pixbuf-2.0-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+COPY requirements.txt /tmp/requirements.txt
+RUN pip install --upgrade pip \
+    && pip wheel --wheel-dir /wheels --requirement /tmp/requirements.txt \
+    && rm -f /tmp/requirements.txt
+
+FROM python:3.11-slim
+
 ARG AEROFOIL_VERSION
-ENV AEROFOIL_VERSION=$AEROFOIL_VERSION
-RUN apk update && apk add --no-cache bash sudo \
-    git \
-    && if [ "$TARGETPLATFORM" = "linux/arm/v6" ] || [ "$TARGETPLATFORM" = "linux/arm/v7" ]; then \
-        apk add --no-cache build-base gcc musl-dev jpeg-dev zlib-dev libffi-dev cairo-dev pango-dev gdk-pixbuf-dev; \
-    fi
 
-RUN mkdir /app
+ENV AEROFOIL_VERSION="${AEROFOIL_VERSION}" \
+    PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    PIP_NO_CACHE_DIR=1
+
+WORKDIR /app
+
+# Runtime dependencies only.
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends \
+        bash \
+        git \
+        sudo \
+        libjpeg62-turbo \
+        zlib1g \
+        libffi8 \
+        libcairo2 \
+        libpango-1.0-0 \
+        libgdk-pixbuf-2.0-0 \
+    && rm -rf /var/lib/apt/lists/*
+
+COPY requirements.txt /tmp/requirements.txt
+COPY --from=builder /wheels /wheels
+RUN pip install --no-index --find-links=/wheels --requirement /tmp/requirements.txt \
+    && rm -f /tmp/requirements.txt \
+    && rm -rf /wheels
 
 COPY ./app /app
 COPY ./docker/run.sh /app/run.sh
 
-COPY requirements.txt /tmp/
-
-RUN pip install --no-cache-dir --requirement /tmp/requirements.txt && rm /tmp/requirements.txt
-
 # Compile i18n message catalogs (checked-in .mo files are refreshed at build time)
 RUN if [ -d /app/translations ]; then pybabel compile -d /app/translations; fi
 
-# Normalize CRLF to LF and ensure entrypoint is executable across platforms
-RUN sed -i 's/\r$//' /app/run.sh && chmod +x /app/run.sh
+RUN sed -i 's/\r$//' /app/run.sh \
+    && chmod +x /app/run.sh \
+    && mkdir -p /app/data
 
-RUN if [ "$TARGETPLATFORM" = "linux/arm/v6" ] || [ "$TARGETPLATFORM" = "linux/arm/v7" ]; then \
-        apk del build-base gcc musl-dev jpeg-dev zlib-dev libffi-dev cairo-dev pango-dev gdk-pixbuf-dev; \
-    fi
-
-RUN mkdir -p /app/data
-
-WORKDIR /app
-
-ENTRYPOINT [ "/app/run.sh" ]
-
+ENTRYPOINT ["/app/run.sh"]

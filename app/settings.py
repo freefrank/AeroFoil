@@ -1,6 +1,7 @@
 from app.constants import *
 import yaml
 import os
+from urllib.parse import urlparse
 import time
 import hashlib
 import threading
@@ -140,6 +141,17 @@ def _normalize_titles_manual_overrides(raw_overrides):
         }
     return out
 
+
+def _get_built_in_titles_manual_overrides():
+    return _normalize_titles_manual_overrides(BUILTIN_TITLE_MANUAL_OVERRIDES)
+
+
+def _merge_titles_manual_overrides(raw_overrides):
+    merged = _get_built_in_titles_manual_overrides()
+    merged.update(_normalize_titles_manual_overrides(raw_overrides))
+    return merged
+
+
 def _normalize_titles_settings(raw_titles):
     defaults = DEFAULT_SETTINGS.get('titles', {}) or {}
     merged = defaults.copy()
@@ -154,9 +166,9 @@ def _normalize_titles_settings(raw_titles):
         merged.get('prefer_english_metadata'),
         default=defaults.get('prefer_english_metadata', False),
     )
-    merged['manual_overrides'] = _normalize_titles_manual_overrides(
-        merged.get('manual_overrides')
-    )
+    user_overrides = _normalize_titles_manual_overrides(merged.get('manual_overrides'))
+    merged['manual_overrides'] = user_overrides
+    merged['effective_manual_overrides'] = _merge_titles_manual_overrides(user_overrides)
     return merged
 
 def _normalize_library_naming_templates(raw_templates):
@@ -196,6 +208,9 @@ def _normalize_library_naming_templates(raw_templates):
                 'folder': str(sec.get('folder') or fallback.get('folder') or ''),
                 'filename': str(sec.get('filename') or fallback.get('filename') or ''),
             }
+        legacy_update_filename = clean.get('update', {}).get('filename')
+        if legacy_update_filename == "{title} [{title_id}] [UPDATE][v{version}].{ext}":
+            clean['update']['filename'] = "{title} [{app_id}] [UPDATE][v{version}].{ext}"
         clean_name = str(name or '').strip() or 'default'
         normalized[clean_name] = clean
 
@@ -278,6 +293,8 @@ def _normalize_download_settings(downloads):
     raw_downloads = downloads if isinstance(downloads, dict) else {}
     merged = defaults.copy()
     merged.update(raw_downloads)
+    required_terms_match = str(merged.get('required_terms_match') or 'all').strip().lower()
+    merged['required_terms_match'] = required_terms_match if required_terms_match in ('all', 'any') else 'all'
     legacy_min_seeders = raw_downloads.get('min_seeders')
     shared_category = str(
         merged.get('category')
@@ -312,11 +329,15 @@ def _normalize_download_settings(downloads):
         minimum=0,
         maximum=100000,
     )
+    merged['torrent_client']['remove_completed_torrents_on_finish'] = _coerce_bool(
+        raw_torrent_client.get('remove_completed_torrents_on_finish'),
+        default=(defaults.get('torrent_client', {}) or {}).get('remove_completed_torrents_on_finish', True),
+    )
     raw_usenet_client = dict(raw_downloads.get('usenet_client') or {})
     merged['usenet_client'] = _normalize_download_client_config(
         raw_usenet_client,
         defaults.get('usenet_client', {}),
-        allow_credentials=False,
+        allow_credentials=True,
         allow_download_path=False,
         allow_api_key=True,
         shared_category=shared_category,
@@ -499,7 +520,12 @@ def _normalize_shop_settings(raw_shop):
     if isinstance(raw_shop, dict):
         merged.update(raw_shop)
 
+    merged['motd_enabled'] = _coerce_bool(
+        merged.get('motd_enabled'),
+        default=defaults.get('motd_enabled', True),
+    )
     merged['motd'] = str(merged.get('motd') or defaults.get('motd') or '').strip()
+    merged['motd_api_url'] = str(merged.get('motd_api_url') or defaults.get('motd_api_url') or '').strip()
     merged['public'] = _coerce_bool(
         merged.get('public'),
         default=defaults.get('public', False),
@@ -515,6 +541,10 @@ def _normalize_shop_settings(raw_shop):
     merged['fast_transfer_mode'] = _coerce_bool(
         merged.get('fast_transfer_mode'),
         default=defaults.get('fast_transfer_mode', False),
+    )
+    merged['cyberfoil_virtual_compressed_stream'] = _coerce_bool(
+        merged.get('cyberfoil_virtual_compressed_stream'),
+        default=defaults.get('cyberfoil_virtual_compressed_stream', True),
     )
     merged['tinfoil_only_mode'] = _coerce_bool(
         merged.get('tinfoil_only_mode'),
@@ -532,6 +562,28 @@ def _normalize_shop_settings(raw_shop):
     return merged
 
 
+def _normalize_content_filter_settings(raw_content_filter):
+    defaults = DEFAULT_SETTINGS.get('content_filter', {}) or {}
+    merged = defaults.copy()
+    if isinstance(raw_content_filter, dict):
+        merged.update(raw_content_filter)
+    merged['block_unrated'] = _coerce_bool(
+        merged.get('block_unrated'),
+        default=defaults.get('block_unrated', True),
+    )
+    return merged
+
+
+def _normalize_cheats_settings(raw_cheats):
+    defaults = DEFAULT_SETTINGS.get('cheats', {}) or {}
+    merged = defaults.copy()
+    if isinstance(raw_cheats, dict):
+        merged.update(raw_cheats)
+    merged['enabled'] = _coerce_bool(merged.get('enabled'), default=defaults.get('enabled', True))
+    merged['sync_url'] = str(merged.get('sync_url') or '').strip()
+    return merged
+
+
 def _validate_shop_public_key(public_key_pem):
     key_text = str(public_key_pem or '').strip()
     if not key_text:
@@ -542,6 +594,24 @@ def _validate_shop_public_key(public_key_pem):
         return False, f'Invalid public key: {exc}'
     if getattr(key, 'has_private', lambda: False)():
         return False, 'Invalid public key: expected a public key, not a private key.'
+    return True, None
+
+
+def _validate_shop_motd_api_url(value):
+    raw = str(value or '').strip()
+    if not raw:
+        return True, None
+    if len(raw) > 2048:
+        return False, 'MOTD API URL is too long.'
+    try:
+        parsed = urlparse(raw)
+    except Exception:
+        return False, 'Invalid MOTD API URL.'
+    scheme = str(parsed.scheme or '').lower()
+    if scheme not in ('http', 'https'):
+        return False, 'MOTD API URL must use http or https.'
+    if not parsed.netloc:
+        return False, 'MOTD API URL must include a host.'
     return True, None
 
 def load_keys(key_file=KEYS_FILE):
@@ -659,6 +729,8 @@ def load_settings(force_reload=False):
         _merge_section('shop')
         _merge_section('titles')
         _merge_section('library')
+        _merge_section('cheats')
+        _merge_section('content_filter')
 
         env_trust = _read_env_bool('AEROFOIL_TRUST_PROXY_HEADERS')
         if env_trust is None:
@@ -692,6 +764,8 @@ def load_settings(force_reload=False):
         settings['downloads'] = _normalize_download_settings(settings.get('downloads'))
         settings['titles'] = _normalize_titles_settings(settings.get('titles'))
         settings['shop'] = _normalize_shop_settings(settings.get('shop'))
+        settings['cheats'] = _normalize_cheats_settings(settings.get('cheats'))
+        settings['content_filter'] = _normalize_content_filter_settings(settings.get('content_filter'))
         settings['library']['conversion_staging_dir'] = _normalize_conversion_staging_dir(
             settings['library'].get('conversion_staging_dir')
         )
@@ -716,6 +790,16 @@ def set_security_settings(data):
     settings.setdefault('security', {})
     settings['security'].update(data or {})
     settings['security'] = _normalize_security_settings(settings.get('security'))
+    with open(CONFIG_FILE, 'w') as yaml_file:
+        yaml.dump(settings, yaml_file)
+    _invalidate_settings_cache()
+
+
+def set_cheats_settings(data):
+    settings = load_settings(force_reload=True)
+    settings.setdefault('cheats', {})
+    settings['cheats'].update(data or {})
+    settings['cheats'] = _normalize_cheats_settings(settings.get('cheats'))
     with open(CONFIG_FILE, 'w') as yaml_file:
         yaml.dump(settings, yaml_file)
     _invalidate_settings_cache()
@@ -781,6 +865,13 @@ def verify_settings(section, data):
             errors.append({
                 'path': 'shop/public_key',
                 'error': public_key_error,
+            })
+        motd_api_ok, motd_api_error = _validate_shop_motd_api_url(normalized.get('motd_api_url'))
+        if not motd_api_ok:
+            success = False
+            errors.append({
+                'path': 'shop/motd_api_url',
+                'error': motd_api_error,
             })
     return success, errors
 
@@ -888,6 +979,16 @@ def set_shop_settings(data):
     with open(CONFIG_FILE, 'w') as yaml_file:
         yaml.dump(settings, yaml_file)
     _invalidate_settings_cache()
+
+def set_content_filter_settings(data):
+    settings = load_settings(force_reload=True)
+    settings.setdefault('content_filter', {})
+    settings['content_filter'].update(data or {})
+    settings['content_filter'] = _normalize_content_filter_settings(settings.get('content_filter'))
+    with open(CONFIG_FILE, 'w') as yaml_file:
+        yaml.dump(settings, yaml_file)
+    _invalidate_settings_cache()
+
 
 def set_download_settings(data):
     settings = load_settings(force_reload=True)

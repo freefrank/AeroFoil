@@ -53,6 +53,46 @@
 </div>
 
 <script>
+    let uploadStatusPollTimer = null;
+    let activeUploadId = null;
+
+    function stopUploadStatusPolling() {
+        if (uploadStatusPollTimer) {
+            clearInterval(uploadStatusPollTimer);
+            uploadStatusPollTimer = null;
+        }
+    }
+
+    function startUploadStatusPolling(uploadId) {
+        const id = String(uploadId || '').trim();
+        if (!id) {
+            return;
+        }
+        activeUploadId = id;
+        stopUploadStatusPolling();
+        const poll = function () {
+            $.getJSON(`/api/upload/library/status/${encodeURIComponent(id)}`, function (result) {
+                if (!result || !result['success']) {
+                    return;
+                }
+                const job = result['job'] || {};
+                const message = String(job['message'] || '').trim();
+                const stage = String(job['stage'] || '').trim();
+                if (message) {
+                    $('#uploadStatus').text(message);
+                } else if (stage) {
+                    $('#uploadStatus').text(`Processing: ${stage}`);
+                }
+                const status = String(job['status'] || '').toLowerCase();
+                if (status && status !== 'running') {
+                    stopUploadStatusPolling();
+                }
+            });
+        };
+        poll();
+        uploadStatusPollTimer = setInterval(poll, 700);
+    }
+
     function loadUploadLibraries() {
         $.getJSON("/api/manage/libraries", function (result) {
             const select = $('#uploadLibrarySelect');
@@ -135,6 +175,8 @@
         $('#uploadStatus').text('');
         $('#uploadProgressWrap').addClass('d-none');
         $('#uploadProgressBar').css('width', '0%').text('0%');
+        stopUploadStatusPolling();
+        activeUploadId = null;
         renderUploadList([]);
         updateUploadActions();
     }
@@ -146,8 +188,11 @@
             return;
         }
         const libraryId = $('#uploadLibrarySelect').val();
+        const uploadId = `${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
+        activeUploadId = uploadId;
         const formData = new FormData();
         formData.append('library_id', libraryId);
+        formData.append('upload_id', uploadId);
         for (const file of files) {
             formData.append('files', file);
         }
@@ -171,11 +216,20 @@
                         const percent = Math.round((evt.loaded / evt.total) * 100);
                         $('#uploadStatus').text({{ _('Uploading... {percent}')|tojson }}.replace('{percent}', `${percent}%`));
                         $('#uploadProgressBar').css('width', `${percent}%`).text(`${percent}%`);
+                        if (percent >= 100) {
+                            $('#uploadStatus').text('Upload complete. Processing on server...');
+                            startUploadStatusPolling(uploadId);
+                        }
                     }
+                }, false);
+                xhr.upload.addEventListener('load', function () {
+                    $('#uploadStatus').text('Upload complete. Processing on server...');
+                    startUploadStatusPolling(uploadId);
                 }, false);
                 return xhr;
             },
             success: function (result) {
+                stopUploadStatusPolling();
                 if (result && result['success']) {
                     const uploaded = result['uploaded'] || 0;
                     const skipped = result['skipped'] || 0;
@@ -189,6 +243,7 @@
                 }
             },
             error: function (xhr) {
+                stopUploadStatusPolling();
                 const responseJson = xhr?.responseJSON;
                 const responseText = typeof xhr?.responseText === 'string' ? xhr.responseText : '';
                 const firstLine = responseText ? responseText.split('\n')[0].trim() : '';
@@ -199,6 +254,7 @@
                 $('#uploadStatus').text(message);
             },
             complete: function () {
+                stopUploadStatusPolling();
                 updateUploadActions();
             }
         });

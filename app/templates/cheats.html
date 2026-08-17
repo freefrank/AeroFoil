@@ -1,0 +1,122 @@
+{% extends "base.html" %}
+{% block content %}
+{% include 'nav.html' %}
+
+<div class="container setting-body mt-3">
+    <h2>Cheats</h2>
+    <p class="text-muted">Manage Atmosphère cheat files for titles in your library. Each build ID is a separate game version.</p>
+
+    <div class="card bg-dark border-secondary mb-3">
+        <div class="card-body">
+            <h5 class="card-title">CyberFoil section</h5>
+            <div class="form-check"><input class="form-check-input" type="checkbox" id="cheatSectionEnabled"><label class="form-check-label" for="cheatSectionEnabled">Show the Cheats section in CyberFoil</label></div>
+            <button id="saveCheatSection" class="btn btn-outline-secondary btn-sm mt-3" type="button">Save CyberFoil setting</button>
+        </div>
+    </div>
+
+    <div class="card bg-dark border-secondary mb-3">
+        <div class="card-body">
+            <h5 class="card-title">Import cheat file</h5>
+            <form id="cheatUploadForm" class="row g-3">
+                <div class="col-md-5">
+                    <label class="form-label" for="cheatTitleSearch">Library title</label>
+                    <input id="cheatTitleSearch" class="form-control" placeholder="Search a library title" autocomplete="off">
+                    <div class="list-group mt-2" id="cheatTitleSearchResults"></div>
+                    <label class="form-label mt-2" for="cheatTitleId">Title ID</label>
+                    <input id="cheatTitleId" class="form-control" maxlength="16" pattern="[0-9A-Fa-f]{16}" placeholder="Select above or enter manually" required>
+                    <div class="form-text">You can enter a title ID directly for a title that is not in the library.</div>
+                </div>
+                <div class="col-md-5"><label class="form-label" for="cheatBuildId">Build ID</label><input id="cheatBuildId" class="form-control" maxlength="64" pattern="[0-9A-Fa-f]{16,64}" required></div>
+                <div class="col-md-5"><label class="form-label" for="cheatFile">Cheat file</label><input id="cheatFile" class="form-control" type="file" accept=".txt,text/plain"><div class="form-text">Upload a file or paste the content.</div></div>
+                <div class="col-md-5"><label class="form-label" for="cheatContent">Cheat content</label><textarea id="cheatContent" class="form-control font-monospace" rows="5" placeholder="[Infinite Example]\n04000000 00000000 00000001"></textarea></div>
+                <div class="col-12"><label class="form-label" for="cheatNote">Note <span class="text-muted">(optional)</span></label><input id="cheatNote" class="form-control" maxlength="1000" placeholder="For example: works with update 1.2.0"></div>
+                <div class="col-md-2 d-flex align-items-end"><button class="btn btn-primary w-100" type="submit">Upload</button></div>
+            </form>
+        </div>
+    </div>
+
+    <div class="card bg-dark border-secondary mb-3">
+        <div class="card-body">
+            <h5 class="card-title">Sync source</h5>
+            <p class="small text-muted">Use a ZIP source containing files named <code>&lt;title-id&gt;/&lt;build-id&gt;.txt</code>. Existing matching files are replaced.</p>
+            <div class="input-group"><input id="cheatSyncUrl" class="form-control" type="url" placeholder="https://example.invalid/cheats.zip"><button id="saveCheatSyncSource" class="btn btn-outline-secondary" type="button">Save</button><button id="syncCheats" class="btn btn-primary" type="button">Sync now</button></div>
+        </div>
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label" for="cheatListSearch">Search available cheats</label>
+        <input id="cheatListSearch" class="form-control" type="search" placeholder="Search by title, title ID, build ID, or note" autocomplete="off">
+    </div>
+    <div id="cheatStatus" class="small mb-2" role="status"></div>
+    <div class="table-responsive"><table class="table table-dark table-hover align-middle"><thead><tr><th>Title</th><th>Title ID</th><th>Build ID</th><th>Note</th><th>Size</th><th></th></tr></thead><tbody id="cheatRows"></tbody></table></div>
+</div>
+
+<script>
+function cheatStatus(message, danger) { $('#cheatStatus').toggleClass('text-danger', !!danger).toggleClass('text-success', !danger).text(message || ''); }
+function cheatBytes(bytes) { return bytes < 1024 ? `${bytes} B` : `${(bytes / 1024).toFixed(1)} KB`; }
+function escapeCheatHtml(text) { return $('<div>').text(text || '').html(); }
+let cheatTitleSearchTimer = null;
+let availableCheats = [];
+function searchCheatTitles() {
+    const query = String($('#cheatTitleSearch').val() || '').trim();
+    const results = $('#cheatTitleSearchResults').empty();
+    if (cheatTitleSearchTimer) clearTimeout(cheatTitleSearchTimer);
+    if (!query) return;
+    cheatTitleSearchTimer = setTimeout(function() {
+        $.getJSON(`/api/titledb/search?q=${encodeURIComponent(query)}&limit=25`, function(result) {
+            const titles = (result.results || []).filter(item => item && item.in_library === true);
+            titles.forEach(item => {
+                const titleId = String(item.id || '').toUpperCase();
+                const button = $(`<button type="button" class="list-group-item list-group-item-action"><div class="fw-semibold">${escapeCheatHtml(item.name || 'Unrecognized')}</div><div class="small text-muted">${escapeCheatHtml(titleId)}</div></button>`);
+                button.on('click', function() {
+                    $('#cheatTitleId').val(titleId);
+                    $('#cheatTitleSearch').val(item.name || titleId);
+                    results.empty();
+                });
+                results.append(button);
+            });
+            if (!titles.length) results.append('<div class="small text-muted mt-1">No matching library titles. Enter a title ID manually below.</div>');
+        });
+    }, 250);
+}
+function renderCheats() {
+    const query = String($('#cheatListSearch').val() || '').trim().toLowerCase();
+    const cheats = availableCheats.filter(item => !query || [item.title_name, item.title_id, item.build_id, item.note]
+        .some(value => String(value || '').toLowerCase().includes(query)));
+    const rows = $('#cheatRows').empty();
+    cheats.forEach(item => {
+            const row = $('<tr>');
+            row.append($('<td>').text(item.title_name || item.title_id));
+            row.append($('<td>').text(item.title_id)); row.append($('<td>').text(item.build_id)); row.append($('<td>').text(item.note || '—')); row.append($('<td>').text(cheatBytes(item.size || 0)));
+            const download = $('<a class="btn btn-sm btn-outline-secondary me-1">Download</a>')
+                .attr('href', `/api/cheats/${encodeURIComponent(item.title_id)}/${encodeURIComponent(item.build_id)}`)
+                .attr('download', `${item.build_id}.txt`);
+            const remove = $('<button class="btn btn-sm btn-outline-danger">Delete</button>').on('click', function() {
+                $.ajax({url: `/api/cheats/${encodeURIComponent(item.title_id)}/${encodeURIComponent(item.build_id)}`, type: 'DELETE'}).done(loadCheats);
+            });
+            row.append($('<td>').append(download, remove)); rows.append(row);
+    });
+    if (!availableCheats.length) rows.append('<tr><td colspan="6" class="text-muted">No cheats are available for titles in this library.</td></tr>');
+    else if (!cheats.length) rows.append('<tr><td colspan="6" class="text-muted">No available cheats match your search.</td></tr>');
+}
+function loadCheats() {
+    $.getJSON('/api/cheats', function(result) {
+        availableCheats = result.cheats || [];
+        renderCheats();
+    });
+}
+$('#cheatUploadForm').on('submit', function(event) {
+    event.preventDefault(); const file = $('#cheatFile').prop('files')[0]; const content = String($('#cheatContent').val() || '');
+    if (!file && !content.trim()) { cheatStatus('Upload a file or paste cheat content.', true); return; }
+    const form = new FormData(); form.append('title_id', $('#cheatTitleId').val()); form.append('build_id', $('#cheatBuildId').val()); form.append('note', $('#cheatNote').val()); if (file) form.append('file', file); if (content.trim()) form.append('content', content);
+    $.ajax({url:'/api/cheats', type:'POST', data:form, processData:false, contentType:false}).done(function(result) { cheatStatus('Cheat uploaded.'); $('#cheatUploadForm')[0].reset(); loadCheats(); }).fail(function(xhr) { cheatStatus(xhr.responseJSON?.error || 'Upload failed.', true); });
+});
+$('#cheatTitleSearch').on('input', searchCheatTitles);
+$('#cheatListSearch').on('input', renderCheats);
+function saveCheatSettings(payload, message) { $.ajax({url:'/api/settings/cheats', type:'POST', contentType:'application/json', data:JSON.stringify(payload)}).done(function() { cheatStatus(message); }).fail(function() { cheatStatus('Could not save cheat settings.', true); }); }
+$('#saveCheatSection').on('click', function() { saveCheatSettings({enabled: $('#cheatSectionEnabled').prop('checked')}, 'CyberFoil setting saved.'); });
+$('#saveCheatSyncSource').on('click', function() { saveCheatSettings({sync_url: $('#cheatSyncUrl').val()}, 'Sync source saved.'); });
+$('#syncCheats').on('click', function() { cheatStatus('Syncing…'); $.ajax({url:'/api/cheats/sync', type:'POST', contentType:'application/json', data:JSON.stringify({url: $('#cheatSyncUrl').val()})}).done(function(result) { cheatStatus(`Imported ${result.imported}; ignored ${result.ignored || 0}; skipped ${result.skipped || 0}.`); loadCheats(); }).fail(function(xhr) { cheatStatus(xhr.responseJSON?.error || 'Sync failed.', true); }); });
+$(function() { $.getJSON('/api/settings', function(result) { const settings = result.cheats || {}; $('#cheatSyncUrl').val(settings.sync_url || ''); $('#cheatSectionEnabled').prop('checked', settings.enabled !== false); }); loadCheats(); });
+</script>
+{% endblock %}

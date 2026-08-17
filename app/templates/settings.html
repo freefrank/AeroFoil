@@ -546,7 +546,7 @@
                                     <select id="selectLanguage" class="form-select" aria-label="{{ _('Select library language') }}">
                                     </select>
                                 </div>
-                                <div id="selectRegionLanguageHelp" class="form-text">{{ _('Region and Language used to get games informations.') }}</div>
+                                <div id="selectRegionLanguageHelp" class="form-text">{{ _('Region and language used to retrieve game information.') }}</div>
                             </div>
                         </div>
 
@@ -711,6 +711,23 @@
                                     {{ _('Prioritize throughput by skipping per-chunk transfer tracking. Activity live byte counters and exact transfer byte accounting may be less precise.') }}
                                 </div>
                             </div>
+                            <div class="form-check">
+                                <input type="checkbox" class="form-check-input" id="cyberfoilVirtualCompressedStreamCheck"
+                                    aria-describedby="cyberfoilVirtualCompressedStreamCheckHelp">
+                                <label class="form-check-label" for="cyberfoilVirtualCompressedStreamCheck">CyberFoil virtual compressed streaming</label>
+                                <div id="cyberfoilVirtualCompressedStreamCheckHelp" class="form-text">
+                                    Serve NSZ, NCZ, and XCZ files to CyberFoil as virtual uncompressed NSP, NCA, and XCI streams. Disable to send the original compressed files instead.
+                                </div>
+                            </div>
+                            <div class="form-check">
+                                <input type="checkbox" class="form-check-input" id="blockUnratedCheck"
+                                    aria-describedby="blockUnratedCheckHelp" onChange="submitContentFilterSettings()">
+                                <label class="form-check-label" for="blockUnratedCheck">Hide unrated titles from age-capped users</label>
+                                <div id="blockUnratedCheckHelp" class="form-text">
+                                    When a user has a max rating set, also hide titles with no known ESRB rating
+                                    (homebrew, unidentified files, or titles missing from TitleDB). Recommended for child accounts.
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -815,9 +832,24 @@
                         </div>
 
                         <div class="mb-3">
+                            <div class="form-check form-switch mb-2">
+                                <input type="checkbox" class="form-check-input" id="motdEnabledCheck">
+                                <label class="form-check-label" for="motdEnabledCheck">{{ _('Enable MOTD') }}</label>
+                            </div>
                             <label for="motdTextArea" class="form-label">{{ _('Message of the day:') }}</label>
                             <textarea class="form-control" id="motdTextArea" rows="3"></textarea>
-                            <div id="motdTextAreaHelp" class="form-text">{{ _('Message presented when opening Tinfoil after successfully loading your shop.') }}</div>
+                            <div id="motdTextAreaHelp" class="form-text">
+                                {{ _('Message presented when opening Tinfoil after successfully loading your shop.') }}
+                                {{ _('Supported variables:') }}
+                                <code>{username}</code>, <code>{user_id}</code>, <code>{is_admin}</code>, <code>{shop_access}</code>, <code>{backup_access}</code>, <code>{frozen}</code>, <code>{client_uid}</code>, <code>{remote_addr}</code>, <code>{user_agent}</code>, <code>{host}</code>, <code>{path}</code>, <code>{date}</code>, <code>{time}</code>, <code>{datetime}</code>, <code>{timestamp}</code>.
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="motdApiUrlInput" class="form-label">{{ _('Custom MOTD API URL (optional):') }}</label>
+                            <input type="text" class="form-control" id="motdApiUrlInput" placeholder="https://example.com/motd.txt">
+                            <div class="form-text">
+                                {{ _('When set, AeroFoil fetches this URL and exposes response variables for MOTD templates: <code>{api_text}</code> for plain text; for JSON object responses it also exposes <code>{api_&lt;key&gt;}</code> (for example JSON <code>{"reason":"..."}</code> gives <code>{api_reason}</code>, and <code>{"status":"Online"}</code> gives <code>{api_status}</code>).')|safe }}
+                            </div>
                         </div>
 
                         <div>
@@ -877,11 +909,19 @@
                             </div>
                         </div>
                         <div class="row g-3 mb-3">
-                            <div class="col-md-6">
+                            <div class="col-md-4">
                                 <label for="downloadsRequiredTermsInput" class="form-label">{{ _('Required terms (comma separated)') }}</label>
                                 <input type="text" class="form-control" id="downloadsRequiredTermsInput">
                             </div>
-                            <div class="col-md-6">
+                            <div class="col-md-4">
+                                <label for="downloadsRequiredTermsMatchInput" class="form-label">{{ _('Required-term match') }}</label>
+                                <select class="form-select" id="downloadsRequiredTermsMatchInput">
+                                    <option value="all">{{ _('All terms') }}</option>
+                                    <option value="any">{{ _('Any term') }}</option>
+                                </select>
+                                <div class="form-text">{{ _('All terms preserves the existing behavior.') }}</div>
+                            </div>
+                            <div class="col-md-4">
                                 <label for="downloadsBlacklistTermsInput" class="form-label">{{ _('Blacklist terms (comma separated)') }}</label>
                                 <input type="text" class="form-control" id="downloadsBlacklistTermsInput">
                             </div>
@@ -952,6 +992,7 @@
                                     <option value="qbittorrent">qBittorrent</option>
                                     <option value="transmission">Transmission</option>
                                     <option value="deluge">Deluge</option>
+                                    <option value="rtorrent">rTorrent</option>
                                 </select>
                             </div>
                             <div class="col-md-8">
@@ -960,22 +1001,34 @@
                             </div>
                         </div>
                         <div class="row g-3 mb-3">
-                            <div class="col-md-6">
-                                <label for="torrentClientUserInput" class="form-label">{{ _('Username') }}</label>
+                            <div class="col-md-4" id="torrentClientUserGroup">
+                                <label for="torrentClientUserInput" class="form-label" id="torrentClientUserLabel">{{ _('Username') }}</label>
                                 <input type="text" class="form-control" id="torrentClientUserInput">
                             </div>
-                            <div class="col-md-6">
-                                <label for="torrentClientPasswordInput" class="form-label">{{ _('Password') }}</label>
+                            <div class="col-md-4" id="torrentClientPasswordGroup">
+                                <label for="torrentClientPasswordInput" class="form-label" id="torrentClientPasswordLabel">{{ _('Password') }}</label>
                                 <input type="password" class="form-control" id="torrentClientPasswordInput">
+                            </div>
+                            <div class="col-md-4 d-none" id="torrentClientApiKeyGroup">
+                                <label for="torrentClientApiKeyInput" class="form-label" id="torrentClientApiKeyLabel">{{ _('API Key') }}</label>
+                                <input type="password" class="form-control" id="torrentClientApiKeyInput">
                             </div>
                         </div>
                         <div class="mb-3">
                             <label for="torrentClientPathInput" class="form-label">{{ _('Download path (optional)') }}</label>
-                            <input type="text" class="form-control" id="torrentClientPathInput" placeholder="D:\\Downloads\\Switch">
+                            <input type="text" class="form-control" id="torrentClientPathInput">
+                        </div>
+                        <div class="mb-3">
+                            <div class="form-text" id="torrentClientRequirementsHint"></div>
                         </div>
                         <div class="mb-3">
                             <label for="torrentClientMinSeedersInput" class="form-label">{{ _('Minimum seeders') }}</label>
                             <input type="number" min="0" class="form-control" id="torrentClientMinSeedersInput">
+                        </div>
+                        <div class="form-check form-switch mb-3">
+                            <input class="form-check-input" type="checkbox" id="torrentClientRemoveOnFinishCheck">
+                            <label class="form-check-label" for="torrentClientRemoveOnFinishCheck">Remove finished torrents from client</label>
+                            <div class="form-text">Disable this to keep finished torrents in the client for seeding.</div>
                         </div>
                         <div class="d-flex align-items-center gap-3">
                             <button type="button" id="testTorrentClientBtn" class="btn btn-outline-secondary"
@@ -998,6 +1051,16 @@
                             </div>
                         </div>
                         <div class="row g-3 mb-3">
+                            <div class="col-md-6" id="usenetClientUserGroup">
+                                <label for="usenetClientUserInput" class="form-label">Username</label>
+                                <input type="text" class="form-control" id="usenetClientUserInput">
+                            </div>
+                            <div class="col-md-6" id="usenetClientPasswordGroup">
+                                <label for="usenetClientPasswordInput" class="form-label">Password</label>
+                                <input type="password" class="form-control" id="usenetClientPasswordInput">
+                            </div>
+                        </div>
+                        <div class="row g-3 mb-3">
                             <div class="col-md-6">
                                 <label for="usenetClientApiKeyInput" class="form-label">{{ _('API Key') }}</label>
                                 <input type="password" class="form-control" id="usenetClientApiKeyInput">
@@ -1006,6 +1069,9 @@
                                 <label for="usenetClientMinAgeInput" class="form-label">{{ _('Minimum age (minutes)') }}</label>
                                 <input type="number" min="0" class="form-control" id="usenetClientMinAgeInput">
                             </div>
+                        </div>
+                        <div class="mb-3">
+                            <div class="form-text" id="usenetClientRequirementsHint"></div>
                         </div>
                         <div class="d-flex align-items-center gap-3">
                             <button type="button" id="testUsenetClientBtn" class="btn btn-outline-secondary"
@@ -1038,6 +1104,7 @@
 
 
     // allUsers = [];
+    let downloadClientCapabilities = [];
 
     function getInputVal(inputId) {
         return $("#" + inputId).val();
@@ -1079,7 +1146,7 @@
             },
             update: {
                 folder: ".",
-                filename: "{title} [{title_id}] [UPDATE][v{version}].{ext}"
+                filename: "{title} [{app_id}] [UPDATE][v{version}].{ext}"
             },
             dlc: {
                 folder: ".",
@@ -1097,7 +1164,7 @@
             },
             update: {
                 folder: "{title} [{title_id}]/Updates",
-                filename: "{title} [{title_id}] [UPDATE][v{version}].{ext}"
+                filename: "{title} [{app_id}] [UPDATE][v{version}].{ext}"
             },
             dlc: {
                 folder: "{title} [{title_id}]/DLC",
@@ -1820,6 +1887,7 @@
             encrypt: getCheckboxStatus("encryptShopCheck"),
             tinfoil_only_mode: getCheckboxStatus("tinfoilOnlyModeCheck"),
             fast_transfer_mode: getCheckboxStatus("fastTransferModeCheck"),
+            cyberfoil_virtual_compressed_stream: getCheckboxStatus("cyberfoilVirtualCompressedStreamCheck"),
             auth_ip_lockout_enabled: getCheckboxStatus("authIpLockoutEnabledCheck"),
             auth_ip_lockout_threshold: threshold,
             auth_ip_lockout_window_seconds: windowSeconds,
@@ -1828,7 +1896,9 @@
             auth_blocked_country_codes: (blockedCountryCodesState || []).slice(),
             auth_allowed_country_codes: (allowedCountryCodesState || []).slice(),
             public_key: getInputVal("shopPublicKeyInput"),
+            motd_enabled: getCheckboxStatus("motdEnabledCheck"),
             motd: $('#motdTextArea').val(),
+            motd_api_url: getInputVal("motdApiUrlInput"),
         }
 
         $.ajax({
@@ -1852,6 +1922,22 @@
                 const result = xhr && xhr.responseJSON ? xhr.responseJSON : {};
                 renderSettingsErrors(result['errors']);
                 $('#submitShopSettingsBtn').prop('disabled', false);
+            }
+        });
+    }
+
+    function submitContentFilterSettings() {
+        const data = {
+            block_unrated: getCheckboxStatus("blockUnratedCheck"),
+        };
+        $.ajax({
+            url: "/api/settings/content-filter",
+            type: 'POST',
+            data: JSON.stringify(data),
+            contentType: "application/json",
+            error: function (xhr) {
+                const result = xhr && xhr.responseJSON ? xhr.responseJSON : {};
+                renderSettingsErrors(result['errors']);
             }
         });
     }
@@ -2331,13 +2417,132 @@
     function updateTorrentClientFieldState() {
         const clientType = getInputVal("torrentClientTypeSelect");
         const usernameInput = $("#torrentClientUserInput");
-        const isDeluge = clientType === "deluge";
-        usernameInput.prop("disabled", isDeluge);
-        if (isDeluge) {
-            usernameInput.attr("placeholder", {{ _('Not required for Deluge')|tojson }});
-        } else {
-            usernameInput.attr("placeholder", "");
+        const passwordInput = $("#torrentClientPasswordInput");
+        const apiKeyInput = $("#torrentClientApiKeyInput");
+        const userGroup = $("#torrentClientUserGroup");
+        const passwordGroup = $("#torrentClientPasswordGroup");
+        const apiKeyGroup = $("#torrentClientApiKeyGroup");
+        const userLabel = $("#torrentClientUserLabel");
+        const passwordLabel = $("#torrentClientPasswordLabel");
+        const pathInput = $("#torrentClientPathInput");
+        const pathHint = $("#torrentClientPathInput").closest('.mb-3').find('.form-text');
+        const caps = downloadClientCapabilities.find(item => item.protocol === 'torrent' && item.type === clientType) || {};
+
+        const profile = {
+            showUsername: true,
+            showPassword: true,
+            showApiKey: false,
+            usernameLabel: {{ _('Username')|tojson }},
+            passwordLabel: {{ _('Password')|tojson }},
+            usernamePlaceholder: "",
+            passwordPlaceholder: ""
+        };
+        if (clientType === "deluge") {
+            profile.showUsername = false;
+        } else if (clientType === "aria2") {
+            profile.showUsername = false;
+            profile.passwordLabel = {{ _('RPC Secret')|tojson }};
+            profile.passwordPlaceholder = {{ _('Optional')|tojson }};
+        } else if (clientType === "blackhole") {
+            profile.showUsername = false;
+            profile.showPassword = false;
+        } else if (clientType === "tribler") {
+            profile.showUsername = false;
+            profile.passwordLabel = {{ _('API Key')|tojson }};
+        } else if (clientType === "freeboxdownload") {
+            profile.usernameLabel = {{ _('App ID')|tojson }};
+            profile.passwordLabel = {{ _('App Token')|tojson }};
         }
+
+        userGroup.toggleClass("d-none", !profile.showUsername);
+        passwordGroup.toggleClass("d-none", !profile.showPassword);
+        apiKeyGroup.toggleClass("d-none", !profile.showApiKey);
+
+        userLabel.text(profile.usernameLabel);
+        passwordLabel.text(profile.passwordLabel);
+        usernameInput.attr("placeholder", profile.usernamePlaceholder);
+        passwordInput.attr("placeholder", profile.passwordPlaceholder);
+
+        const supportsDownloadPath = !!caps.supports_download_path;
+        pathInput.prop("disabled", !supportsDownloadPath);
+        if (!supportsDownloadPath) {
+            pathInput.attr("placeholder", "Not supported for this client");
+            pathHint.text("This client does not support overriding download path.");
+        } else {
+            pathInput.attr("placeholder", "");
+            pathHint.text("");
+        }
+        const required = [];
+        if (profile.showUsername) required.push(profile.usernameLabel);
+        if (profile.showPassword) required.push(profile.passwordLabel);
+        if (profile.showApiKey) required.push("API Key");
+        if (clientType === "blackhole") required.push("Client URL (watch folder path)", "Download path");
+        $("#torrentClientRequirementsHint").text(
+            required.length ? `Required fields for ${clientType}: ${required.join(", ")}.` : `Required fields for ${clientType}: Client URL.`
+        );
+    }
+
+    function updateUsenetClientFieldState() {
+        const clientType = getInputVal("usenetClientTypeSelect");
+        const caps = downloadClientCapabilities.find(item => item.protocol === 'usenet' && item.type === clientType) || {};
+        const userGroup = $('#usenetClientUserGroup');
+        const passwordGroup = $('#usenetClientPasswordGroup');
+        const apiKeyGroup = $('#usenetClientApiKeyInput').closest('.col-md-6');
+        if (clientType === 'nzbget' || clientType === 'downloadstation') {
+            userGroup.removeClass('d-none');
+            passwordGroup.removeClass('d-none');
+            apiKeyGroup.addClass('d-none');
+        } else if (clientType === 'pneumatic') {
+            userGroup.addClass('d-none');
+            passwordGroup.addClass('d-none');
+            apiKeyGroup.addClass('d-none');
+        } else {
+            userGroup.addClass('d-none');
+            passwordGroup.addClass('d-none');
+            apiKeyGroup.removeClass('d-none');
+        }
+        if (caps && caps.type) {
+            $('#testUsenetClientBtn').attr('title', `${caps.protocol}/${caps.type}`);
+        }
+        let requiredHint = `Required fields for ${clientType}: Client URL`;
+        if (clientType === 'nzbget' || clientType === 'downloadstation') {
+            requiredHint += ", Username, Password";
+        } else if (clientType === 'nzbvortex' || clientType === 'sabnzbd') {
+            requiredHint += ", API Key";
+        } else if (clientType === 'pneumatic') {
+            requiredHint += " (watch folder path)";
+        }
+        $('#usenetClientRequirementsHint').text(requiredHint + '.');
+    }
+
+    function populateDownloadClientTypeSelects(downloadsSettings) {
+        const torrentSelect = $('#torrentClientTypeSelect');
+        const usenetSelect = $('#usenetClientTypeSelect');
+        torrentSelect.empty();
+        usenetSelect.empty();
+
+        const torrentClients = downloadClientCapabilities
+            .filter(item => item.protocol === 'torrent')
+            .sort((a, b) => String(a.type || '').localeCompare(String(b.type || '')));
+        const usenetClients = downloadClientCapabilities
+            .filter(item => item.protocol === 'usenet')
+            .sort((a, b) => String(a.type || '').localeCompare(String(b.type || '')));
+
+        torrentClients.forEach(item => {
+            const label = item.type === 'qbittorrent' ? 'qBittorrent' : (item.type === 'rtorrent' ? 'rTorrent' : item.type);
+            torrentSelect.append(`<option value="${item.type}">${label}</option>`);
+        });
+        usenetClients.forEach(item => {
+            const label = item.type === 'sabnzbd' ? 'SABnzbd' : item.type;
+            usenetSelect.append(`<option value="${item.type}">${label}</option>`);
+        });
+
+        const torrentSettings = (downloadsSettings || {}).torrent_client || {};
+        const usenetSettings = (downloadsSettings || {}).usenet_client || {};
+        const selectedTorrentType = torrentSettings.type || (torrentClients[0] && torrentClients[0].type) || 'qbittorrent';
+        const selectedUsenetType = usenetSettings.type || (usenetClients[0] && usenetClients[0].type) || 'sabnzbd';
+        setInputVal("torrentClientTypeSelect", selectedTorrentType);
+        setInputVal("usenetClientTypeSelect", selectedUsenetType);
     }
 
     function copyPublicKey() {
@@ -2391,6 +2596,7 @@
             interval_minutes: parseInt(getInputVal("downloadsIntervalInput"), 10),
             category: getInputVal("downloadsCategoryInput"),
             required_terms: splitTerms(getInputVal("downloadsRequiredTermsInput")),
+            required_terms_match: getInputVal("downloadsRequiredTermsMatchInput"),
             blacklist_terms: splitTerms(getInputVal("downloadsBlacklistTermsInput")),
             search_prefix: getInputVal("downloadsSearchPrefixInput"),
             search_suffix: getInputVal("downloadsSearchSuffixInput"),
@@ -2408,12 +2614,16 @@
                 url: getInputVal("torrentClientUrlInput"),
                 username: getInputVal("torrentClientUserInput"),
                 password: getInputVal("torrentClientPasswordInput"),
+                api_key: getInputVal("torrentClientApiKeyInput"),
                 download_path: getInputVal("torrentClientPathInput"),
-                min_seeders: parseInt(getInputVal("torrentClientMinSeedersInput"), 10)
+                min_seeders: parseInt(getInputVal("torrentClientMinSeedersInput"), 10),
+                remove_completed_torrents_on_finish: getCheckboxStatus("torrentClientRemoveOnFinishCheck")
             },
             usenet_client: {
                 type: getInputVal("usenetClientTypeSelect"),
                 url: getInputVal("usenetClientUrlInput"),
+                username: getInputVal("usenetClientUserInput"),
+                password: getInputVal("usenetClientPasswordInput"),
                 api_key: getInputVal("usenetClientApiKeyInput"),
                 min_age_minutes: parseInt(getInputVal("usenetClientMinAgeInput"), 10)
             }
@@ -2545,6 +2755,7 @@
             url: getInputVal("torrentClientUrlInput"),
             username: getInputVal("torrentClientUserInput"),
             password: getInputVal("torrentClientPasswordInput"),
+            api_key: getInputVal("torrentClientApiKeyInput"),
             download_path: getInputVal("torrentClientPathInput")
         };
         $.ajax({
@@ -2555,9 +2766,20 @@
             success: function (result) {
                 const ok = result['success'];
                 const warning = result['warning'];
+                const diagnostics = result['diagnostics'] || {};
+                const diagLabel = diagnostics.protocol && diagnostics.type
+                    ? ` [${diagnostics.protocol}/${diagnostics.type}]`
+                    : '';
                 let text = result['message'] || (ok ? {{ _('Torrent client OK')|tojson }} : {{ _('Torrent client test failed')|tojson }});
+                text = `${text}${diagLabel}`;
+                const detail = String(result['detail'] || '').trim();
                 if (warning) {
                     text = `${text} (${warning})`;
+                }
+                if (!ok && detail) {
+                    text = `${text} ${detail}`;
+                } else if (!ok && Array.isArray(diagnostics.missing) && diagnostics.missing.length) {
+                    text = `${text} ${ {{ _('Missing: {items}')|tojson }}.replace('{items}', diagnostics.missing.join(', ')) }`;
                 }
                 $('#torrentClientTestResult')
                     .text(text)
@@ -2576,6 +2798,8 @@
         data = {
             type: getInputVal("usenetClientTypeSelect"),
             url: getInputVal("usenetClientUrlInput"),
+            username: getInputVal("usenetClientUserInput"),
+            password: getInputVal("usenetClientPasswordInput"),
             api_key: getInputVal("usenetClientApiKeyInput")
         };
         $.ajax({
@@ -2586,9 +2810,20 @@
             success: function (result) {
                 const ok = result['success'];
                 const warning = result['warning'];
+                const diagnostics = result['diagnostics'] || {};
+                const diagLabel = diagnostics.protocol && diagnostics.type
+                    ? ` [${diagnostics.protocol}/${diagnostics.type}]`
+                    : '';
                 let text = result['message'] || (ok ? {{ _('Usenet client OK')|tojson }} : {{ _('Usenet client test failed')|tojson }});
+                text = `${text}${diagLabel}`;
+                const detail = String(result['detail'] || '').trim();
                 if (warning) {
                     text = `${text} (${warning})`;
+                }
+                if (!ok && detail) {
+                    text = `${text} ${detail}`;
+                } else if (!ok && Array.isArray(diagnostics.missing) && diagnostics.missing.length) {
+                    text = `${text} Missing: ${diagnostics.missing.join(', ')}`;
                 }
                 $('#usenetClientTestResult')
                     .text(text)
@@ -2677,6 +2912,7 @@
         
         fillLibraryTable();
         $("#torrentClientTypeSelect").on("change", updateTorrentClientFieldState);
+        $("#usenetClientTypeSelect").on("change", updateUsenetClientFieldState);
         $("#tinfoilOnlyModeCheck").on("change", syncTinfoilOnlyModeControls);
         $('#libraryTemplateBaseFolderInput, #libraryTemplateBaseFilenameInput, #libraryTemplateUpdateFolderInput, #libraryTemplateUpdateFilenameInput, #libraryTemplateDlcFolderInput, #libraryTemplateDlcFilenameInput, #libraryTemplateOtherFolderInput, #libraryTemplateOtherFilenameInput')
             .on('change', function () { submitLibrarySettings(); });
@@ -2731,6 +2967,7 @@
         });
 
         $.getJSON("/api/settings", function (result) {
+            downloadClientCapabilities = ((result['downloads'] || {})['client_capabilities'] || []);
             Object.keys(languages).forEach(function (key) {
                 $('#selectRegion').append(`<option value="${key}">${key}</option>`);
             });
@@ -2777,12 +3014,17 @@
             shopSettings = result['shop'];
             setInputVal("shopHostInput", shopSettings['host']);
             setInputVal("shopHauthInput", shopSettings['hauth_value'] || '');
+            $("#motdEnabledCheck").prop("checked", shopSettings['motd_enabled'] !== false);
             setInputVal("motdTextArea", shopSettings['motd']);
+            setInputVal("motdApiUrlInput", shopSettings['motd_api_url'] || '');
             $("#publicShopCheck").prop("checked", shopSettings['public']);
             $("#externalTinfoilOnlyCheck").prop("checked", !!shopSettings['external_tinfoil_only']);
             $("#encryptShopCheck").prop("checked", shopSettings['encrypt']);
             $("#tinfoilOnlyModeCheck").prop("checked", !!shopSettings['tinfoil_only_mode']);
             $("#fastTransferModeCheck").prop("checked", !!shopSettings['fast_transfer_mode']);
+            $("#cyberfoilVirtualCompressedStreamCheck").prop("checked", shopSettings['cyberfoil_virtual_compressed_stream'] !== false);
+            const contentFilterSettings = result['content_filter'] || {};
+            $("#blockUnratedCheck").prop("checked", contentFilterSettings['block_unrated'] !== false);
             syncTinfoilOnlyModeControls();
             setInputVal("shopPublicKeyInput", shopSettings['public_key'] || '');
             securitySettings = result['security'] || {};
@@ -2796,8 +3038,10 @@
             syncShopSecurityNotices(shopSettings);
             // Downloads settings
             downloadsSettings = result['downloads'] || {};
+            populateDownloadClientTypeSelects(downloadsSettings);
             setInputVal("downloadsIntervalInput", downloadsSettings['interval_minutes']);
             setInputVal("downloadsRequiredTermsInput", (downloadsSettings['required_terms'] || []).join(', '));
+            setInputVal("downloadsRequiredTermsMatchInput", downloadsSettings['required_terms_match'] || 'all');
             setInputVal("downloadsBlacklistTermsInput", (downloadsSettings['blacklist_terms'] || []).join(', '));
             setInputVal("downloadsSearchPrefixInput", downloadsSettings['search_prefix'] || '');
             setInputVal("downloadsSearchSuffixInput", downloadsSettings['search_suffix'] || '');
@@ -2817,18 +3061,21 @@
             setInputVal("prowlarrSearchLimitInput", prowlarrSettings['search_limit'] || 100);
 
             torrentSettings = downloadsSettings['torrent_client'] || {};
-            setInputVal("torrentClientTypeSelect", torrentSettings['type'] || 'qbittorrent');
             setInputVal("torrentClientUrlInput", torrentSettings['url'] || '');
             setInputVal("torrentClientUserInput", torrentSettings['username'] || '');
             setInputVal("torrentClientPasswordInput", torrentSettings['password'] || '');
+            setInputVal("torrentClientApiKeyInput", torrentSettings['api_key'] || '');
             setInputVal("torrentClientPathInput", torrentSettings['download_path'] || '');
             setInputVal("torrentClientMinSeedersInput", torrentSettings['min_seeders'] ?? 2);
+            $("#torrentClientRemoveOnFinishCheck").prop("checked", torrentSettings['remove_completed_torrents_on_finish'] !== false);
             usenetSettings = downloadsSettings['usenet_client'] || {};
-            setInputVal("usenetClientTypeSelect", usenetSettings['type'] || 'sabnzbd');
             setInputVal("usenetClientUrlInput", usenetSettings['url'] || '');
+            setInputVal("usenetClientUserInput", usenetSettings['username'] || '');
+            setInputVal("usenetClientPasswordInput", usenetSettings['password'] || '');
             setInputVal("usenetClientApiKeyInput", usenetSettings['api_key'] || '');
             setInputVal("usenetClientMinAgeInput", usenetSettings['min_age_minutes'] ?? 0);
             updateTorrentClientFieldState();
+            updateUsenetClientFieldState();
         });
 
     });

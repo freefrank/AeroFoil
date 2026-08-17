@@ -70,32 +70,44 @@ def debounce(wait):
         }
 
         def runner():
-            while True:
+            try:
+                while True:
+                    with condition:
+                        while state["deadline"] is None and not state["stop"]:
+                            condition.wait()
+                        if state["stop"]:
+                            return
+
+                        while True:
+                            remaining = state["deadline"] - time.time()
+                            if remaining <= 0:
+                                break
+                            condition.wait(timeout=remaining)
+                            if state["deadline"] is None or state["stop"]:
+                                break
+
+                        if state["stop"]:
+                            return
+
+                        if state["deadline"] is None:
+                            continue
+
+                        args = state["args"]
+                        kwargs = state["kwargs"]
+                        state["deadline"] = None
+
+                    try:
+                        fn(*args, **kwargs)
+                    except Exception:
+                        logging.getLogger(__name__).exception(
+                            "Debounced call to %s raised; debounce runner keeps waiting for new calls.",
+                            getattr(fn, "__name__", repr(fn)),
+                        )
+            finally:
+                # If this thread ever exits (stop or unexpected error), allow a
+                # future call to start a fresh runner instead of being dropped.
                 with condition:
-                    while state["deadline"] is None and not state["stop"]:
-                        condition.wait()
-                    if state["stop"]:
-                        return
-
-                    while True:
-                        remaining = state["deadline"] - time.time()
-                        if remaining <= 0:
-                            break
-                        condition.wait(timeout=remaining)
-                        if state["deadline"] is None or state["stop"]:
-                            break
-
-                    if state["stop"]:
-                        return
-
-                    if state["deadline"] is None:
-                        continue
-
-                    args = state["args"]
-                    kwargs = state["kwargs"]
-                    state["deadline"] = None
-
-                fn(*args, **kwargs)
+                    state["running"] = False
 
         @wraps(fn)
         def debounced(*args, **kwargs):
@@ -135,6 +147,10 @@ _SUPPORTED_EXTENSION_SUFFIXES = tuple(
 
 def get_supported_content_extension(path):
     name = os.path.basename(str(path or ""))
+    # Ignore hidden files early
+    # Mac AppleDouble files (._) have matching extensions
+    if name.startswith("."):
+        return None
     lowered = name.lower()
     if not lowered:
         return None

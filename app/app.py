@@ -13,6 +13,7 @@ from werkzeug.utils import secure_filename
 from werkzeug.security import check_password_hash
 from werkzeug.exceptions import RequestEntityTooLarge
 from sqlalchemy import func, and_, or_, case, literal
+from sqlalchemy import inspect
 from app.scheduler import init_scheduler
 from functools import wraps
 from app.file_watcher import Watcher
@@ -25,7 +26,7 @@ from datetime import timedelta, datetime
 flask.cli.show_server_banner = lambda *args: None
 from app.constants import *
 from app.settings import *
-from app.downloads import ProwlarrClient, filter_results, test_download_client, run_downloads_job, manual_search_update, queue_download_url, search_update_options, check_completed_downloads, get_downloads_state, get_active_downloads, get_download_ui_visibility, filter_download_search_results, sort_download_search_results, remove_pending_download
+from app.downloads import ProwlarrClient, filter_results, test_download_client, get_supported_download_clients, get_download_client_capabilities, get_download_client_diagnostics, run_downloads_job, manual_search_update, queue_download_url, search_update_options, check_completed_downloads, get_downloads_state, get_active_downloads, get_download_ui_visibility, filter_download_search_results, sort_download_search_results, remove_pending_download, remove_duplicate_download, dismiss_duplicate_download
 from app.library import organize_library, delete_older_updates, delete_duplicates, delete_library_content, delete_orphaned_addons
 from app.db import *
 from app.shop import *
@@ -36,6 +37,7 @@ from app.utils import *
 from app.library import *
 from app.library import _get_nsz_runner, _ensure_unique_path
 from app import titledb
+from app import cheats
 from app.title_requests import create_title_request, list_requests
 import requests
 import re
@@ -49,6 +51,9 @@ import gc
 import ctypes
 import zipfile
 import tempfile
+from urllib.parse import quote
+
+from app import compressed_stream
 
 from app.db import add_access_event, get_access_events
 
@@ -493,6 +498,9 @@ titledb_update_lock = threading.Lock()
 conversion_jobs = {}
 conversion_jobs_lock = threading.Lock()
 conversion_job_limit = 50
+upload_jobs = {}
+upload_jobs_lock = threading.Lock()
+upload_job_limit = 200
 library_rebuild_status = {
     'in_progress': False,
     'started_at': 0,
@@ -518,11 +526,12 @@ shop_root_cache_lock = threading.Lock()
 shop_root_cache = {
     'state_token': None,
     'files': None,
+    'files_enriched': None,
     'encrypted': {},
 }
 _SHOP_ROOT_ENCRYPTED_CACHE_LIMIT = 8
 _SHOP_SECTIONS_ENCRYPTED_CACHE_LIMIT = 8
-_TITLES_METADATA_CACHE_VERSION = 3
+_TITLES_METADATA_CACHE_VERSION = 4
 titles_metadata_cache_lock = threading.Lock()
 titles_metadata_cache = {
     'version': _TITLES_METADATA_CACHE_VERSION,
@@ -531,6 +540,7 @@ titles_metadata_cache = {
     'title_name_map': {},
     'genre_title_ids': {},
     'unrecognized_title_ids': set(),
+    'rating_by_title_id': {},
 }
 titles_total_cache_lock = threading.Lock()
 titles_total_cache = {}
@@ -544,6 +554,150 @@ request_settings_sync_lock = threading.Lock()
 request_settings_last_sync_ts = 0.0
 missing_files_sweep_lock = threading.Lock()
 missing_files_last_run_ts = 0.0
+_title_request_users_table_exists_cache = None
+
+
+def _has_title_request_users_table():
+    global _title_request_users_table_exists_cache
+    if _title_request_users_table_exists_cache is not None:
+        return bool(_title_request_users_table_exists_cache)
+    try:
+        _title_request_users_table_exists_cache = bool(inspect(db.engine).has_table('title_request_users'))
+    except Exception:
+        _title_request_users_table_exists_cache = False
+    return bool(_title_request_users_table_exists_cache)
+
+
+def _resolve_motd_username():
+    try:
+        if current_user.is_authenticated:
+            return str(getattr(current_user, 'user', '') or '').strip()
+    except Exception:
+        pass
+    try:
+        auth = request.authorization
+        if auth and auth.username:
+            return str(auth.username).strip()
+    except Exception:
+        pass
+    return ''
+
+
+def _render_motd_template(raw_motd):
+    text = str(raw_motd or '')
+    if not text:
+        return ''
+    now_ts = time.time()
+    now_struct = time.localtime(now_ts)
+    username = _resolve_motd_username()
+    user_id = ''
+    is_admin = 'false'
+    shop_access = 'false'
+    backup_access = 'false'
+    frozen = 'false'
+    client_uid = ''
+    try:
+        if current_user.is_authenticated:
+            user_id = str(getattr(current_user, 'id', '') or '')
+            is_admin = 'true' if bool(getattr(current_user, 'is_admin', False)) else 'false'
+            shop_access = 'true' if bool(getattr(current_user, 'shop_access', False)) else 'false'
+            backup_access = 'true' if bool(getattr(current_user, 'backup_access', False)) else 'false'
+            frozen = 'true' if bool(getattr(current_user, 'frozen', False)) else 'false'
+            client_uid = str(getattr(current_user, 'client_uid', '') or '').strip()
+    except Exception:
+        pass
+    values = {
+        'username': username,
+        'user_id': user_id,
+        'is_admin': is_admin,
+        'shop_access': shop_access,
+        'backup_access': backup_access,
+        'frozen': frozen,
+        'client_uid': client_uid,
+        'remote_addr': _effective_remote_addr(),
+        'user_agent': str(request.user_agent.string or ''),
+        'host': str(request.host or ''),
+        'path': str(request.path or ''),
+        'date': time.strftime('%Y-%m-%d', now_struct),
+        'time': time.strftime('%H:%M:%S', now_struct),
+        'datetime': time.strftime('%Y-%m-%d %H:%M:%S', now_struct),
+        'timestamp': str(int(now_ts)),
+    }
+    values.update(_resolve_motd_api_variables())
+    return re.sub(r"\{([a-z_][a-z0-9_]*)\}", lambda m: str(values.get(m.group(1), m.group(0))), text)
+
+
+def _resolve_motd_api_variables():
+    shop_settings = app_settings.get('shop', {}) if isinstance(app_settings, dict) else {}
+    custom_url = str((shop_settings or {}).get('motd_api_url') or '').strip()
+    out = {'api_text': ''}
+    if not custom_url:
+        return out
+    try:
+        resp = requests.get(custom_url, timeout=3, headers={'User-Agent': 'AeroFoil-MOTD/1.0'})
+        if resp.status_code >= 400:
+            logger.warning('MOTD API returned HTTP %s for %s; API MOTD variables will be empty.', resp.status_code, custom_url)
+            return out
+        content_type = str(resp.headers.get('Content-Type') or '').lower()
+        text_body = str(resp.text or '').strip()[:4096]
+        out['api_text'] = text_body
+        if 'application/json' in content_type:
+            try:
+                payload = resp.json()
+                if isinstance(payload, dict):
+                    for key, value in payload.items():
+                        key_norm = re.sub(r'[^a-z0-9_]+', '_', str(key or '').strip().lower()).strip('_')
+                        if not key_norm:
+                            continue
+                        out[f'api_{key_norm}'] = str(value if value is not None else '')
+            except Exception:
+                pass
+        return out
+    except Exception as exc:
+        logger.warning('MOTD API request failed for %s: %s; API MOTD variables will be empty.', custom_url, exc)
+        return out
+
+
+def _prune_upload_jobs_unlocked(now_ts=None):
+    now = float(now_ts if now_ts is not None else time.time())
+    stale_cutoff = now - 3600.0
+    stale_ids = [
+        job_id for job_id, job in upload_jobs.items()
+        if float(job.get('updated_at') or 0.0) < stale_cutoff
+    ]
+    for job_id in stale_ids:
+        upload_jobs.pop(job_id, None)
+    while len(upload_jobs) > upload_job_limit:
+        oldest_id = min(upload_jobs, key=lambda key: float((upload_jobs.get(key) or {}).get('updated_at') or 0.0))
+        upload_jobs.pop(oldest_id, None)
+
+
+def _set_upload_job_stage(upload_id, stage, message=None, status=None, extra=None):
+    if not upload_id:
+        return
+    now = time.time()
+    with upload_jobs_lock:
+        _prune_upload_jobs_unlocked(now)
+        job = upload_jobs.get(upload_id)
+        if job is None:
+            job = {
+                'id': upload_id,
+                'status': 'running',
+                'stage': 'starting',
+                'message': 'Starting upload...',
+                'created_at': now,
+                'updated_at': now,
+            }
+            upload_jobs[upload_id] = job
+        job['stage'] = str(stage or job.get('stage') or 'running')
+        if message is not None:
+            job['message'] = str(message)
+        if status:
+            job['status'] = str(status)
+        if isinstance(extra, dict):
+            for key, value in extra.items():
+                job[key] = value
+        job['updated_at'] = now
 
 
 def _is_conversion_running():
@@ -591,6 +745,7 @@ def _invalidate_shop_root_cache():
     with shop_root_cache_lock:
         shop_root_cache['state_token'] = None
         shop_root_cache['files'] = None
+        shop_root_cache['files_enriched'] = None
         shop_root_cache['encrypted'] = {}
 
 def _get_titledb_aware_state_token():
@@ -599,7 +754,7 @@ def _get_titledb_aware_state_token():
         titledb_token = str(titles.get_titledb_cache_token() or 'missing')
     except Exception:
         titledb_token = 'missing'
-    return f"{library_token}::{titledb_token}"
+    return f"{library_token}::{titledb_token}::{cheats.cheat_state_token()}"
 
 
 def _get_cached_titles_total(cache_key):
@@ -639,35 +794,122 @@ def _store_titles_total(cache_key, total):
             for key, value in ordered:
                 titles_total_cache[key] = value
 
-def _get_cached_shop_files():
+def _build_enriched_shop_files():
+    """Build the shop file list annotated with each file's ESRB rating.
+
+    `rating` is the max known rating among the file's titles (most restrictive),
+    or None. `unrated` is True when any associated title is unrated or the file
+    is unidentified (no title). Used to apply the per-user age filter.
+    """
+    rows = (
+        db.session.query(
+            Files.id.label('file_id'),
+            Files.filename.label('filename'),
+            Files.size.label('size'),
+            Titles.title_id.label('title_id'),
+        )
+        .select_from(Files)
+        .outerjoin(app_files, app_files.c.file_id == Files.id)
+        .outerjoin(Apps, Apps.id == app_files.c.app_id)
+        .outerjoin(Titles, Titles.id == Apps.title_id)
+        .all()
+    )
+
+    files = {}
+    order = []
+    for row in rows:
+        fid = row.file_id
+        meta = files.get(fid)
+        if meta is None:
+            meta = {'filename': row.filename, 'size': int(row.size or 0), 'title_ids': set()}
+            files[fid] = meta
+            order.append(fid)
+        tid = (row.title_id or '').strip().upper()
+        if tid:
+            meta['title_ids'].add(tid)
+
+    rating_cache = {}
+    enriched = []
+    with titles.titledb_session() as titledb_loaded:
+        def _rating(tid):
+            if not titledb_loaded:
+                return None
+            if tid not in rating_cache:
+                info = titles.get_game_info(tid) or {}
+                rating_cache[tid] = _coerce_rating_value(info.get('rating'))
+            return rating_cache[tid]
+
+        for fid in order:
+            meta = files[fid]
+            tids = meta['title_ids']
+            if not tids:
+                file_rating = None
+                unrated = True
+            else:
+                ratings = [_rating(t) for t in tids]
+                unrated = any(r is None for r in ratings)
+                known = [r for r in ratings if r is not None]
+                file_rating = max(known) if known else None
+            enriched.append({
+                'url': f"/api/get_game/{fid}#{meta['filename']}",
+                'size': meta['size'],
+                'rating': file_rating,
+                'unrated': unrated,
+            })
+    return enriched
+
+
+def _enriched_file_allowed(entry, cap, block_unrated):
+    if cap is None:
+        return True
+    if entry.get('unrated') and block_unrated:
+        return False
+    rating = entry.get('rating')
+    if rating is None:
+        return True
+    return rating <= cap
+
+
+def _get_cached_shop_files(cap=None, block_unrated=True, virtualize_compressed=False):
     state_token = get_library_cache_state_token()
     with shop_root_cache_lock:
-        if (
-            shop_root_cache.get('state_token') == state_token
-            and isinstance(shop_root_cache.get('files'), list)
-        ):
-            return shop_root_cache['files']
+        cached = shop_root_cache.get('files_enriched')
+        if shop_root_cache.get('state_token') == state_token and isinstance(cached, list):
+            enriched = cached
+        else:
+            enriched = None
 
-    rows = db.session.query(Files.id, Files.filename, Files.size).all()
-    files_payload = [
-        {
-            "url": f"/api/get_game/{row.id}#{row.filename}",
-            "size": int(row.size or 0),
-        }
-        for row in rows
+    if enriched is None:
+        enriched = _build_enriched_shop_files()
+        with shop_root_cache_lock:
+            shop_root_cache['state_token'] = state_token
+            shop_root_cache['files_enriched'] = enriched
+            shop_root_cache['encrypted'] = {}
+
+    visible = enriched if cap is None else [
+        {"url": e["url"], "size": e["size"]}
+        for e in enriched
+        if _enriched_file_allowed(e, cap, block_unrated)
     ]
+    if cap is None:
+        visible = [{"url": e["url"], "size": e["size"]} for e in enriched]
+    if not virtualize_compressed:
+        return visible
 
-    with shop_root_cache_lock:
-        shop_root_cache['state_token'] = state_token
-        shop_root_cache['files'] = files_payload
-        shop_root_cache['encrypted'] = {}
-    return files_payload
+    virtual_files = []
+    for entry in visible:
+        virtual_entry = dict(entry)
+        url, marker, listed_filename = str(entry['url']).partition('#')
+        if marker and compressed_stream.supports_virtual_stream(listed_filename):
+            virtual_entry['url'] = f'{url}#{compressed_stream.virtual_filename(listed_filename)}'
+        virtual_files.append(virtual_entry)
+    return virtual_files
 
-def _get_cached_encrypted_shop_payload(shop_payload, public_key, verified_host):
+def _get_cached_encrypted_shop_payload(shop_payload, public_key, verified_host, filter_token=None):
     state_token = get_library_cache_state_token()
     motd = str(shop_payload.get("success") or "")
     referrer = str(shop_payload.get("referrer") or verified_host or "")
-    cache_key = (state_token, motd, str(public_key or ''), referrer)
+    cache_key = (state_token, motd, str(public_key or ''), referrer, filter_token)
 
     with shop_root_cache_lock:
         encrypted_cache = shop_root_cache.setdefault('encrypted', {})
@@ -685,9 +927,41 @@ def _get_cached_encrypted_shop_payload(shop_payload, public_key, verified_host):
     return payload
 
 
-def _get_cached_encrypted_shop_sections_payload(shop_payload, public_key, cache_limit, full_catalog=False):
+def _filter_sections_payload(payload, cap, block_unrated):
+    """Return a copy of a sections payload with items above the age cap removed.
+
+    Each item carries a `rating` (base-title ESRB age, or None when unrated).
+    Applied per-request at the response edge so the global section caches stay
+    user-agnostic.
+    """
+    if cap is None or not isinstance(payload, dict):
+        return payload
+    sections = payload.get('sections')
+    if not isinstance(sections, list):
+        return payload
+
+    filtered_sections = []
+    for section in sections:
+        items = section.get('items') if isinstance(section, dict) else None
+        if not isinstance(items, list):
+            filtered_sections.append(section)
+            continue
+        kept = [
+            item for item in items
+            if _title_allowed(cap, _coerce_rating_value((item or {}).get('rating')), block_unrated)
+        ]
+        new_section = dict(section)
+        new_section['items'] = kept
+        filtered_sections.append(new_section)
+
+    new_payload = dict(payload)
+    new_payload['sections'] = filtered_sections
+    return new_payload
+
+
+def _get_cached_encrypted_shop_sections_payload(shop_payload, public_key, cache_limit, full_catalog=False, filter_token=None):
     state_token = _get_titledb_aware_state_token()
-    cache_key = (state_token, int(cache_limit), bool(full_catalog), str(public_key or ''))
+    cache_key = (state_token, int(cache_limit), bool(full_catalog), str(public_key or ''), filter_token)
 
     with shop_sections_cache_lock:
         encrypted_cache = shop_sections_cache.setdefault('encrypted', {})
@@ -705,7 +979,7 @@ def _get_cached_encrypted_shop_sections_payload(shop_payload, public_key, cache_
     return payload
 
 
-def _respond_with_shop_payload(payload, verified_host=None, cache_kind=None, cache_limit=None, full_catalog=False):
+def _respond_with_shop_payload(payload, verified_host=None, cache_kind=None, cache_limit=None, full_catalog=False, filter_token=None):
     response_payload = payload
     if verified_host is not None and not response_payload.get('referrer'):
         response_payload = dict(response_payload)
@@ -718,6 +992,7 @@ def _respond_with_shop_payload(payload, verified_host=None, cache_kind=None, cac
                 response_payload,
                 public_key=public_key,
                 verified_host=verified_host,
+                filter_token=filter_token,
             )
         elif cache_kind == 'sections':
             encrypted = _get_cached_encrypted_shop_sections_payload(
@@ -725,6 +1000,7 @@ def _respond_with_shop_payload(payload, verified_host=None, cache_kind=None, cac
                 public_key=public_key,
                 cache_limit=cache_limit,
                 full_catalog=full_catalog,
+                filter_token=filter_token,
             )
         else:
             encrypted = encrypt_shop(response_payload, public_key_pem=public_key, compression_level=6)
@@ -797,6 +1073,7 @@ def _build_titles_metadata_cache():
     genre_title_ids = {}
     title_name_map = {}
     unrecognized_title_ids = set()
+    rating_by_title_id = {}
 
     with titles.titledb_session() as titledb_loaded:
         if not titledb_loaded:
@@ -805,6 +1082,7 @@ def _build_titles_metadata_cache():
                 'title_name_map': {},
                 'genre_title_ids': {},
                 'unrecognized_title_ids': set(),
+                'rating_by_title_id': {},
             }
 
         title_ids = [row.title_id for row in db.session.query(Titles.title_id).all() if row.title_id]
@@ -815,6 +1093,7 @@ def _build_titles_metadata_cache():
             info = titles.get_game_info(normalized_tid) or {}
             name = str(info.get('name') or '').strip()
             title_name_map[normalized_tid] = _normalize_library_search_text(name)
+            rating_by_title_id[normalized_tid] = _coerce_rating_value(info.get('rating'))
             if _is_titledb_unrecognized(info):
                 unrecognized_title_ids.add(normalized_tid)
             for genre in _split_genres_value(info.get('category') or ''):
@@ -829,6 +1108,7 @@ def _build_titles_metadata_cache():
         'title_name_map': title_name_map,
         'genre_title_ids': genre_title_ids,
         'unrecognized_title_ids': unrecognized_title_ids,
+        'rating_by_title_id': rating_by_title_id,
     }
 
 def _get_cached_titles_metadata():
@@ -846,6 +1126,7 @@ def _get_cached_titles_metadata():
                 'title_name_map': titles_metadata_cache.get('title_name_map') or {},
                 'genre_title_ids': titles_metadata_cache.get('genre_title_ids') or {},
                 'unrecognized_title_ids': titles_metadata_cache.get('unrecognized_title_ids') or set(),
+                'rating_by_title_id': titles_metadata_cache.get('rating_by_title_id') or {},
             }
 
     fresh = _build_titles_metadata_cache()
@@ -859,6 +1140,7 @@ def _get_cached_titles_metadata():
             for k, v in (fresh.get('genre_title_ids') or {}).items()
         }
         titles_metadata_cache['unrecognized_title_ids'] = set(fresh.get('unrecognized_title_ids') or set())
+        titles_metadata_cache['rating_by_title_id'] = dict(fresh.get('rating_by_title_id') or {})
     return fresh
 
 def _get_cached_library_genres():
@@ -1178,6 +1460,8 @@ def _build_shop_sections_payload(limit, full_catalog=False):
                 title_name = title_id or name
                 category = ''
             icon_url = f'/api/shop/icon/{title_id}' if title_id else ((app_info or {}).get('iconUrl') or '')
+            # Base-title rating governs the whole title (updates/DLC inherit it).
+            rating = _coerce_rating_value((base_info or {}).get('rating'))
 
             return {
                 'name': name,
@@ -1187,6 +1471,7 @@ def _build_shop_sections_payload(limit, full_catalog=False):
                 'app_version': row.app_version,
                 'app_type': row.app_type,
                 'category': category,
+                'rating': rating,
                 'icon_url': icon_url,
                 'iconUrl': icon_url,
                 'url': f"/api/get_game/{int(row.file_id)}#{row.filename}",
@@ -1272,21 +1557,75 @@ def _build_shop_sections_payload(limit, full_catalog=False):
         if all_limit is not None:
             all_items = all_items[:all_limit]
 
+        sections = [
+            {'id': 'new', 'title': 'New', 'items': new_items},
+            {'id': 'recommended', 'title': 'Recommended', 'items': recommended_items},
+            {'id': 'updates', 'title': 'Updates', 'items': update_items},
+            {'id': 'dlc', 'title': 'DLC', 'items': dlc_items},
+            {
+                'id': 'all',
+                'title': 'All',
+                'items': all_items,
+                'total': all_total,
+                'truncated': len(all_items) < all_total
+            }
+        ]
+        if full_catalog and bool((app_settings.get('cheats') or {}).get('enabled', True)):
+            cheat_items = _build_cyberfoil_cheat_items()
+            sections.append({
+                'id': 'cheats',
+                'title': 'Cheats',
+                'items': cheat_items,
+                'total': len(cheat_items),
+                'truncated': False,
+            })
         return {
-            'sections': [
-                {'id': 'new', 'title': 'New', 'items': new_items},
-                {'id': 'recommended', 'title': 'Recommended', 'items': recommended_items},
-                {'id': 'updates', 'title': 'Updates', 'items': update_items},
-                {'id': 'dlc', 'title': 'DLC', 'items': dlc_items},
-                {
-                    'id': 'all',
-                    'title': 'All',
-                    'items': all_items,
-                    'total': all_total,
-                    'truncated': len(all_items) < all_total
-                }
-            ]
+            'sections': sections
         }
+
+
+def _build_cyberfoil_cheat_items():
+    """Return versioned cheat entries for the CyberFoil catalogue.
+
+    Entries deliberately carry a normal URL/size pair, making them browseable by
+    current clients while providing the title/build metadata newer clients need to
+    place a file in Atmosphere's cheats directory.
+    """
+    owned_title_ids = {
+        str(row[0] or '').upper()
+        for row in (
+            db.session.query(Titles.title_id)
+            .join(Apps, Apps.title_id == Titles.id)
+            .filter(Apps.owned.is_(True), Apps.app_type == APP_TYPE_BASE)
+            .distinct()
+            .all()
+        )
+    }
+    items = []
+    with titles.titledb_session() as titledb_loaded:
+        for cheat in cheats.list_cheats():
+            title_id = cheat['title_id']
+            if title_id not in owned_title_ids:
+                continue
+            info = titles.get_game_info(title_id) if titledb_loaded else {}
+            name = str((info or {}).get('name') or title_id)
+            build_id = cheat['build_id']
+            icon_url = f'/api/shop/icon/{title_id}'
+            items.append({
+                'name': f'{name} — {build_id}',
+                'title_name': name,
+                'title_id': title_id,
+                'build_id': build_id,
+                'app_type': 'CHEAT',
+                'category': 'Cheats',
+                'icon_url': icon_url,
+                'iconUrl': icon_url,
+                'url': f'/api/cheats/{title_id}/{build_id}',
+                'size': int(cheat['size']),
+                'filename': f'{build_id}.txt',
+                'note': str(cheat.get('note') or ''),
+            })
+    return sorted(items, key=lambda item: (item['title_name'].lower(), item['build_id']))
 
 def _refresh_shop_sections_cache(limit):
     global shop_sections_refresh_running
@@ -1527,6 +1866,14 @@ def _save_sync_title_dir(user, title_id):
     return os.path.join(_save_sync_user_dir(user), title_id)
 
 
+def _save_sync_latest_dir(user, title_id):
+    return os.path.join(_save_sync_title_dir(user, title_id), 'latest')
+
+
+def _save_sync_latest_archive_path(user, title_id):
+    return os.path.join(_save_sync_title_dir(user, title_id), '_latest.zip')
+
+
 def _save_sync_archive_path(user, title_id, save_id=None):
     if save_id:
         return os.path.join(_save_sync_title_dir(user, title_id), f'{save_id}.zip')
@@ -1600,6 +1947,126 @@ def _save_sync_write_metadata(path, data):
     os.replace(temp_path, path)
 
 
+def _save_sync_safe_extract_zip(archive_path, dest_dir):
+    with zipfile.ZipFile(archive_path, 'r') as archive:
+        names = archive.namelist()
+        if not names:
+            raise ValueError('Save archive is empty.')
+        os.makedirs(dest_dir, exist_ok=True)
+        dest_root = os.path.abspath(dest_dir)
+        for member in archive.infolist():
+            member_name = str(member.filename or '')
+            if not member_name or member_name.endswith('/'):
+                continue
+            normalized = member_name.replace('\\', '/')
+            target_path = os.path.abspath(os.path.normpath(os.path.join(dest_root, normalized)))
+            if not (target_path == dest_root or target_path.startswith(dest_root + os.sep)):
+                raise ValueError('Save archive contains invalid path traversal entry.')
+            parent_dir = os.path.dirname(target_path)
+            os.makedirs(parent_dir, exist_ok=True)
+            with archive.open(member, 'r') as src, open(target_path, 'wb') as dst:
+                shutil.copyfileobj(src, dst)
+
+
+def _save_sync_clear_directory(path):
+    if not os.path.isdir(path):
+        return
+    for entry in os.listdir(path):
+        entry_path = os.path.join(path, entry)
+        try:
+            if os.path.isdir(entry_path):
+                shutil.rmtree(entry_path)
+            else:
+                os.remove(entry_path)
+        except Exception:
+            continue
+
+
+def _save_sync_refresh_latest_from_archive(user, title_id, archive_path):
+    latest_dir = _save_sync_latest_dir(user, title_id)
+    os.makedirs(latest_dir, exist_ok=True)
+    temp_dir = os.path.join(_save_sync_title_dir(user, title_id), '.latest_tmp')
+    if os.path.isdir(temp_dir):
+        shutil.rmtree(temp_dir, ignore_errors=True)
+    os.makedirs(temp_dir, exist_ok=True)
+    try:
+        _save_sync_safe_extract_zip(archive_path, temp_dir)
+        _save_sync_clear_directory(latest_dir)
+        for entry in os.listdir(temp_dir):
+            src = os.path.join(temp_dir, entry)
+            dst = os.path.join(latest_dir, entry)
+            os.replace(src, dst)
+    finally:
+        shutil.rmtree(temp_dir, ignore_errors=True)
+
+
+def _save_sync_build_archive_from_directory(source_dir, archive_path):
+    if not os.path.isdir(source_dir):
+        raise ValueError('Latest save directory does not exist.')
+
+    started_at = time.time()
+    temp_archive = archive_path + '.tmp'
+    if os.path.exists(temp_archive):
+        os.remove(temp_archive)
+
+    try:
+        with zipfile.ZipFile(temp_archive, 'w', compression=zipfile.ZIP_DEFLATED) as archive:
+            has_files = False
+            file_count = 0
+            for root, _dirs, files in os.walk(source_dir):
+                for filename in files:
+                    abs_path = os.path.join(root, filename)
+                    rel_path = os.path.relpath(abs_path, source_dir)
+                    archive.write(abs_path, arcname=rel_path)
+                    has_files = True
+                    file_count += 1
+            if not has_files:
+                raise ValueError('Latest save directory is empty.')
+        os.replace(temp_archive, archive_path)
+        elapsed_ms = int((time.time() - started_at) * 1000)
+        archive_size = 0
+        try:
+            archive_size = int(os.path.getsize(archive_path))
+        except Exception:
+            archive_size = 0
+        logger.info(
+            'Save latest archive generated source=%s archive=%s files=%s bytes=%s elapsed_ms=%s',
+            source_dir,
+            archive_path,
+            file_count,
+            archive_size,
+            elapsed_ms,
+        )
+    except Exception:
+        try:
+            if os.path.exists(temp_archive):
+                os.remove(temp_archive)
+        except Exception:
+            pass
+        raise
+
+
+def _save_sync_refresh_latest_for_title(user, title_id):
+    versions = _save_sync_collect_versions_for_title(user, title_id)
+    latest_archive = None
+    for version in versions:
+        archive_path = str(version.get('archive_path') or '')
+        if archive_path and os.path.isfile(archive_path):
+            latest_archive = archive_path
+            break
+    latest_dir = _save_sync_latest_dir(user, title_id)
+    latest_archive_path = _save_sync_latest_archive_path(user, title_id)
+    if not latest_archive:
+        _save_sync_clear_directory(latest_dir)
+        try:
+            if os.path.isfile(latest_archive_path):
+                os.remove(latest_archive_path)
+        except Exception:
+            pass
+        return
+    _save_sync_refresh_latest_from_archive(user, title_id, latest_archive)
+
+
 def _save_sync_collect_versions_for_title(user, title_id):
     versions = []
     title_dir = _save_sync_title_dir(user, title_id)
@@ -1607,6 +2074,8 @@ def _save_sync_collect_versions_for_title(user, title_id):
         try:
             for filename in sorted(os.listdir(title_dir)):
                 if not filename.lower().endswith('.zip'):
+                    continue
+                if filename == '_latest.zip':
                     continue
                 save_id = _normalize_save_id(filename[:-4])
                 if not save_id:
@@ -1704,6 +2173,45 @@ def _save_sync_collect_versions(user):
 
 
 def _save_sync_resolve_download_archive(user, title_id, save_id=None):
+    latest_archive_path = _save_sync_latest_archive_path(user, title_id)
+    wants_generated_latest = (save_id is None) or (str(save_id).strip().lower() == 'latest')
+    if wants_generated_latest:
+        latest_dir = _save_sync_latest_dir(user, title_id)
+        if os.path.isdir(latest_dir):
+            try:
+                _save_sync_build_archive_from_directory(latest_dir, latest_archive_path)
+            except Exception as e:
+                logger.warning(
+                    'Failed generating latest save archive for user %s title %s from latest directory: %s',
+                    getattr(user, 'user', '?'),
+                    title_id,
+                    e,
+                )
+    if wants_generated_latest and os.path.isfile(latest_archive_path):
+        latest_size = 0
+        latest_created_ts = int(time.time())
+        try:
+            latest_size = int(os.path.getsize(latest_archive_path))
+        except Exception:
+            latest_size = 0
+        try:
+            latest_created_ts = int(os.path.getmtime(latest_archive_path))
+        except Exception:
+            latest_created_ts = int(time.time())
+        return {
+            'title_id': title_id,
+            'save_id': 'latest',
+            'size': latest_size,
+            'note': 'latest',
+            'created_ts': latest_created_ts,
+            'created_at': _save_sync_format_created_at(latest_created_ts),
+            'download_url': f'/api/saves/download/{title_id}.zip',
+            'delete_url': '',
+            'archive_path': latest_archive_path,
+            'legacy': False,
+            'generated_latest': True,
+        }, None
+
     versions = _save_sync_collect_versions_for_title(user, title_id)
     if not versions:
         return None, 'Save archive not found.'
@@ -2128,6 +2636,165 @@ def _get_request_user():
     return None
 
 
+# --- ESRB / age content filter ---------------------------------------------
+
+def _content_filter_block_unrated():
+    try:
+        settings = load_settings()
+        return bool((settings or {}).get('content_filter', {}).get('block_unrated', True))
+    except Exception:
+        return True
+
+
+def _coerce_rating_value(rating):
+    """Coerce a rating to a non-negative int age, or None if unknown/unrated."""
+    if rating is None:
+        return None
+    try:
+        value = int(rating)
+    except (TypeError, ValueError):
+        return None
+    return value if value >= 0 else None
+
+
+def _title_rating(title_id):
+    """Return the ESRB minimum-age int for a title_id, or None if unknown.
+
+    Opens its own TitleDB session; intended for single-title checks (e.g. the
+    download gate). List builders should reuse an open session instead.
+    """
+    tid = str(title_id or '').strip().upper()
+    if not tid:
+        return None
+    try:
+        with titles.titledb_session() as titledb_loaded:
+            if not titledb_loaded:
+                return None
+            info = titles.get_game_info(tid) or {}
+    except Exception:
+        return None
+    return _coerce_rating_value(info.get('rating'))
+
+
+def _title_allowed(cap, rating, block_unrated):
+    """Whether a title is visible/downloadable under an age cap.
+
+    cap is None        -> unrestricted (always allowed)
+    rating is None      -> allowed only when not block_unrated (fail-closed)
+    otherwise           -> allowed when rating <= cap
+    """
+    if cap is None:
+        return True
+    if rating is None:
+        return not bool(block_unrated)
+    try:
+        return int(rating) <= int(cap)
+    except (TypeError, ValueError):
+        return not bool(block_unrated)
+
+
+def _user_rating_cap(username=None):
+    """Resolve (cap, block_unrated) for the requesting (or named) user.
+
+    cap is the user's max_rating int, or None when unrestricted/unknown user.
+    """
+    block_unrated = _content_filter_block_unrated()
+    user = None
+    try:
+        if username is None:
+            try:
+                if current_user.is_authenticated:
+                    user = current_user
+            except Exception:
+                user = None
+            if user is None:
+                username = _get_request_user()
+        if user is None and username:
+            user = User.query.filter_by(user=username).first()
+        cap = getattr(user, 'max_rating', None) if user is not None else None
+    except Exception:
+        cap = None
+    try:
+        cap = int(cap) if cap is not None else None
+    except (TypeError, ValueError):
+        cap = None
+    return cap, block_unrated
+
+
+def _file_title_ids(file_id):
+    """All distinct title_ids associated with a file (multicontent-safe)."""
+    rows = (
+        db.session.query(Titles.title_id)
+        .select_from(Files)
+        .outerjoin(app_files, app_files.c.file_id == Files.id)
+        .outerjoin(Apps, Apps.id == app_files.c.app_id)
+        .outerjoin(Titles, Titles.id == Apps.title_id)
+        .filter(Files.id == file_id)
+        .all()
+    )
+    seen = []
+    for row in rows:
+        tid = (row[0] or '').strip().upper()
+        if tid and tid not in seen:
+            seen.append(tid)
+    return seen
+
+
+def _file_blocked_by_cap(file_id, cap, block_unrated):
+    """True if a file must be hidden/blocked for the given age cap.
+
+    Gates on the most restrictive associated title (fail-closed): an unidentified
+    file, or any title that is unrated/over-cap, blocks the whole file.
+    """
+    if cap is None:
+        return False
+    title_ids = _file_title_ids(file_id)
+    if not title_ids:
+        return bool(block_unrated)
+    with titles.titledb_session() as titledb_loaded:
+        for tid in title_ids:
+            rating = None
+            if titledb_loaded:
+                info = titles.get_game_info(tid) or {}
+                rating = _coerce_rating_value(info.get('rating'))
+            if not _title_allowed(cap, rating, block_unrated):
+                return True
+    return False
+
+
+def _blocked_title_ids_for_cap(cap, block_unrated):
+    """Set of library title_ids that must be hidden for the given age cap.
+
+    Backed by the per-state-token titles metadata cache (rating_by_title_id),
+    so this is cheap to call per request.
+    """
+    if cap is None:
+        return set()
+    metadata = _get_cached_titles_metadata()
+    rating_by_title_id = metadata.get('rating_by_title_id') or {}
+    blocked = set()
+    for tid, rating in rating_by_title_id.items():
+        if not _title_allowed(cap, _coerce_rating_value(rating), block_unrated):
+            blocked.add(tid)
+    return blocked
+
+
+def _allowed_title_ids_for_cap(cap):
+    """Return TitleDB-rated library title IDs at or below ``cap``.
+
+    Used for fail-closed browse filtering: titles absent from the metadata cache
+    are unrated and therefore must not be shown to capped users.
+    """
+    if cap is None:
+        return set()
+    metadata = _get_cached_titles_metadata()
+    rating_by_title_id = metadata.get('rating_by_title_id') or {}
+    return {
+        tid for tid, rating in rating_by_title_id.items()
+        if _title_allowed(cap, _coerce_rating_value(rating), block_unrated=True)
+    }
+
+
 def _effective_remote_addr():
     # Use trusted proxy config to resolve the true client IP.
     # Cache in `g` so multiple log calls per request are consistent and cheap.
@@ -2377,6 +3044,35 @@ def _is_shop_client_allowed_for_external():
 def _is_shop_client_request():
     # Primary detection for shop protocol traffic.
     return _has_tinfoil_header_set() or _is_shop_client_allowed_for_external()
+
+
+def _request_has_cheat_access():
+    """Resolve the current shop user's cheat permission without changing auth flow."""
+    try:
+        if current_user.is_authenticated:
+            return bool(current_user.has_access('cheats'))
+    except Exception:
+        pass
+    username = _get_request_user()
+    if username:
+        user = User.query.filter_by(user=username).first()
+        return bool(user and user.has_access('cheats'))
+    # A public shop has no per-user identity to apply a user permission to.
+    return bool((app_settings.get('shop') or {}).get('public', False))
+
+
+def _filter_cheat_section(payload, allowed):
+    if allowed:
+        return payload
+    sections = (payload or {}).get('sections')
+    if not isinstance(sections, list):
+        return payload
+    filtered = [section for section in sections if str((section or {}).get('id') or '') != 'cheats']
+    if len(filtered) == len(sections):
+        return payload
+    result = dict(payload)
+    result['sections'] = filtered
+    return result
 
 
 def _log_access(
@@ -3061,7 +3757,7 @@ def tinfoil_access(f):
                                 return _respond_with_shop_payload(empty_sections)
 
                             placeholder = {"url": "/api/frozen/notice#frozen.txt", "size": 1}
-                            shop = {"success": message, "files": [placeholder]}
+                            shop = {"error": message, "files": [placeholder]}
                             return _respond_with_shop_payload(shop, verified_host=request.verified_host)
                 except Exception:
                     pass
@@ -3121,7 +3817,7 @@ def tinfoil_access(f):
                         return _respond_with_shop_payload(empty_sections)
 
                     placeholder = {"url": "/api/frozen/notice#frozen.txt", "size": 1}
-                    shop = {"success": message, "files": [placeholder]}
+                    shop = {"error": message, "files": [placeholder]}
                     return _respond_with_shop_payload(shop, verified_host=request.verified_host)
 
                 return tinfoil_error(message)
@@ -3140,6 +3836,7 @@ def frozen_notice_api():
     return Response(b' ', mimetype='application/octet-stream')
 
 def access_shop():
+    static_asset_version = os.stat(os.path.join(app.static_folder, 'style.css')).st_mtime_ns
     return render_template(
         'index.html',
         title='Library',
@@ -3147,6 +3844,7 @@ def access_shop():
         valid_keys=app_settings['titles']['valid_keys'],
         identification_disabled=not app_settings['titles']['valid_keys'],
         download_ui_visibility=_get_download_template_visibility(),
+        static_asset_version=static_asset_version,
     )
 
 @access_required('shop')
@@ -3167,12 +3865,27 @@ def index():
     @tinfoil_access
     def access_tinfoil_shop():
         start_ts = time.time()
+        motd_text = ''
+        try:
+            if bool(app_settings.get('shop', {}).get('motd_enabled', True)):
+                motd_text = _render_motd_template(app_settings['shop']['motd'])
+        except Exception:
+            motd_text = ''
+        cap, block_unrated = _user_rating_cap()
         shop = {
-            "success": app_settings['shop']['motd']
+            "success": motd_text
         }
-        shop["files"] = _get_cached_shop_files()
+        is_cyberfoil = _is_cyberfoil_request()
+        virtual_compressed_stream = bool(
+            (app_settings.get('shop') or {}).get('cyberfoil_virtual_compressed_stream', True)
+        )
+        shop["files"] = _get_cached_shop_files(
+            cap=cap,
+            block_unrated=block_unrated,
+            virtualize_compressed=is_cyberfoil and virtual_compressed_stream,
+        )
 
-        if _is_cyberfoil_request():
+        if is_cyberfoil:
             _log_access(
                 kind='shop',
                 filename=request.full_path if request.query_string else request.path,
@@ -3181,7 +3894,12 @@ def index():
                 duration_ms=int((time.time() - start_ts) * 1000),
             )
 
-        return _respond_with_shop_payload(shop, verified_host=request.verified_host, cache_kind='root')
+        return _respond_with_shop_payload(
+            shop,
+            verified_host=request.verified_host,
+            cache_kind='root',
+            filter_token=(cap, block_unrated, is_cyberfoil, virtual_compressed_stream),
+        )
     
     if is_shop_client or (tinfoil_only_mode and not prefers_html):
         logger.info(
@@ -3255,6 +3973,15 @@ def upload_page():
     return render_template(
         'upload.html',
         title='Upload',
+        admin_account_created=admin_account_created())
+
+
+@app.route('/cheats')
+@access_required('admin')
+def cheats_page():
+    return render_template(
+        'cheats.html',
+        title='Cheats',
         admin_account_created=admin_account_created())
 
 
@@ -3367,18 +4094,41 @@ def list_requests_api():
         except Exception:
             pass
 
+    relation_table_available = _has_title_request_users_table()
     out = []
     for r in items:
+        request_users = []
+        requester_count = 0
+        if relation_table_available:
+            try:
+                request_users = list(getattr(r, 'request_users', []) or [])
+                requester_count = len(request_users)
+            except Exception:
+                request_users = []
+                requester_count = 0
+        primary_user = getattr(r, 'user', None)
+        if primary_user is None and request_users:
+            primary_user = getattr(request_users[0], 'user', None)
         out.append({
             'id': r.id,
             'created_at': int(r.created_at.timestamp()) if r.created_at else None,
             'status': r.status,
+            'user_status': r.status,
             'title_id': r.title_id,
             'title_name': r.title_name,
             'user': {
-                'id': r.user.id if r.user else None,
-                'user': r.user.user if r.user else None,
+                'id': primary_user.id if primary_user else None,
+                'user': primary_user.user if primary_user else None,
             } if include_all else None,
+            'requesters': [
+                {
+                    'id': link.user.id if getattr(link, 'user', None) else None,
+                    'user': link.user.user if getattr(link, 'user', None) else None,
+                }
+                for link in request_users
+                if getattr(link, 'user', None) is not None
+            ] if include_all else None,
+            'requester_count': int(requester_count) if include_all else None,
         })
     return jsonify({'success': True, 'requests': out})
 
@@ -3517,6 +4267,30 @@ def admin_delete_request_api():
         db.session.delete(req)
         db.session.commit()
         return jsonify({'success': True})
+    except Exception as e:
+        db.session.rollback()
+        return api_error(str(e), 500)
+
+
+@app.post('/api/requests/deny')
+@access_required('admin')
+def admin_deny_request_api():
+    data = request.json or {}
+    try:
+        req_id = int(data.get('request_id'))
+    except Exception:
+        return api_error('Invalid request_id.', 400)
+
+    try:
+        req = TitleRequests.query.filter_by(id=req_id).first()
+        if req is None:
+            return api_error('Request not found.', 404)
+        if (req.status or '').strip().lower() == 'denied':
+            return jsonify({'success': True, 'message': 'Request already denied.'})
+
+        req.status = 'denied'
+        db.session.commit()
+        return jsonify({'success': True, 'message': 'Request denied.'})
     except Exception as e:
         db.session.rollback()
         return api_error(str(e), 500)
@@ -3894,6 +4668,9 @@ def get_settings_api():
     settings['shop']['hauth_value'] = hauth_value or ''
     settings['shop']['hauth'] = bool(hauth_value)
     settings['shop']['fast_transfer_mode'] = bool(settings['shop'].get('fast_transfer_mode'))
+    settings['shop']['cyberfoil_virtual_compressed_stream'] = bool(
+        settings['shop'].get('cyberfoil_virtual_compressed_stream', True)
+    )
 
     # Surface the effective public key in the UI even if it isn't in settings.yaml yet.
     settings['shop']['public_key'] = settings['shop'].get('public_key') or TINFOIL_PUBLIC_KEY
@@ -3906,7 +4683,21 @@ def get_settings_api():
             settings['library']['maintenance_last_run'] = last_run.isoformat() if last_run else None
     except Exception:
         pass
+    settings.setdefault('downloads', {})
+    settings['downloads']['client_capabilities'] = get_supported_download_clients()
     return jsonify(settings)
+
+@app.post('/api/settings/content-filter')
+@access_required('admin')
+def set_content_filter_settings_api():
+    data = request.json or {}
+    block_unrated = bool(data.get('block_unrated'))
+    set_content_filter_settings({'block_unrated': block_unrated})
+    reload_conf()
+    # Encrypted shop payloads vary by filter; drop caches so changes apply now.
+    _invalidate_shop_root_cache()
+    return jsonify({'success': True, 'errors': []})
+
 
 @app.post('/api/settings/titles')
 @access_required('admin')
@@ -3980,6 +4771,7 @@ def set_shop_settings_api():
     if security_data:
         set_security_settings(security_data)
     reload_conf()
+    _invalidate_shop_root_cache()
     resp = {
         'success': True,
         'errors': []
@@ -4257,6 +5049,17 @@ def test_downloads_prowlarr_api():
 @access_required('admin')
 def test_downloads_client_api():
     data = request.json or {}
+    diagnostics = get_download_client_diagnostics(
+        '',
+        {
+            'type': data.get('type', ''),
+            'url': data.get('url', ''),
+            'username': data.get('username', ''),
+            'password': data.get('password', ''),
+            'api_key': data.get('api_key', ''),
+        }
+    ) or {}
+    capabilities = diagnostics.get('capabilities') or {}
     ok, message = test_download_client(
         client_type=data.get('type', ''),
         url=data.get('url', ''),
@@ -4264,14 +5067,63 @@ def test_downloads_client_api():
         password=data.get('password', ''),
         api_key=data.get('api_key', '')
     )
+    detail = None
+    failure_kind = None
+    message_text = str(message or '').strip()
+    message_lower = message_text.lower()
+    missing_fields = diagnostics.get('missing') if isinstance(diagnostics, dict) else []
+    if ok:
+        failure_kind = None
+    elif isinstance(missing_fields, list) and missing_fields:
+        failure_kind = 'missing_credentials'
+        detail = f"Missing required fields: {', '.join(str(field) for field in missing_fields)}."
+    elif (
+        'authentication failed' in message_lower
+        or 'login failed' in message_lower
+        or 'unauthorized' in message_lower
+        or '(401' in message_lower
+        or re.search(r'(^|\s|\()401(\b|\)|\.)', message_lower)
+    ):
+        failure_kind = 'authentication'
+        detail = 'Authentication failed. Verify username/password or API key for this client.'
+    elif (
+        'forbidden' in message_lower
+        or '(403' in message_lower
+        or re.search(r'(^|\s|\()403(\b|\)|\.)', message_lower)
+    ):
+        failure_kind = 'authorization'
+        detail = 'Client denied access. Check account permissions and client security settings.'
+    elif 'timeout' in message_lower or 'timed out' in message_lower:
+        failure_kind = 'timeout'
+        detail = 'Connection timed out. Verify the URL/port, client availability, and network reachability.'
+    elif 'url is required' in message_lower or 'url is invalid' in message_lower:
+        failure_kind = 'invalid_url'
+        detail = 'Client URL is invalid or missing. Include protocol and port (for example http://host:8080).'
+    elif 'connection' in message_lower or 'refused' in message_lower or 'failed to establish a new connection' in message_lower:
+        failure_kind = 'connection'
+        detail = 'Could not connect to the client. Confirm the host, port, and firewall/network settings.'
+    elif 'unsupported' in message_lower:
+        failure_kind = 'unsupported_client'
+        detail = 'Selected client type is not supported for testing.'
+    else:
+        failure_kind = 'unknown'
+        detail = 'Client test failed. Review URL, credentials, and server logs for more detail.'
     download_path = (data.get('download_path') or '').strip()
     warning = None
-    if ok and download_path:
+    supports_download_path = bool(capabilities.get('supports_download_path'))
+    if ok and download_path and supports_download_path:
         if not os.path.isdir(download_path):
             warning = _('Download path not found: %(path)s', path=download_path)
         elif not os.access(download_path, os.W_OK):
             warning = _('Download path not writable: %(path)s', path=download_path)
-    return jsonify({'success': ok, 'message': message, 'warning': warning})
+    return jsonify({
+        'success': ok,
+        'message': message,
+        'detail': detail,
+        'failure_kind': failure_kind,
+        'warning': warning,
+        'diagnostics': diagnostics,
+    })
 
 @app.post('/api/downloads/manual')
 @access_required('admin')
@@ -4361,22 +5213,25 @@ def downloads_queue():
     title_id = data.get('title_id')
     protocol = data.get('protocol')
     update_only = bool(data.get('update_only', False))
+    dlc_only = bool(data.get('dlc_only', False))
     expected_version = data.get('expected_version')
     if not download_url:
         return jsonify({'success': False, 'message': _('Missing download URL.')})
     url_digest = hashlib.sha256(download_url.encode('utf-8', errors='ignore')).hexdigest()[:12]
     logger.debug(
-        'Queue download request: url_len=%s url_sha12=%s is_magnet=%s title_id=%s update_only=%s',
+        'Queue download request: url_len=%s url_sha12=%s is_magnet=%s title_id=%s update_only=%s dlc_only=%s',
         len(download_url),
         url_digest,
         download_url.lower().startswith('magnet:?'),
         title_id,
         update_only,
+        dlc_only,
     )
     ok, message = queue_download_url(
         download_url,
         expected_name=expected_name,
         update_only=update_only,
+        dlc_only=dlc_only,
         expected_version=expected_version,
         title_id=title_id,
         protocol=protocol,
@@ -4390,7 +5245,7 @@ def manage_organize_library():
     dry_run = bool(data.get('dry_run', False))
     verbose = bool(data.get('verbose', False))
     results = organize_library(dry_run=dry_run, verbose=verbose)
-    if results.get('success') and not dry_run:
+    if not dry_run and results.get('mutated'):
         post_library_change()
     return jsonify(results)
 
@@ -4401,7 +5256,7 @@ def manage_delete_updates():
     dry_run = bool(data.get('dry_run', False))
     verbose = bool(data.get('verbose', False))
     results = delete_older_updates(dry_run=dry_run, verbose=verbose)
-    if results.get('success') and not dry_run:
+    if not dry_run and results.get('mutated'):
         post_library_change()
     return jsonify(results)
 
@@ -4412,7 +5267,7 @@ def manage_delete_duplicates():
     dry_run = bool(data.get('dry_run', False))
     verbose = bool(data.get('verbose', False))
     results = delete_duplicates(dry_run=dry_run, verbose=verbose)
-    if results.get('success') and not dry_run:
+    if not dry_run and results.get('mutated'):
         post_library_change()
     return jsonify(results)
 
@@ -4483,6 +5338,24 @@ def downloads_queue_delete():
     return jsonify({'success': ok, 'message': message, 'state': state})
 
 
+@app.post('/api/downloads/duplicates/delete')
+@access_required('admin')
+def downloads_duplicates_delete():
+    data = request.json or {}
+    ok, message = remove_duplicate_download(data.get('id'))
+    state = get_downloads_state()
+    return jsonify({'success': ok, 'message': message, 'state': state})
+
+
+@app.post('/api/downloads/duplicates/dismiss')
+@access_required('admin')
+def downloads_duplicates_dismiss():
+    data = request.json or {}
+    ok, message = dismiss_duplicate_download(data.get('id'), fingerprint=data.get('fingerprint'))
+    state = get_downloads_state()
+    return jsonify({'success': ok, 'message': message, 'state': state})
+
+
 @app.get('/api/downloads/active')
 @access_required('admin')
 def downloads_active():
@@ -4514,7 +5387,7 @@ def manage_convert_nsz():
         threads=threads,
         verify=verify
     )
-    if results.get('success') and not dry_run:
+    if not dry_run and results.get('mutated'):
         post_library_change()
     return jsonify(results)
 
@@ -4547,7 +5420,7 @@ def manage_convert_single():
         threads=threads,
         verify=verify
     )
-    if results.get('success') and not dry_run:
+    if not dry_run and results.get('mutated'):
         post_library_change()
     return jsonify(results)
 
@@ -4597,7 +5470,7 @@ def manage_convert_job():
                     'details': []
                 }
             _job_finish(job_id, results)
-            if results.get('success') and not dry_run:
+            if not dry_run and results.get('mutated'):
                 try:
                     post_library_change()
                 except Exception:
@@ -4654,7 +5527,7 @@ def manage_convert_single_job():
                     'details': []
                 }
             _job_finish(job_id, results)
-            if results.get('success') and not dry_run:
+            if not dry_run and results.get('mutated'):
                 try:
                     post_library_change()
                 except Exception:
@@ -4912,23 +5785,31 @@ def delete_keys_file():
 @app.post('/api/upload/library')
 @access_required('admin')
 def upload_library_files():
+    upload_id = str(request.form.get('upload_id') or '').strip()
+    if not upload_id:
+        upload_id = str(uuid.uuid4())
+    _set_upload_job_stage(upload_id, 'starting', 'Preparing upload request...')
     try:
         files = request.files.getlist('files')
     except RequestEntityTooLarge:
+        _set_upload_job_stage(upload_id, 'failed', 'Upload rejected: request too large.', status='failed')
         raise
     except Exception as e:
         logger.exception("Failed to parse upload request")
         parsed_message = str(e).strip() or e.__class__.__name__
+        _set_upload_job_stage(upload_id, 'failed', f'Unable to parse upload request: {parsed_message}', status='failed')
         return jsonify({
             'success': False,
             'message': _('Unable to parse upload request: %(error)s', error=parsed_message),
             'uploaded': 0,
             'skipped': 0,
-            'errors': [parsed_message]
+            'errors': [parsed_message],
+            'upload_id': upload_id,
         }), 400
 
     if not files:
-        return jsonify({'success': False, 'message': _('No files uploaded.'), 'uploaded': 0, 'skipped': 0, 'errors': []}), 400
+        _set_upload_job_stage(upload_id, 'failed', _('No files uploaded.'), status='failed')
+        return jsonify({'success': False, 'message': _('No files uploaded.'), 'uploaded': 0, 'skipped': 0, 'errors': [], 'upload_id': upload_id}), 400
 
     library_id = request.form.get('library_id')
     library_path = None
@@ -4939,18 +5820,21 @@ def upload_library_files():
         library_path = library_paths[0] if library_paths else None
 
     if not library_path:
-        return jsonify({'success': False, 'message': _('No library path configured.'), 'uploaded': 0, 'skipped': 0, 'errors': []}), 400
+        _set_upload_job_stage(upload_id, 'failed', _('No library path configured.'), status='failed')
+        return jsonify({'success': False, 'message': _('No library path configured.'), 'uploaded': 0, 'skipped': 0, 'errors': [], 'upload_id': upload_id}), 400
 
     try:
         os.makedirs(library_path, exist_ok=True)
     except Exception as e:
         logger.error("Unable to create/access library path %s: %s", library_path, e)
+        _set_upload_job_stage(upload_id, 'failed', f'Cannot access library path: {library_path}', status='failed')
         return jsonify({
             'success': False,
             'message': _('Cannot access library path: %(path)s', path=library_path),
             'uploaded': 0,
             'skipped': len(files),
-            'errors': [str(e)]
+            'errors': [str(e)],
+            'upload_id': upload_id,
         }), 500
 
     allowed_exts = {'nsp', 'nsz', 'xci', 'xcz'}
@@ -4958,12 +5842,14 @@ def upload_library_files():
     skipped = 0
     errors = []
     saved_paths = []
+    _set_upload_job_stage(upload_id, 'saving', f'Saving {len(files)} file(s)...', extra={'total_files': len(files), 'uploaded': 0, 'skipped': 0})
 
-    for file in files:
+    for index, file in enumerate(files):
         filename = secure_filename(file.filename or '')
         if not filename:
             errors.append(_('A file has an invalid or empty filename.'))
             skipped += 1
+            _set_upload_job_stage(upload_id, 'saving', f"Saving files... ({index + 1}/{len(files)})", extra={'uploaded': uploaded, 'skipped': skipped})
             continue
         
         # Validate file size (use library limit for game files)
@@ -4974,25 +5860,33 @@ def upload_library_files():
         if not is_valid_size:
             errors.append(f"{filename}: {size_error}")
             skipped += 1
+            _set_upload_job_stage(upload_id, 'saving', f"Saving files... ({index + 1}/{len(files)})", extra={'uploaded': uploaded, 'skipped': skipped})
             continue
         
         ext = filename.rsplit('.', 1)[-1].lower() if '.' in filename else ''
         if ext not in allowed_exts:
             errors.append(_("%(filename)s: unsupported extension '%(ext)s'.", filename=filename, ext=ext or 'none'))
             skipped += 1
+            _set_upload_job_stage(upload_id, 'saving', f"Saving files... ({index + 1}/{len(files)})", extra={'uploaded': uploaded, 'skipped': skipped})
             continue
         dest_path = _ensure_unique_path(os.path.join(library_path, filename))
         try:
             file.save(dest_path)
             uploaded += 1
             saved_paths.append(dest_path)
+            _set_upload_job_stage(upload_id, 'saving', f"Saved file {index + 1}/{len(files)}: {filename}", extra={'uploaded': uploaded, 'skipped': skipped})
         except Exception as e:
             logger.error("Failed to save uploaded file %s to %s: %s", filename, library_path, e)
             errors.append(str(e))
+            skipped += 1
+            _set_upload_job_stage(upload_id, 'saving', f"Saving files... ({index + 1}/{len(files)})", extra={'uploaded': uploaded, 'skipped': skipped})
 
     if uploaded:
+        _set_upload_job_stage(upload_id, 'scanning', 'Scanning library for uploaded files...', extra={'uploaded': uploaded, 'skipped': skipped})
         scan_library_path(library_path)
+        _set_upload_job_stage(upload_id, 'queueing', 'Queueing uploaded files for organization...', extra={'uploaded': uploaded, 'skipped': skipped})
         enqueue_organize_paths(saved_paths)
+        _set_upload_job_stage(upload_id, 'refreshing', 'Refreshing library metadata...', extra={'uploaded': uploaded, 'skipped': skipped})
         post_library_change()
 
     success = uploaded > 0
@@ -5009,13 +5903,34 @@ def upload_library_files():
         else:
             message = _('Upload failed.')
 
+    if success:
+        _set_upload_job_stage(upload_id, 'completed', message or 'Upload complete.', status='success', extra={'uploaded': uploaded, 'skipped': skipped})
+    else:
+        _set_upload_job_stage(upload_id, 'failed', message or 'Upload failed.', status='failed', extra={'uploaded': uploaded, 'skipped': skipped})
+
     return jsonify({
         'success': success,
         'message': message,
         'uploaded': uploaded,
         'skipped': skipped,
-        'errors': errors
+        'errors': errors,
+        'upload_id': upload_id,
     }), (200 if success else 400)
+
+
+@app.get('/api/upload/library/status/<upload_id>')
+@access_required('admin')
+def upload_library_status(upload_id):
+    lookup_id = str(upload_id or '').strip()
+    if not lookup_id:
+        return jsonify({'success': False, 'message': 'Missing upload id.'}), 400
+    with upload_jobs_lock:
+        _prune_upload_jobs_unlocked()
+        job = upload_jobs.get(lookup_id)
+        if not job:
+            return jsonify({'success': False, 'message': 'Upload job not found.'}), 404
+        payload = dict(job)
+    return jsonify({'success': True, 'job': payload})
 
 
 @app.get('/api/saves/list')
@@ -5033,7 +5948,45 @@ def list_saves_api():
         logger.warning('Unable to load TitleDB for save metadata: %s', e)
 
     try:
+        is_cyberfoil = _is_cyberfoil_request()
         save_versions = _save_sync_collect_versions(user)
+        seen_titles = {
+            str(item.get('title_id') or '').strip().upper()
+            for item in save_versions
+            if str(item.get('title_id') or '').strip()
+        }
+        for title_id in sorted(seen_titles):
+            latest_dir = _save_sync_latest_dir(user, title_id)
+            if not os.path.isdir(latest_dir):
+                continue
+            latest_created_ts = int(time.time())
+            try:
+                latest_created_ts = int(os.path.getmtime(latest_dir))
+            except Exception:
+                latest_created_ts = int(time.time())
+            save_versions.append({
+                'title_id': title_id,
+                'save_id': 'latest',
+                'size': 0,
+                'note': 'latest directory',
+                'created_ts': latest_created_ts,
+                'created_at': _save_sync_format_created_at(latest_created_ts),
+                'download_url': f'/api/saves/download/{title_id}/latest.zip',
+                'delete_url': '',
+                'archive_path': '',
+                'legacy': False,
+                'latest_directory': True,
+            })
+        latest_by_title = {}
+        for version in save_versions:
+            title_id = str(version.get('title_id') or '').strip().upper()
+            if not title_id:
+                continue
+            created_ts = int(version.get('created_ts') or 0)
+            save_id = str(version.get('save_id') or '')
+            current = latest_by_title.get(title_id)
+            if current is None or created_ts > current.get('created_ts', 0):
+                latest_by_title[title_id] = {'created_ts': created_ts, 'save_id': save_id}
         title_metadata = {}
         for version in save_versions:
             title_id = str(version.get('title_id') or '').strip().upper()
@@ -5064,6 +6017,13 @@ def list_saves_api():
             download_url = str(version.get('download_url') or '')
             delete_url = str(version.get('delete_url') or '')
             icon_url = f'/api/shop/icon/{title_id}'
+            latest_info = latest_by_title.get(title_id) or {}
+            is_latest = (
+                int(latest_info.get('created_ts') or 0) == created_ts
+                and str(latest_info.get('save_id') or '') == save_id
+            )
+            latest_note = ' [latest]' if (is_cyberfoil and is_latest) else ''
+            note_with_latest = f'{note}{latest_note}'.strip()
             saves.append({
                 'title_id': title_id,
                 'titleId': title_id,
@@ -5074,13 +6034,19 @@ def list_saves_api():
                 'size': size,
                 'save_id': save_id,
                 'saveId': save_id,
-                'note': note,
-                'save_note': note,
-                'saveNote': note,
+                'note': note_with_latest if is_cyberfoil else note,
+                'save_note': note_with_latest if is_cyberfoil else note,
+                'saveNote': note_with_latest if is_cyberfoil else note,
                 'created_at': created_at,
                 'createdAt': created_at,
                 'created_ts': created_ts,
                 'createdTs': created_ts,
+                'latest_directory': bool(version.get('latest_directory')),
+                'latestDirectory': bool(version.get('latest_directory')),
+                'is_latest': is_latest,
+                'isLatest': is_latest,
+                'latest_available_save_id': str(latest_info.get('save_id') or ''),
+                'latestAvailableSaveId': str(latest_info.get('save_id') or ''),
                 'icon_url': icon_url,
                 'iconUrl': icon_url,
                 'icon_remote_url': cached_meta['icon_remote_url'],
@@ -5168,6 +6134,16 @@ def upload_save_api(title_id):
         _save_sync_write_metadata(_save_sync_metadata_path(user, normalized_title_id, save_id), metadata)
     except Exception as e:
         logger.warning('Failed writing save metadata for user %s title %s save %s: %s', getattr(user, 'user', '?'), normalized_title_id, save_id, e)
+    try:
+        _save_sync_refresh_latest_from_archive(user, normalized_title_id, archive_path)
+    except Exception as e:
+        logger.warning(
+            'Failed to refresh latest extracted save for user %s title %s save %s: %s',
+            getattr(user, 'user', '?'),
+            normalized_title_id,
+            save_id,
+            e,
+        )
 
     return api_success({
         'title_id': normalized_title_id,
@@ -5197,25 +6173,76 @@ def download_save_api(title_id, save_id=None):
     if user is None:
         return api_error(_('Save sync authorization failed.'), 403)
 
+    requested_save_id = str(save_id or '').strip()
+    client_kind = 'cyberfoil' if _is_cyberfoil_request() else 'other'
+
     normalized_title_id = _normalize_save_title_id(title_id)
     if not normalized_title_id:
+        logger.warning(
+            'Save download rejected for user %s: invalid title_id=%s save_id=%s client=%s',
+            getattr(user, 'user', '?'),
+            title_id,
+            requested_save_id or '-',
+            client_kind,
+        )
         return api_error(_('Invalid title_id for save download.'), 400)
+
+    logger.info(
+        'Save download request user=%s title=%s save_id=%s client=%s',
+        getattr(user, 'user', '?'),
+        normalized_title_id,
+        requested_save_id or 'latest',
+        client_kind,
+    )
 
     selected_archive, resolve_error = _save_sync_resolve_download_archive(user, normalized_title_id, save_id=save_id)
     if selected_archive is None:
+        logger.warning(
+            'Save download resolve failed user=%s title=%s save_id=%s client=%s error=%s',
+            getattr(user, 'user', '?'),
+            normalized_title_id,
+            requested_save_id or 'latest',
+            client_kind,
+            resolve_error or 'not found',
+        )
         if resolve_error and str(resolve_error).lower().startswith('invalid'):
             return api_error(resolve_error, 400)
         return api_error(resolve_error or _('Save archive not found.'), 404)
 
     archive_path = str(selected_archive.get('archive_path') or '')
     if not os.path.isfile(archive_path):
+        logger.warning(
+            'Save download archive missing user=%s title=%s save_id=%s path=%s client=%s',
+            getattr(user, 'user', '?'),
+            normalized_title_id,
+            requested_save_id or 'latest',
+            archive_path or '-',
+            client_kind,
+        )
         return api_error(_('Save archive not found.'), 404)
 
     selected_save_id = str(selected_archive.get('save_id') or '').strip()
+    generated_latest = bool(selected_archive.get('generated_latest'))
+    archive_size = 0
+    try:
+        archive_size = int(os.path.getsize(archive_path))
+    except Exception:
+        archive_size = 0
     if selected_save_id and selected_save_id != 'legacy':
         download_name = f'{normalized_title_id}_{selected_save_id}.zip'
     else:
         download_name = f'{normalized_title_id}.zip'
+
+    logger.info(
+        'Save download serving user=%s title=%s resolved_save_id=%s bytes=%s generated_latest=%s client=%s path=%s',
+        getattr(user, 'user', '?'),
+        normalized_title_id,
+        selected_save_id or 'latest',
+        archive_size,
+        generated_latest,
+        client_kind,
+        archive_path,
+    )
 
     return send_from_directory(
         os.path.dirname(archive_path),
@@ -5258,6 +6285,15 @@ def delete_save_api(title_id, save_id=None):
 
     deleted_save_id = str(deleted_info.get('save_id') or '')
     is_legacy = bool(deleted_info.get('legacy'))
+    try:
+        _save_sync_refresh_latest_for_title(user, normalized_title_id)
+    except Exception as e:
+        logger.warning(
+            'Failed to refresh latest extracted save after delete for user %s title %s: %s',
+            getattr(user, 'user', '?'),
+            normalized_title_id,
+            e,
+        )
     return api_success({
         'title_id': normalized_title_id,
         'titleId': normalized_title_id,
@@ -5288,6 +6324,8 @@ def get_all_titles_api():
     titles_metadata = None
     search_normalized = ''
     allowed_types = set()
+    # Per-user ESRB age filter for the web browse view.
+    cap, block_unrated = _user_rating_cap()
 
     size_subquery = (
         db.session.query(
@@ -5327,6 +6365,7 @@ def get_all_titles_api():
                 )
             ).label('max_owned_update_version')
         )
+        .filter(or_(Apps.app_type != APP_TYPE_UPD, Apps.ignored.is_(False)))
         .group_by(Apps.title_id)
         .subquery()
     )
@@ -5341,7 +6380,7 @@ def get_all_titles_api():
                 )
             ).label('max_owned_version')
         )
-        .filter(Apps.app_type == APP_TYPE_DLC)
+        .filter(Apps.app_type == APP_TYPE_DLC, Apps.ignored.is_(False))
         .group_by(Apps.app_id)
         .subquery()
     )
@@ -5363,7 +6402,7 @@ def get_all_titles_api():
                 )
             ).label('max_owned_version')
         )
-        .filter(Apps.app_type == APP_TYPE_DLC)
+        .filter(Apps.app_type == APP_TYPE_DLC, Apps.ignored.is_(False))
         .group_by(Apps.title_id, Apps.app_id)
         .subquery()
     )
@@ -5532,6 +6571,20 @@ def get_all_titles_api():
         else:
             query = query.filter(Titles.id == -1)
 
+    if cap is not None:
+        if block_unrated:
+            # Fail closed: only explicitly rated, permitted titles are visible.
+            # This also hides titles absent from TitleDB metadata.
+            allowed_ids = _allowed_title_ids_for_cap(cap)
+            if allowed_ids:
+                query = query.filter(Titles.title_id.in_(allowed_ids))
+            else:
+                query = query.filter(Titles.id == -1)
+        else:
+            blocked_ids = _blocked_title_ids_for_cap(cap, block_unrated)
+            if blocked_ids:
+                query = query.filter(Titles.title_id.notin_(blocked_ids))
+
     use_name_sort = sort_key in ('title_asc', 'title_desc')
     if sort_key == 'newest':
         query = query.order_by(Titles.id.desc(), Apps.id.desc())
@@ -5549,6 +6602,7 @@ def get_all_titles_api():
         str(completion or ''),
         str(genre or '').lower(),
         'unrecognized' if recognized == 'unrecognized' else ('recognized' if recognized == 'recognized' else ''),
+        ('cap', cap, bool(block_unrated)) if cap is not None else 'nocap',
     )
     total = _get_cached_titles_total(count_cache_key)
     if total is None:
@@ -5680,9 +6734,9 @@ def get_all_titles_api():
         release_dates = release_dates_by_title.get(title_fk) or {}
         for version in versions:
             version['release_date'] = release_dates.get(version['version'], 'Unknown')
-        versions.sort(key=lambda item: item['version'])
+        versions.sort(key=lambda item: item['version'], reverse=True)
     for app_id, versions in dlc_versions_by_app_id.items():
-        versions.sort(key=lambda item: item['version'])
+        versions.sort(key=lambda item: item['version'], reverse=True)
 
     games = []
     for row in rows:
@@ -5723,6 +6777,15 @@ def get_all_titles_api():
         games.append(game)
 
     newest, recommended = _get_discovery_sections(limit=12)
+    if cap is not None:
+        newest = [
+            item for item in newest
+            if _title_allowed(cap, _coerce_rating_value((item or {}).get('rating')), block_unrated)
+        ]
+        recommended = [
+            item for item in recommended
+            if _title_allowed(cap, _coerce_rating_value((item or {}).get('rating')), block_unrated)
+        ]
 
     if lite:
         def _lite(entry):
@@ -5755,6 +6818,22 @@ def get_all_titles_api():
             'recommended': recommended,
         }
     })
+
+
+def _build_library_download_files(app_entry):
+    files = []
+    for file_entry in list(getattr(app_entry, 'files', []) or []):
+        file_id = getattr(file_entry, 'id', None)
+        filepath = str(getattr(file_entry, 'filepath', '') or '').strip()
+        if not file_id or not filepath or not os.path.isfile(filepath):
+            continue
+        files.append({
+            'id': int(file_id),
+            'filename': str(getattr(file_entry, 'filename', '') or os.path.basename(filepath)),
+            'size': int(getattr(file_entry, 'size', 0) or 0),
+            'url': f'/api/get_game/{int(file_id)}?download=1',
+        })
+    return files
 
 
 @app.get('/api/title-details')
@@ -5814,6 +6893,18 @@ def get_title_details_api():
 
     game = None
     if row:
+        title_cheats = []
+        if _request_has_cheat_access():
+            title_cheats = [
+                {
+                    'build_id': cheat['build_id'],
+                    'size': int(cheat['size']),
+                    'note': str(cheat.get('note') or ''),
+                    'url': f"/api/cheats/{row.title_id}/{cheat['build_id']}",
+                }
+                for cheat in cheats.list_cheats()
+                if cheat['title_id'] == row.title_id
+            ]
         with titles.titledb_session():
             title_info = titles.get_game_info(row.title_id) or {}
             app_info = title_info if row.app_type == APP_TYPE_BASE else (titles.get_game_info(row.app_id) or title_info)
@@ -5822,17 +6913,40 @@ def get_title_details_api():
                 .filter(Apps.title_id == row.title_fk)
                 .all()
             )
+            files_by_app_pk = {
+                app.id: _build_library_download_files(app)
+                for app in title_apps
+            }
+            current_app_files = files_by_app_pk.get(row.app_pk, [])
             owned_base_count = sum(1 for app in title_apps if app.app_type == APP_TYPE_BASE and bool(app.owned))
             owned_update_count = sum(1 for app in title_apps if app.app_type == APP_TYPE_UPD and bool(app.owned))
             owned_dlc_count = sum(1 for app in title_apps if app.app_type == APP_TYPE_DLC and bool(app.owned))
             has_base = owned_base_count > 0
             deletable_versions = _build_deletable_version_map(title_apps)
-            available_update_versions = [_safe_int(app.app_version) for app in title_apps if app.app_type == APP_TYPE_UPD]
-            owned_update_versions = [_safe_int(app.app_version) for app in title_apps if app.app_type == APP_TYPE_UPD and bool(app.owned)]
+            available_update_versions = [
+                _safe_int(app.app_version) for app in title_apps
+                if app.app_type == APP_TYPE_UPD and not bool(app.ignored)
+            ]
+            owned_update_versions = [
+                _safe_int(app.app_version) for app in title_apps
+                if app.app_type == APP_TYPE_UPD and bool(app.owned) and not bool(app.ignored)
+            ]
             highest_available_update_version = max(available_update_versions, default=0)
             highest_owned_update_version = max(owned_update_versions, default=0)
             has_latest_version = highest_available_update_version <= 0 or highest_owned_update_version >= highest_available_update_version
             dlc_items, has_all_dlcs = _build_title_details_dlc_items(row.title_fk, row.title_id)
+            dlc_files_by_app_id = {}
+            for app in title_apps:
+                if app.app_type != APP_TYPE_DLC:
+                    continue
+                app_id = str(app.app_id or '').strip().upper()
+                if app_id:
+                    dlc_files_by_app_id.setdefault(app_id, []).extend(files_by_app_pk.get(app.id, []))
+            for dlc_item in dlc_items:
+                dlc_item['files'] = dlc_files_by_app_id.get(
+                    str(dlc_item.get('app_id') or '').strip().upper(),
+                    [],
+                )
             game = {
                 'id': app_info.get('id') or row.app_id,
                 'name': app_info.get('name') or row.app_id,
@@ -5850,6 +6964,7 @@ def get_title_details_api():
                 'app_type': row.app_type,
                 'owned': bool(row.owned),
                 'size': int(row.size or 0),
+                'files': current_app_files,
                 'owned_base_count': int(owned_base_count or 0),
                 'owned_update_count': int(owned_update_count or 0),
                 'owned_dlc_count': int(owned_dlc_count or 0),
@@ -5860,16 +6975,19 @@ def get_title_details_api():
                 'dlc_list': dlc_items,
                 'missing_dlcs': [
                     item for item in dlc_items
-                    if not item.get('owned')
+                    if not item.get('owned') and not item.get('ignored')
                 ],
+                'cheats': title_cheats,
             }
             if row.app_type == APP_TYPE_BASE:
                 versions = []
                 for upd in (
                     db.session.query(
+                        Apps.id.label('app_pk'),
                         Apps.app_id,
                         Apps.app_version,
                         Apps.owned,
+                        Apps.ignored,
                         func.coalesce(app_size_subquery.c.size, 0).label('size'),
                     )
                     .outerjoin(app_size_subquery, app_size_subquery.c.app_pk == Apps.id)
@@ -5881,11 +6999,13 @@ def get_title_details_api():
                         'app_type': APP_TYPE_UPD,
                         'version': int(upd.app_version or 0),
                         'owned': bool(upd.owned),
+                        'ignored': bool(upd.ignored),
                         'deletable': deletable_versions.get(
                             (str(upd.app_id or '').strip().upper(), APP_TYPE_UPD, str(upd.app_version or '').strip()),
                             False,
                         ),
                         'size': int(upd.size or 0),
+                        'files': files_by_app_pk.get(upd.app_pk, []),
                         'release_date': 'Unknown',
                     })
                 release_dates = {
@@ -5894,15 +7014,17 @@ def get_title_details_api():
                 }
                 for version in versions:
                     version['release_date'] = release_dates.get(version['version'], 'Unknown')
-                versions.sort(key=lambda item: item['version'])
+                versions.sort(key=lambda item: item['version'], reverse=True)
                 game['version'] = versions
             elif row.app_type == APP_TYPE_DLC:
                 dlc_versions = []
                 for dlc in (
                     db.session.query(
+                        Apps.id.label('app_pk'),
                         Apps.app_id,
                         Apps.app_version,
                         Apps.owned,
+                        Apps.ignored,
                         func.coalesce(app_size_subquery.c.size, 0).label('size'),
                     )
                     .outerjoin(app_size_subquery, app_size_subquery.c.app_pk == Apps.id)
@@ -5914,16 +7036,18 @@ def get_title_details_api():
                         'app_type': APP_TYPE_DLC,
                         'version': int(dlc.app_version or 0),
                         'owned': bool(dlc.owned),
+                        'ignored': bool(dlc.ignored),
                         'deletable': deletable_versions.get(
                             (str(dlc.app_id or '').strip().upper(), APP_TYPE_DLC, str(dlc.app_version or '').strip()),
                             False,
                         ),
                         'size': int(dlc.size or 0),
+                        'files': files_by_app_pk.get(dlc.app_pk, []),
                         'release_date': 'Unknown',
                     })
-                dlc_versions.sort(key=lambda item: item['version'])
+                dlc_versions.sort(key=lambda item: item['version'], reverse=True)
                 game['version'] = dlc_versions
-                latest_available = max([item['version'] for item in dlc_versions], default=0)
+                latest_available = max([item['version'] for item in dlc_versions if not item['ignored']], default=0)
                 latest_owned = max([item['version'] for item in dlc_versions if item['owned']], default=0)
                 game['has_latest_version'] = latest_owned >= latest_available
 
@@ -5933,9 +7057,40 @@ def get_title_details_api():
     })
 
 
+@app.post('/api/library/ignored-content')
+@access_required('admin')
+def set_ignored_library_content_api():
+    data = request.get_json(silent=True) or {}
+    app_id = str(data.get('app_id') or '').strip().upper()
+    app_type = str(data.get('app_type') or '').strip().upper()
+    ignored = bool(data.get('ignored'))
+
+    if not app_id or app_type not in (APP_TYPE_UPD, APP_TYPE_DLC):
+        return jsonify({'success': False, 'error': 'invalid_content'}), 400
+
+    query = Apps.query.filter(Apps.app_id == app_id, Apps.app_type == app_type)
+    if app_type == APP_TYPE_UPD:
+        try:
+            version = int(data.get('version'))
+        except (TypeError, ValueError):
+            return jsonify({'success': False, 'error': 'invalid_version'}), 400
+        query = query.filter(Apps.app_version_num == version)
+
+    updated = query.update({Apps.ignored: ignored}, synchronize_session=False)
+    if not updated:
+        db.session.rollback()
+        return jsonify({'success': False, 'error': 'content_not_found'}), 404
+
+    db.session.commit()
+    update_titles()
+    invalidate_library_cache_state_token()
+    post_library_change()
+    return jsonify({'success': True, 'ignored': ignored, 'updated': updated})
+
+
 def _build_title_details_dlc_items(title_fk, title_id):
     dlc_rows = (
-        db.session.query(Apps.app_id, Apps.app_version, Apps.owned)
+        db.session.query(Apps.app_id, Apps.app_version, Apps.owned, Apps.ignored)
         .filter(Apps.title_id == title_fk, Apps.app_type == APP_TYPE_DLC)
         .all()
     )
@@ -5944,7 +7099,12 @@ def _build_title_details_dlc_items(title_fk, title_id):
         app_id = str(dlc.app_id or '').strip().upper()
         if not app_id:
             continue
-        entry = dlc_state.setdefault(app_id, {'max_version': None, 'max_owned': None, 'has_owned': False})
+        entry = dlc_state.setdefault(app_id, {
+            'max_version': None,
+            'max_owned': None,
+            'has_owned': False,
+            'ignored': True,
+        })
         version_value = int(dlc.app_version or 0)
         if entry['max_version'] is None or version_value > entry['max_version']:
             entry['max_version'] = version_value
@@ -5952,6 +7112,8 @@ def _build_title_details_dlc_items(title_fk, title_id):
             entry['has_owned'] = True
             if entry['max_owned'] is None or version_value > entry['max_owned']:
                 entry['max_owned'] = version_value
+        if not bool(getattr(dlc, 'ignored', False)):
+            entry['ignored'] = False
 
     dlc_app_ids = set(dlc_state.keys())
     if not dlc_app_ids:
@@ -5963,7 +7125,12 @@ def _build_title_details_dlc_items(title_fk, title_id):
 
     dlc_items = []
     for app_id in sorted(dlc_app_ids):
-        entry = dlc_state.get(app_id) or {'max_version': None, 'max_owned': None, 'has_owned': False}
+        entry = dlc_state.get(app_id) or {
+            'max_version': None,
+            'max_owned': None,
+            'has_owned': False,
+            'ignored': False,
+        }
         versions_list = titles.get_all_app_existing_versions(app_id) or []
         max_version = None
         if versions_list:
@@ -5986,10 +7153,11 @@ def _build_title_details_dlc_items(title_fk, title_id):
             'latest_version': max_version,
             'owned_version': owned_max,
             'owned': bool(entry.get('has_owned')),
+            'ignored': bool(entry.get('ignored')),
         })
 
     dlc_items.sort(key=lambda item: str(item.get('name') or '').lower())
-    has_all_dlcs = all(item.get('owned') for item in dlc_items) if dlc_items else True
+    has_all_dlcs = all(item.get('owned') or item.get('ignored') for item in dlc_items) if dlc_items else True
     return dlc_items, has_all_dlcs
 
 
@@ -6112,6 +7280,15 @@ def serve_game(id):
     if not file_row:
         return Response(status=404)
 
+    # Per-user ESRB age filter: block downloads above the requester's cap.
+    cap, block_unrated = _user_rating_cap(username)
+    if cap is not None and _file_blocked_by_cap(id, cap, block_unrated):
+        logger.info(
+            "Blocked download of file id %s for user %r: exceeds age cap %s.",
+            id, username, cap,
+        )
+        return Response(status=403)
+
     try:
         queue_file_download_increment(id)
     except Exception as e:
@@ -6120,8 +7297,14 @@ def serve_game(id):
     filepath = file_row.filepath
     filename = file_row.filename or os.path.basename(filepath)
     filedir = os.path.dirname(filepath)
+    force_download = str(request.args.get('download') or '').strip().lower() in ('1', 'true', 'yes')
     title_id = (file_row.title_id or '').strip().upper() or None
     fast_transfer_mode = bool((app_settings.get('shop') or {}).get('fast_transfer_mode'))
+    stream_compressed = (
+        _is_cyberfoil_request()
+        and bool((app_settings.get('shop') or {}).get('cyberfoil_virtual_compressed_stream', True))
+        and compressed_stream.supports_virtual_stream(filepath)
+    )
 
     transfer_id = uuid.uuid4().hex
     meta = {
@@ -6135,12 +7318,53 @@ def serve_game(id):
         'filename': filename,
         'title_id': title_id,
         'bytes_sent': 0,
+        'transfer_mode': 'virtual' if stream_compressed else 'original',
+        'virtual_filename': compressed_stream.virtual_filename(filename) if stream_compressed else None,
     }
 
     with _active_transfers_lock:
         _active_transfers[transfer_id] = meta
 
-    resp = send_from_directory(filedir, filename, conditional=True)
+    if stream_compressed:
+        try:
+            stream, output_size = compressed_stream.virtual_stream(filepath)
+            output_filename = compressed_stream.virtual_filename(filename)
+            byte_range = compressed_stream.parse_single_range(
+                request.headers.get('Range'), output_size,
+            )
+            if request.headers.get('Range') and byte_range is None:
+                with _active_transfers_lock:
+                    _active_transfers.pop(transfer_id, None)
+                return Response(status=416, headers={'Content-Range': f'bytes */{output_size}'})
+            if byte_range is not None:
+                range_start, range_end = byte_range
+                resp = Response(
+                    compressed_stream.virtual_range(filepath, range_start, range_end),
+                    status=206,
+                    mimetype='application/octet-stream',
+                )
+                resp.headers['Content-Range'] = f'bytes {range_start}-{range_end}/{output_size}'
+                resp.headers['Content-Length'] = str(range_end - range_start + 1)
+            else:
+                resp = Response(stream, mimetype='application/octet-stream')
+                resp.headers['Content-Length'] = str(output_size)
+            resp.headers['Content-Disposition'] = (
+                "attachment; filename*=UTF-8''" + quote(output_filename)
+            )
+            # Ranges are generated from the virtual stream (single range only).
+            resp.headers['Accept-Ranges'] = 'bytes'
+            logger.info(
+                'CyberFoil virtual stream: %s -> %s (%s bytes, range=%s)',
+                filename,
+                output_filename,
+                output_size,
+                request.headers.get('Range') or 'full',
+            )
+        except Exception:
+            logger.exception('Unable to create virtual compressed stream for %s', filepath)
+            resp = send_from_directory(filedir, filename, conditional=True, as_attachment=force_download)
+    else:
+        resp = send_from_directory(filedir, filename, conditional=True, as_attachment=force_download)
 
     session_key = _transfer_session_start(
         user=username,
@@ -6311,12 +7535,124 @@ def shop_sections_api():
             duration_ms=int((time.time() - start_ts) * 1000),
         )
 
+    # Per-user ESRB age filter: applied at the response edge so the global
+    # section caches above stay user-agnostic.
+    cap, block_unrated = _user_rating_cap()
+    response_payload = _filter_sections_payload(payload, cap, block_unrated)
+    cheat_access = _request_has_cheat_access()
+    if is_cyberfoil:
+        response_payload = _filter_cheat_section(response_payload, cheat_access)
+
     return _respond_with_shop_payload(
-        payload,
+        response_payload,
         cache_kind='sections',
         cache_limit=cache_limit,
         full_catalog=is_cyberfoil,
+        filter_token=(cap, block_unrated, cheat_access),
     )
+
+
+@app.get('/api/cheats')
+@access_required('shop')
+def list_cheats_api():
+    if not _request_has_cheat_access():
+        return jsonify({'success': False, 'error': 'Cheat access is disabled for this account.'}), 403
+    return jsonify({'success': True, 'cheats': _build_cyberfoil_cheat_items()})
+
+
+@app.get('/api/cheats/<title_id>/<build_id>')
+@tinfoil_access
+def download_cheat_api(title_id, build_id):
+    if not _request_has_cheat_access():
+        return tinfoil_error('Cheat access is disabled for this account.')
+    data = cheats.read_cheat(title_id, build_id)
+    if data is None:
+        return jsonify({'success': False, 'error': 'cheat_not_found'}), 404
+    normalized_build_id = cheats.normalize_build_id(build_id)
+    response = Response(data, mimetype='text/plain')
+    response.headers['Content-Disposition'] = (
+        f'attachment; filename="{normalized_build_id}.txt"'
+    )
+    return response
+
+
+@app.post('/api/cheats')
+@access_required('admin')
+def upload_cheat_api():
+    upload = request.files.get('file')
+    pasted_content = request.form.get('content')
+    note = str(request.form.get('note') or '').strip()
+    if len(note) > 1000:
+        return jsonify({'success': False, 'error': 'Cheat note must be 1000 characters or less.'}), 400
+    if upload is not None and upload.filename:
+        cheat_data = upload.read()
+    elif pasted_content is not None and pasted_content.strip():
+        cheat_data = pasted_content.encode('utf-8')
+    else:
+        return jsonify({'success': False, 'error': 'Provide a cheat file or paste cheat content.'}), 400
+    try:
+        cheat = cheats.save_cheat(
+            request.form.get('title_id'), request.form.get('build_id'), cheat_data)
+        cheat['note'] = cheats.set_cheat_note(
+            cheat['title_id'], cheat['build_id'], note)
+    except ValueError as exc:
+        return jsonify({'success': False, 'error': str(exc)}), 400
+    _invalidate_shop_root_cache()
+    with shop_sections_cache_lock:
+        shop_sections_cache['payload'] = None
+        shop_sections_cache['encrypted'] = {}
+    return jsonify({'success': True, 'cheat': cheat})
+
+
+@app.delete('/api/cheats/<title_id>/<build_id>')
+@access_required('admin')
+def delete_cheat_api(title_id, build_id):
+    if not cheats.delete_cheat(title_id, build_id):
+        return jsonify({'success': False, 'error': 'cheat_not_found'}), 404
+    _invalidate_shop_root_cache()
+    with shop_sections_cache_lock:
+        shop_sections_cache['payload'] = None
+        shop_sections_cache['encrypted'] = {}
+    return jsonify({'success': True})
+
+
+@app.post('/api/cheats/sync')
+@access_required('admin')
+def sync_cheats_api():
+    data = request.get_json(silent=True) or {}
+    sync_url = str(data.get('url') or (app_settings.get('cheats') or {}).get('sync_url') or '').strip()
+    if not sync_url.lower().startswith(('https://', 'http://')):
+        return jsonify({'success': False, 'error': 'Configure an HTTP(S) cheat ZIP URL first.'}), 400
+    try:
+        response = requests.get(sync_url, timeout=(10, 90))
+        response.raise_for_status()
+        result = cheats.import_zip(response.content)
+    except requests.RequestException as exc:
+        return jsonify({'success': False, 'error': f'Cheat sync failed: {exc}'}), 502
+    except ValueError as exc:
+        return jsonify({'success': False, 'error': str(exc)}), 400
+    _invalidate_shop_root_cache()
+    with shop_sections_cache_lock:
+        shop_sections_cache['payload'] = None
+        shop_sections_cache['encrypted'] = {}
+    return jsonify({'success': True, **result})
+
+
+@app.post('/api/settings/cheats')
+@access_required('admin')
+def set_cheats_settings_api():
+    data = request.get_json(silent=True) or {}
+    updates = {}
+    if 'enabled' in data:
+        updates['enabled'] = bool(data.get('enabled'))
+    if 'sync_url' in data:
+        updates['sync_url'] = str(data.get('sync_url') or '').strip()
+    set_cheats_settings(updates)
+    reload_conf()
+    with shop_sections_cache_lock:
+        shop_sections_cache['payload'] = None
+        shop_sections_cache['encrypted'] = {}
+    return jsonify({'success': True})
 
 
 @app.get('/api/shop/icon/<title_id>')
@@ -6382,12 +7718,18 @@ def shop_icon_api(title_id):
     titles.load_titledb()
     try:
         info = titles.get_game_info(title_id)
+        if (not (info or {}).get('iconUrl')) and hasattr(titles, '_build_local_fallback_info'):
+            try:
+                titles._build_local_fallback_info(title_id)
+            except Exception:
+                pass
+            info = titles.get_game_info(title_id)
     finally:
         titles.release_titledb()
     icon_url = info.get('iconUrl') if info else ''
     if not icon_url:
         response = send_from_directory(app.static_folder, 'placeholder-icon.svg')
-        response.headers['Cache-Control'] = 'public, max-age=3600'
+        response.headers['Cache-Control'] = 'no-store, no-cache, must-revalidate'
         if _is_cyberfoil_request():
             _log_access(
                 kind='shop_media',
@@ -6402,7 +7744,7 @@ def shop_icon_api(title_id):
     cache_name, cache_path = _ensure_cached_media_file(cache_dir, title_id, icon_url)
     if not cache_path:
         response = send_from_directory(app.static_folder, 'placeholder-icon.svg')
-        response.headers['Cache-Control'] = 'public, max-age=3600'
+        response.headers['Cache-Control'] = 'no-store, no-cache, must-revalidate'
         if _is_cyberfoil_request():
             _log_access(
                 kind='shop_media',
@@ -6458,7 +7800,7 @@ def shop_icon_api(title_id):
         return response
 
     response = send_from_directory(app.static_folder, 'placeholder-icon.svg')
-    response.headers['Cache-Control'] = 'public, max-age=3600'
+    response.headers['Cache-Control'] = 'no-store, no-cache, must-revalidate'
     if _is_cyberfoil_request():
         _log_access(
             kind='shop_media',
@@ -6534,12 +7876,18 @@ def shop_banner_api(title_id):
     titles.load_titledb()
     try:
         info = titles.get_game_info(title_id)
+        if (not (info or {}).get('bannerUrl')) and hasattr(titles, '_build_local_fallback_info'):
+            try:
+                titles._build_local_fallback_info(title_id)
+            except Exception:
+                pass
+            info = titles.get_game_info(title_id)
     finally:
         titles.release_titledb()
     banner_url = info.get('bannerUrl') if info else ''
     if not banner_url:
         response = send_from_directory(app.static_folder, 'placeholder-banner.svg')
-        response.headers['Cache-Control'] = 'public, max-age=3600'
+        response.headers['Cache-Control'] = 'no-store, no-cache, must-revalidate'
         if _is_cyberfoil_request():
             _log_access(
                 kind='shop_media',
@@ -6554,7 +7902,7 @@ def shop_banner_api(title_id):
     cache_name, cache_path = _ensure_cached_media_file(cache_dir, title_id, banner_url)
     if not cache_path:
         response = send_from_directory(app.static_folder, 'placeholder-banner.svg')
-        response.headers['Cache-Control'] = 'public, max-age=3600'
+        response.headers['Cache-Control'] = 'no-store, no-cache, must-revalidate'
         if _is_cyberfoil_request():
             _log_access(
                 kind='shop_media',
@@ -6610,7 +7958,7 @@ def shop_banner_api(title_id):
         return response
 
     response = send_from_directory(app.static_folder, 'placeholder-banner.svg')
-    response.headers['Cache-Control'] = 'public, max-age=3600'
+    response.headers['Cache-Control'] = 'no-store, no-cache, must-revalidate'
     if _is_cyberfoil_request():
         _log_access(
             kind='shop_media',

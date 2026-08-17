@@ -4,9 +4,16 @@
 gid=${PGID:-1000}
 uid=${PUID:-1000}
 
-! getent group "${gid}" && addgroup -g "${gid}" -S aerofoil
+# Ensure group exists for requested GID.
+if ! getent group "${gid}" >/dev/null 2>&1; then
+  groupadd -g "${gid}" aerofoil
+fi
 GROUP=$(getent group "${gid}" | cut -d ":" -f 1)
-! getent passwd "${uid}" && adduser -u "${uid}" -G "${GROUP}" -S aerofoil
+
+# Ensure user exists for requested UID and belongs to that group.
+if ! getent passwd "${uid}" >/dev/null 2>&1; then
+  useradd -u "${uid}" -g "${GROUP}" -M -s /usr/sbin/nologin aerofoil
+fi
 
 chown -R ${uid}:${gid} /app
 chown -R ${uid}:${gid} /root

@@ -6,10 +6,12 @@ _IMPORT_ERROR = None
 flask_app = None
 _resolve_save_sync_user = None
 delete_save_api = None
+upload_save_api = None
 try:
     from app.app import app as flask_app
     from app.app import _resolve_save_sync_user
     from app.app import delete_save_api
+    from app.app import upload_save_api
 except ModuleNotFoundError as exc:
     _IMPORT_ERROR = exc
 
@@ -107,6 +109,26 @@ class SaveSyncAccessTests(unittest.TestCase):
 
         self.assertEqual(status_code, 403)
         self.assertEqual(response.get_json()["message"], "Account is frozen.")
+
+    def test_upload_save_api_returns_403_for_frozen_authenticated_session(self):
+        fake_user = _FakeSaveUser(frozen=True, frozen_message="Account is frozen.")
+
+        with flask_app.test_request_context("/api/saves/upload/0100B6E012EBE000", method="POST"):
+            with patch("app.app.current_user", fake_user):
+                response, status_code = upload_save_api("0100B6E012EBE000")
+
+        self.assertEqual(status_code, 403)
+        self.assertEqual(response.get_json()["message"], "Account is frozen.")
+
+    def test_upload_save_api_rejects_missing_file(self):
+        fake_user = _FakeSaveUser(shop_access=True, backup_access=True)
+
+        with flask_app.test_request_context("/api/saves/upload/0100B6E012EBE000", method="POST"):
+            with patch("app.app.current_user", fake_user):
+                response, status_code = upload_save_api("0100B6E012EBE000")
+
+        self.assertEqual(status_code, 400)
+        self.assertEqual(response.get_json()["message"], "No save archive provided.")
 
 
 if __name__ == "__main__":

@@ -95,7 +95,7 @@ DEFAULT_SETTINGS = {
                     },
                     "update": {
                         "folder": "{title} [{title_id}]/Updates/v{version}",
-                        "filename": "{title} [{title_id}] [UPDATE][v{version}].{ext}",
+                        "filename": "{title} [{app_id}] [UPDATE][v{version}].{ext}",
                     },
                     "dlc": {
                         "folder": "{title} [{title_id}]/DLC/{dlc_name} [{app_id}]",
@@ -121,8 +121,9 @@ DEFAULT_SETTINGS = {
         "interval_minutes": 60,
         "category": "aerofoil",
         "required_terms": [],
+        "required_terms_match": "all",
         "blacklist_terms": [],
-        "search_prefix": "Nintendo Switch",
+        "search_prefix": "",
         "search_suffix": "",
         "search_char_replacements": [
             {"from": "™", "to": ""},
@@ -146,6 +147,7 @@ DEFAULT_SETTINGS = {
             "category": "aerofoil",
             "download_path": "",
             "min_seeders": 2,
+            "remove_completed_torrents_on_finish": True,
         },
         "usenet_client": {
             "type": "sabnzbd",
@@ -156,18 +158,86 @@ DEFAULT_SETTINGS = {
         }
     },
     "shop": {
+        "motd_enabled": True,
         "motd": "Welcome to your own shop!",
+        "motd_api_url": "",
         "public": False,
         "external_tinfoil_only": False,
         "encrypt": True,
         "tinfoil_only_mode": False,
         "fast_transfer_mode": False,
+        "cyberfoil_virtual_compressed_stream": True,
         "public_key": "",
         "clientCertPub": "-----BEGIN PUBLIC KEY-----",
         "clientCertKey": "-----BEGIN PRIVATE KEY-----",
         "host": "",
         "hauth": "",
+    },
+    "cheats": {
+        "enabled": True,
+        # Optional URL to a ZIP archive whose entries include
+        # <title-id>/<build-id>.txt.  Leave empty to use manual imports only.
+        "sync_url": "",
+    },
+    "content_filter": {
+        # When a user has an age cap (max_rating) set, also hide/block titles
+        # that have no known rating (homebrew, unidentified files, or titles
+        # missing from TitleDB). True = fail-closed (safest for child accounts).
+        "block_unrated": True,
     }
+}
+
+BUILTIN_TITLE_MANUAL_OVERRIDES = {
+    "018FCC923D8D0000": {
+        "name": "The Simpsons: Hit & Run [Port]",
+        "description": "Community port of The Simpsons: Hit & Run for Nintendo Switch. Requires the original Windows game files to run.",
+        "iconUrl": "https://static.simpsonswiki.com/images/5/5f/The_Simpsons_Hit_and_Run_cover.png",
+        "bannerUrl": "https://static.simpsonswiki.com/images/5/5f/The_Simpsons_Hit_and_Run_cover.png",
+        "screenshots": [],
+    },
+    "056783A0CC4A0000": {
+        "name": "Ship of Harkinian",
+        "description": "Open-source port of The Legend of Zelda: Ocarina of Time with modern enhancements for Nintendo Switch and other platforms.",
+        "iconUrl": "https://raw.githubusercontent.com/HarbourMasters/shipofharkinian.com/9c5639c054cb3bc952760758307473a3e425fd33/public/logo.png",
+        "bannerUrl": "https://raw.githubusercontent.com/HarbourMasters/shipofharkinian.com/9c5639c054cb3bc952760758307473a3e425fd33/public/splash_poster.jpg",
+        "screenshots": [],
+    },
+    "0500D22512158000": {
+        "name": "Sonic Dimensions",
+        "description": "Fan-made homebrew port of the 2D Sonic fangame Sonic Dimensions for Nintendo Switch.",
+        "iconUrl": "https://dlhb.gamebrew.org/switchhomebrews/images/SonicDimensionsSwitch-01.png",
+        "bannerUrl": "https://dlhb.gamebrew.org/switchhomebrews/images/SonicDimensionsSwitch-02.png",
+        "screenshots": [],
+    },
+    "010CAF78CF713000": {
+        "name": "The Legend of Zelda - A Link to the Past",
+        "description": "Community homebrew port of The Legend of Zelda: A Link to the Past for Nintendo Switch with quality-of-life and widescreen enhancements.",
+        "iconUrl": "https://dlhb.gamebrew.org/switchhomebrews/images/zeldalinktothepastnx2.png",
+        "bannerUrl": "https://dlhb.gamebrew.org/switchhomebrews/images/zeldalinktothepastnx3.png",
+        "screenshots": [],
+    },
+    # Unverified port candidates, add only after confirming the Switch NSP app ID:
+    # "TODO_APP_ID_2SHIP2HARKINIAN": {
+    #     "name": "2 Ship 2 Harkinian",
+    #     "description": "Community port of The Legend of Zelda: Majora's Mask for Nintendo Switch.",
+    #     "iconUrl": "https://github.com/user-attachments/assets/a12851e2-1eb7-428c-973c-86fdfad73dd3",
+    #     "bannerUrl": "https://github.com/user-attachments/assets/a12851e2-1eb7-428c-973c-86fdfad73dd3",
+    #     "screenshots": [],
+    # },
+    # "TODO_APP_ID_STARSHIP": {
+    #     "name": "Starship",
+    #     "description": "Community port of Star Fox 64 for Nintendo Switch.",
+    #     "iconUrl": "https://raw.githubusercontent.com/HarbourMasters/Starship/62eb5a198bc5a8806f8c1b43551cd689e929455e/logo.png",
+    #     "bannerUrl": "https://raw.githubusercontent.com/HarbourMasters/Starship/62eb5a198bc5a8806f8c1b43551cd689e929455e/nx-logo.jpg",
+    #     "screenshots": [],
+    # },
+    # "TODO_APP_ID_SUPER_METROID_SWITCH": {
+    #     "name": "Super Metroid Switch",
+    #     "description": "Community port of Super Metroid for Nintendo Switch.",
+    #     "iconUrl": "",
+    #     "bannerUrl": "",
+    #     "screenshots": [],
+    # },
 }
 
 TINFOIL_HEADERS = [
@@ -195,3 +265,21 @@ APP_TYPE_MAP = {
     129: APP_TYPE_UPD,
     130: APP_TYPE_DLC,
 }
+
+# ESRB content rating scale. The numeric "age" matches TitleDB's `rating` field
+# (the eShop minimum-age recommendation, e.g. Breath of the Wild = 10 = E10+).
+# Filtering compares numerically, so it also works for PEGI-region TitleDB data;
+# the labels assume the US (ESRB) region.
+ESRB_RATINGS = [
+    {"code": "E", "age": 0, "label": "Everyone"},
+    {"code": "E10", "age": 10, "label": "Everyone 10+"},
+    {"code": "T", "age": 13, "label": "Teen"},
+    {"code": "M", "age": 17, "label": "Mature 17+"},
+    {"code": "AO", "age": 18, "label": "Adults Only 18+"},
+]
+ESRB_AGE_BY_CODE = {item["code"]: item["age"] for item in ESRB_RATINGS}
+ESRB_VALID_AGES = [item["age"] for item in ESRB_RATINGS]
+
+# Bump to force a one-time rebuild of the titles SQLite index when its on-disk
+# schema changes (the `rating` column was added in this version).
+TITLES_INDEX_SCHEMA_VERSION = 'rating-v1'

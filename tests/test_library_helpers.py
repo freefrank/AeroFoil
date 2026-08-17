@@ -20,6 +20,7 @@ flask_app = None
 try:
     from app.app import app as flask_app
     from app.app import _app_has_deletable_files
+    from app.app import _build_library_download_files
     from app.app import _build_title_details_dlc_items
     from app.app import _build_deletable_version_map
     from app.app import _sort_library_rows_by_title_name
@@ -31,6 +32,7 @@ try:
         _finalize_staged_conversion_output,
         _format_nsz_command,
         _iter_library_files,
+        _parse_command_args,
         _pending_cleanup_roots,
         _pending_organize_paths,
         _sanitize_component,
@@ -40,6 +42,7 @@ try:
         delete_orphaned_addons,
         enqueue_cleanup_roots,
         enqueue_organize_paths,
+        generate_library,
     )
     from app.titles import getDirsAndFiles
 except ModuleNotFoundError as exc:
@@ -81,6 +84,33 @@ class LibraryHelperTests(unittest.TestCase):
             apps=list(linked_apps),
         )
 
+    @patch('app.app.os.path.isfile')
+    def test_build_library_download_files_exposes_existing_files_only(self, isfile_mock):
+        isfile_mock.side_effect = lambda path: path == 'X:\\fixture-root\\Example Base.nsp'
+        app_entry = SimpleNamespace(files=[
+            SimpleNamespace(
+                id=7,
+                filepath='X:\\fixture-root\\Example Base.nsp',
+                filename='Example Base.nsp',
+                size=123,
+            ),
+            SimpleNamespace(
+                id=8,
+                filepath='X:\\fixture-root\\missing.nsp',
+                filename='missing.nsp',
+                size=456,
+            ),
+        ])
+
+        files = _build_library_download_files(app_entry)
+
+        self.assertEqual(files, [{
+            'id': 7,
+            'filename': 'Example Base.nsp',
+            'size': 123,
+            'url': '/api/get_game/7?download=1',
+        }])
+
     def _make_test_temp_root(self, name):
         os.makedirs(TEST_TMP_ROOT, exist_ok=True)
         tmp_root = os.path.join(TEST_TMP_ROOT, name)
@@ -114,6 +144,85 @@ class LibraryHelperTests(unittest.TestCase):
             ["0100AAAA00000000", "0100BBBB00000000", "0100CCCC00000000"],
         )
 
+    @patch("app.library.get_library_cache_state_token", return_value="state-token")
+    @patch("app.library.save_library_to_disk")
+    @patch("app.library.titles_lib.get_game_info")
+    @patch("app.library.get_all_apps")
+    @patch("app.library.is_library_unchanged", return_value=False)
+    @patch("app.library.titles_lib.titledb_session")
+    @patch("app.library.db.session.query")
+    def test_generate_library_includes_files_in_cached_rows(
+        self,
+        db_query_mock,
+        titledb_session_mock,
+        is_library_unchanged_mock,
+        get_all_apps_mock,
+        get_game_info_mock,
+        save_library_to_disk_mock,
+        get_state_token_mock,
+    ):
+        app_file = SimpleNamespace(
+            filepath="X:\\fixture-root\\Example Release NSW-GRP\\Example.nsp",
+            filename="Example.nsp",
+            folder="\\Example Release NSW-GRP",
+            size=12345,
+        )
+        app_obj = SimpleNamespace(
+            app_id="0100AAAA00000000",
+            app_version="0",
+            files=[app_file],
+        )
+
+        class _AppsQuery:
+            def options(self, *_args, **_kwargs):
+                return self
+
+            def filter(self, *_args, **_kwargs):
+                return self
+
+            def all(self):
+                return [app_obj]
+
+        class _TitlesQuery:
+            def all(self):
+                return []
+
+        def _query_side_effect(*args, **kwargs):
+            if args and getattr(args[0], "__name__", "") == "Apps":
+                return _AppsQuery()
+            return _TitlesQuery()
+
+        db_query_mock.side_effect = _query_side_effect
+        titledb_session_mock.return_value.__enter__.return_value = None
+        titledb_session_mock.return_value.__exit__.return_value = False
+        get_all_apps_mock.return_value = [{
+            "id": 1,
+            "title_db_id": 1,
+            "title_id": "0100AAAA00000000",
+            "app_id": "0100AAAA00000000",
+            "app_version": "0",
+            "app_type": "BASE",
+            "owned": True,
+            "size": 12345,
+        }]
+        get_game_info_mock.return_value = {
+            "name": "Example Title",
+            "category": "Action",
+        }
+
+        library = generate_library()
+
+        self.assertEqual(len(library), 1)
+        self.assertIn("files", library[0])
+        self.assertEqual(len(library[0]["files"]), 1)
+        self.assertEqual(
+            library[0]["files"][0]["filename"],
+            "Example.nsp",
+        )
+        saved_payload = save_library_to_disk_mock.call_args[0][0]
+        self.assertEqual(saved_payload["version"], 8)
+        self.assertIn("files", saved_payload["library"][0])
+
     def test_sanitize_component(self):
         self.assertEqual(_sanitize_component('Game: Name?'), 'Game Name')
         self.assertEqual(_sanitize_component(''), 'Unknown')
@@ -127,6 +236,29 @@ class LibraryHelperTests(unittest.TestCase):
         )
         self.assertIn('-t 4', command)
         self.assertIn('input.nsp', command)
+
+    def test_parse_command_args_strips_windows_wrapping_quotes(self):
+        command = (
+            '"C:\\Program Files\\Python\\python.exe" '
+            '-c "import nsz; nsz.main()" '
+            '--keys "C:\\AeroFoil\\keys.txt" '
+            '"C:\\Library\\Example Title.nsp"'
+        )
+
+        with patch('app.library.os.name', 'nt'):
+            args = _parse_command_args(command)
+
+        self.assertEqual(
+            args,
+            [
+                'C:\\Program Files\\Python\\python.exe',
+                '-c',
+                'import nsz; nsz.main()',
+                '--keys',
+                'C:\\AeroFoil\\keys.txt',
+                'C:\\Library\\Example Title.nsp',
+            ],
+        )
 
     def test_build_staging_output_path_disabled_returns_final_output(self):
         source = '/library/Game.nsp'
@@ -355,6 +487,30 @@ class LibraryHelperTests(unittest.TestCase):
         self.assertEqual(payload["skipped"], 0)
         self.assertEqual(payload["details"], ["Deleted: X:\\library\\old-update.nsp."])
 
+    @patch("app.app.post_library_change")
+    @patch("app.app.delete_older_updates")
+    def test_manage_delete_updates_runs_post_change_when_mutated_despite_errors(
+        self,
+        delete_updates_mock,
+        post_library_change_mock,
+    ):
+        delete_updates_mock.return_value = {
+            "success": False,
+            "deleted": 1,
+            "skipped": 0,
+            "mutated": True,
+            "details": ["Deleted: X:\\library\\old-update.nsp."],
+            "errors": ["one file failed"],
+        }
+
+        with flask_app.test_request_context("/api/manage/delete-updates", method="POST", json={}):
+            from app.app import manage_delete_updates
+            response = manage_delete_updates.__wrapped__()
+
+        payload = response.get_json()
+        self.assertFalse(payload["success"])
+        post_library_change_mock.assert_called_once_with()
+
     def test_manage_delete_duplicates_api_does_not_report_skipped_items(self):
         fake_user = self._AdminUser()
 
@@ -372,6 +528,94 @@ class LibraryHelperTests(unittest.TestCase):
         self.assertEqual(payload["deleted"], 1)
         self.assertEqual(payload["skipped"], 0)
         self.assertFalse(any(line.startswith("Skip ") for line in payload["details"]))
+
+    @patch("app.app.post_library_change")
+    @patch("app.app.delete_duplicates")
+    def test_manage_delete_duplicates_runs_post_change_when_mutated_despite_errors(
+        self,
+        delete_duplicates_mock,
+        post_library_change_mock,
+    ):
+        delete_duplicates_mock.return_value = {
+            "success": False,
+            "deleted": 1,
+            "skipped": 0,
+            "mutated": True,
+            "details": ["Deleted duplicate 0100DUPES0000000 v1: X:\\library\\duplicate.nsp."],
+            "errors": ["cleanup failed"],
+        }
+
+        with flask_app.test_request_context("/api/manage/delete-duplicates", method="POST", json={}):
+            from app.app import manage_delete_duplicates
+            response = manage_delete_duplicates.__wrapped__()
+
+        payload = response.get_json()
+        self.assertFalse(payload["success"])
+        post_library_change_mock.assert_called_once_with()
+
+    @patch("app.library.os.path.getmtime")
+    @patch("app.library.os.path.exists", return_value=True)
+    @patch("app.library.Apps")
+    def test_delete_duplicates_prefers_newer_detected_version_over_extension_priority(
+        self,
+        apps_mock,
+        exists_mock,
+        getmtime_mock,
+    ):
+        app = self._make_app(1, "0100AAAA00000800", "UPDATE", 131072)
+        older_file = self._make_file(101, "X:\\library\\Example Title [0100AAAA00000800] [v65536].nsz", [app])
+        older_file.extension = "nsz"
+        older_file.size = 500
+        newer_file = self._make_file(102, "X:\\library\\Example Title [0100AAAA00000800] [v131072].nsp", [app])
+        newer_file.extension = "nsp"
+        newer_file.size = 400
+        app.files = [older_file, newer_file]
+
+        apps_mock.owned.is_.return_value = True
+        apps_mock.query.filter.return_value.all.return_value = [app]
+        getmtime_mock.side_effect = lambda path: {
+            older_file.filepath: 200,
+            newer_file.filepath: 100,
+        }[path]
+
+        result = delete_duplicates(dry_run=True, verbose=True)
+
+        self.assertTrue(result["success"])
+        self.assertEqual(result["deleted"], 1)
+        self.assertIn(newer_file.filepath, result["details"][0])
+        self.assertIn(older_file.filepath, result["details"][1])
+
+    @patch("app.library.os.path.getmtime")
+    @patch("app.library.os.path.exists", return_value=True)
+    @patch("app.library.Apps")
+    def test_delete_duplicates_falls_back_to_extension_priority_without_version_tokens(
+        self,
+        apps_mock,
+        exists_mock,
+        getmtime_mock,
+    ):
+        app = self._make_app(1, "0100BBBB00000800", "UPDATE", 0)
+        preferred_file = self._make_file(201, "X:\\library\\Example Preferred [0100BBBB00000800].nsz", [app])
+        preferred_file.extension = "nsz"
+        preferred_file.size = 300
+        other_file = self._make_file(202, "X:\\library\\Example Other [0100BBBB00000800].nsp", [app])
+        other_file.extension = "nsp"
+        other_file.size = 400
+        app.files = [preferred_file, other_file]
+
+        apps_mock.owned.is_.return_value = True
+        apps_mock.query.filter.return_value.all.return_value = [app]
+        getmtime_mock.side_effect = lambda path: {
+            preferred_file.filepath: 100,
+            other_file.filepath: 200,
+        }[path]
+
+        result = delete_duplicates(dry_run=True, verbose=True)
+
+        self.assertTrue(result["success"])
+        self.assertEqual(result["deleted"], 1)
+        self.assertIn(preferred_file.filepath, result["details"][0])
+        self.assertIn(other_file.filepath, result["details"][1])
 
     def test_manage_delete_orphaned_addons_api_does_not_report_skipped_items(self):
         fake_user = self._AdminUser()
@@ -475,6 +719,7 @@ class LibraryHelperTests(unittest.TestCase):
                     "latest_version": 5,
                     "owned_version": None,
                     "owned": False,
+                    "ignored": False,
                 },
                 {
                     "app_id": "0100AAAA00001002",
@@ -482,10 +727,31 @@ class LibraryHelperTests(unittest.TestCase):
                     "latest_version": 0,
                     "owned_version": None,
                     "owned": False,
+                    "ignored": False,
                 },
             ],
         )
         self.assertFalse(has_all_dlcs)
+
+    @patch("app.app.titles.get_game_info", return_value={"name": "Optional language pack"})
+    @patch("app.app.titles.get_all_app_existing_versions", return_value=[0])
+    @patch("app.app.db.session.query")
+    def test_build_title_details_dlc_items_treats_ignored_dlc_as_complete(
+        self,
+        query_mock,
+        get_all_app_existing_versions_mock,
+        get_game_info_mock,
+    ):
+        query_mock.return_value.filter.return_value.all.return_value = [
+            SimpleNamespace(app_id="0100AAAA00001001", app_version="0", owned=False, ignored=True),
+        ]
+
+        dlc_items, has_all_dlcs = _build_title_details_dlc_items(123, "0100AAAA00000000")
+
+        self.assertTrue(has_all_dlcs)
+        self.assertEqual(dlc_items[0]["name"], "Optional language pack")
+        self.assertTrue(dlc_items[0]["ignored"])
+        self.assertFalse(dlc_items[0]["owned"])
 
     @patch("app.app._run_post_library_change")
     @patch("app.app.post_library_change")
@@ -570,6 +836,77 @@ class LibraryHelperTests(unittest.TestCase):
         self.assertEqual(status_code, 400)
         self.assertFalse(response.get_json()["success"])
         run_post_library_change_mock.assert_not_called()
+
+    @patch("app.app.post_library_change")
+    @patch("app.app.organize_library")
+    def test_manage_organize_library_runs_post_change_when_mutated_despite_errors(
+        self,
+        organize_library_mock,
+        post_library_change_mock,
+    ):
+        organize_library_mock.return_value = {
+            "success": False,
+            "moved": 2,
+            "skipped": 0,
+            "folders_deleted": 0,
+            "folders_failed": 0,
+            "mutated": True,
+            "errors": ["one file failed"],
+            "details": [],
+        }
+
+        with flask_app.test_request_context("/api/manage/organize", method="POST", json={}):
+            from app.app import manage_organize_library
+            response = manage_organize_library.__wrapped__()
+
+        self.assertFalse(response.get_json()["success"])
+        post_library_change_mock.assert_called_once_with()
+
+    @patch("app.app.post_library_change")
+    @patch("app.app.convert_to_nsz")
+    def test_manage_convert_nsz_runs_post_change_when_mutated_despite_errors(
+        self,
+        convert_mock,
+        post_library_change_mock,
+    ):
+        convert_mock.return_value = {
+            "success": False,
+            "converted": 1,
+            "skipped": 0,
+            "mutated": True,
+            "errors": ["one file failed"],
+            "details": [],
+        }
+
+        with flask_app.test_request_context("/api/manage/convert", method="POST", json={"command": "nsz"}):
+            from app.app import manage_convert_nsz
+            response = manage_convert_nsz.__wrapped__()
+
+        self.assertFalse(response.get_json()["success"])
+        post_library_change_mock.assert_called_once_with()
+
+    @patch("app.app.post_library_change")
+    @patch("app.app.convert_single_to_nsz")
+    def test_manage_convert_single_runs_post_change_when_mutated_despite_errors(
+        self,
+        convert_single_mock,
+        post_library_change_mock,
+    ):
+        convert_single_mock.return_value = {
+            "success": False,
+            "converted": 1,
+            "skipped": 0,
+            "mutated": True,
+            "errors": ["verify failed after write"],
+            "details": [],
+        }
+
+        with flask_app.test_request_context("/api/manage/convert-single", method="POST", json={"file_id": 1, "command": "nsz"}):
+            from app.app import manage_convert_single
+            response = manage_convert_single.__wrapped__()
+
+        self.assertFalse(response.get_json()["success"])
+        post_library_change_mock.assert_called_once_with()
 
 
 if __name__ == '__main__':
