@@ -5,6 +5,8 @@ Two problems in `app/file_watcher.py`:
    dispatch (near-certain during a mass move) raises `FileNotFoundError` inside
    watchdog's dispatch loop and kills the emitter thread — file watching silently
    stops for the rest of the process lifetime, with no log line.
+Same failure family as #131 (a background thread dying silently and processing stopping) — this one is the watchdog observer thread instead of the debounce runner.
+
 2. **O(E²) stat storm:** `collect_event` ends with an unconditional synchronous
    `self._check_file_stability()` (~line 152), which walks the entire `tracked_files`
    dict doing 2 stats per entry. Copying/moving 10k files into a library ≈ 10⁸ stat

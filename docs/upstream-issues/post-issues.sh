@@ -3,8 +3,8 @@
 set -euo pipefail
 cd "$(dirname "$0")"
 
-gh issue create --repo luketanti/aerofoil --title "database is locked during library scans: SQLite needs WAL + busy_timeout + a larger pool" --body-file issue-1.md
-gh issue create --repo luketanti/aerofoil --title "Scan/identify hold a write transaction across container decryption — minutes-long DB locks" --body-file issue-2.md
-gh issue create --repo luketanti/aerofoil --title "No retry backoff in identification: failing/orphaned files are fully re-decrypted every scan cycle" --body-file issue-3.md
-gh issue create --repo luketanti/aerofoil --title "scan_lock/library_rebuild_lock don't prevent concurrent scans and rebuilds" --body-file issue-4.md
-gh issue create --repo luketanti/aerofoil --title "Watchdog handler dies silently on vanished files and stat-storms on mass copies/moves" --body-file issue-5.md
+gh issue create --repo luketanti/aerofoil --title "[Bug] \"database is locked\" aborts library scans and freezes the web UI (SQLite runs without WAL/busy_timeout)" --body-file issue-1.md
+gh issue create --repo luketanti/aerofoil --title "[Bug] Same files re-ingested every scan cycle after a lock error (write transaction held while reading/decrypting files)" --body-file issue-2.md
+gh issue create --repo luketanti/aerofoil --title "[Bug] Failing or orphaned files are fully re-identified on every scan cycle forever (no retry backoff)" --body-file issue-3.md
+gh issue create --repo luketanti/aerofoil --title "[Bug] Scheduled scan, download jobs and rebuilds can all write the database at the same time (locks only guard status flags)" --body-file issue-4.md
+gh issue create --repo luketanti/aerofoil --title "[Bug] File watching silently stops during mass copies/moves (unhandled FileNotFoundError kills the watchdog thread; per-event stability scan is O(n²))" --body-file issue-5.md
