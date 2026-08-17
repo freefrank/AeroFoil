@@ -838,14 +838,14 @@ def _get_cached_titles_metadata():
             titles_metadata_cache.get('state_token') == state_token
             and int(titles_metadata_cache.get('version') or 0) == _TITLES_METADATA_CACHE_VERSION
         ):
+            # Read-only contract: callers must not mutate these structures.
+            # Deep-copying a 10k-entry name map plus every genre set on each
+            # hit made cache hits O(titles).
             return {
-                'genres': list(titles_metadata_cache.get('genres') or []),
-                'title_name_map': dict(titles_metadata_cache.get('title_name_map') or {}),
-                'genre_title_ids': {
-                    str(k): set(v or set())
-                    for k, v in (titles_metadata_cache.get('genre_title_ids') or {}).items()
-                },
-                'unrecognized_title_ids': set(titles_metadata_cache.get('unrecognized_title_ids') or set()),
+                'genres': titles_metadata_cache.get('genres') or [],
+                'title_name_map': titles_metadata_cache.get('title_name_map') or {},
+                'genre_title_ids': titles_metadata_cache.get('genre_title_ids') or {},
+                'unrecognized_title_ids': titles_metadata_cache.get('unrecognized_title_ids') or set(),
             }
 
     fresh = _build_titles_metadata_cache()
@@ -5565,10 +5565,22 @@ def get_all_titles_api():
     info_cache = {}
     release_dates_by_title = {}
     if use_name_sort:
-        rows_for_sort = query.order_by(None).all()
-        total = len(rows_for_sort)
-        all_lookup_ids.update([row.title_id for row in rows_for_sort if row.title_id])
-        all_lookup_ids.update([row.app_id for row in rows_for_sort if row.app_type == APP_TYPE_DLC and row.app_id])
+        # Sort on a slim 4-column projection instead of materializing every
+        # 16-column row, then hydrate only the requested page. Display names
+        # come from the memoized TitleDB lookups (LRU-cached across requests).
+        slim_rows = (
+            query.order_by(None)
+            .with_entities(
+                Apps.id.label('app_pk'),
+                Titles.title_id.label('title_id'),
+                Apps.app_id.label('app_id'),
+                Apps.app_type.label('app_type'),
+            )
+            .all()
+        )
+        total = len(slim_rows)
+        all_lookup_ids.update([row.title_id for row in slim_rows if row.title_id])
+        all_lookup_ids.update([row.app_id for row in slim_rows if row.app_type == APP_TYPE_DLC and row.app_id])
 
         with titles.titledb_session() as titledb_loaded:
             if titledb_loaded:
@@ -5591,8 +5603,14 @@ def get_all_titles_api():
                 str(row.app_id or ''),
             )
 
-        rows_for_sort.sort(key=_row_sort_key, reverse=(sort_key == 'title_desc'))
-        rows = rows_for_sort[start:start + per_page]
+        slim_rows.sort(key=_row_sort_key, reverse=(sort_key == 'title_desc'))
+        page_pks = [row.app_pk for row in slim_rows[start:start + per_page]]
+        if page_pks:
+            page_rows = query.filter(Apps.id.in_(page_pks)).all()
+            rows_by_pk = {row.app_pk: row for row in page_rows}
+            rows = [rows_by_pk[pk] for pk in page_pks if pk in rows_by_pk]
+        else:
+            rows = []
     else:
         rows = query.offset(start).limit(per_page).all()
 

@@ -120,7 +120,9 @@ _english_titles_index_file = os.path.join(TITLEDB_DIR, 'titles.english.index.sql
 _titledb_lock = threading.Lock()
 _missing_titledb_log_lock = threading.Lock()
 _missing_titledb_last_log = {}
+_missing_titledb_prune_last = 0.0
 _MISSING_TITLE_LOG_TTL_S = 3600
+_MISSING_TITLE_PRUNE_INTERVAL_S = 60
 _TITLEDB_STATE_WARN_TTL_S = 60
 _titledb_state_warn_last_log = {}
 _MISSING_FILES_RECOVERY_COOLDOWN_S = 60
@@ -1351,10 +1353,12 @@ def _apply_manual_title_override(title_id, info):
 def _get_title_info_from_index_file(title_key, index_file, cache_store, cache_lock):
     with cache_lock:
         cached = cache_store.get(title_key)
-        if isinstance(cached, dict):
+        if cached is not None:
             # Move-to-end on hit so eviction is LRU rather than FIFO.
             cache_store[title_key] = cache_store.pop(title_key)
-            return dict(cached)
+            # False is the negative-result sentinel: titles absent from the
+            # index would otherwise re-query it on every lookup.
+            return dict(cached) if isinstance(cached, dict) else None
 
     try:
         conn = _get_read_index_connection(index_file)
@@ -1368,6 +1372,13 @@ def _get_title_info_from_index_file(title_key, index_file, cache_store, cache_lo
         return None
 
     if not row:
+        with cache_lock:
+            cache_store[title_key] = False
+            if len(cache_store) > _TITLE_LOOKUP_CACHE_MAX:
+                try:
+                    cache_store.pop(next(iter(cache_store)))
+                except Exception:
+                    cache_store.clear()
         return None
 
     info = {
@@ -1488,7 +1499,15 @@ def get_game_info(title_id):
             if (now - last_logged) >= _MISSING_TITLE_LOG_TTL_S:
                 _missing_titledb_last_log[normalized_title_id] = now
                 should_log = True
-            if len(_missing_titledb_last_log) > 5000:
+            global _missing_titledb_prune_last
+            if (
+                len(_missing_titledb_last_log) > 5000
+                and (now - _missing_titledb_prune_last) >= _MISSING_TITLE_PRUNE_INTERVAL_S
+            ):
+                # Throttled: pruning on every unrecognized lookup made each
+                # miss scan the whole throttle dict (O(misses x entries) on
+                # libraries with many unrecognized titles).
+                _missing_titledb_prune_last = now
                 cutoff = now - (_MISSING_TITLE_LOG_TTL_S * 2)
                 stale_keys = [k for k, ts in _missing_titledb_last_log.items() if ts < cutoff]
                 for key in stale_keys:

@@ -21,7 +21,7 @@ Conventions:
 | PR-5 | File watcher robustness: exception guard, drop O(E²) per-event stability scan | F5 | **done** | see `git log --grep=PR-5` |
 | PR-6 | Identification retry backoff + orphan-trap fix | F2 | **done** | see `git log --grep=PR-6` |
 | PR-7 | Dirty-tracked rebuild: scoped update_titles/add_missing_apps, set-based title cleanup, diff-only owned-flag sync | F6, F7, F8 | **done** | see `git log --grep=PR-7` |
-| PR-8 | /api/titles name sort without full materialization | F11, F25 | planned | |
+| PR-8 | /api/titles name sort without full materialization | F11, F25 | **done** | see `git log --grep=PR-8` |
 | PR-9 | TitleDB lookup: thread-local connections, identify_appId memoization, real LRU, meta_only probe memo | F7, F22, F29 | **done** | see `git log --grep=PR-9` |
 | PR-10 | Index completeness (both creation tracks) + access_events retention | F16, F17, F19 | **done** | see `git log --grep=PR-10` |
 | PR-11 | Hot-path hygiene: state-token TTL, media index, per-file log levels, extension check | F10, F24, F26, F27 | **done** | see `git log --grep=PR-11` |
