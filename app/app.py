@@ -7,6 +7,7 @@ if PROJECT_DIR not in sys.path:
     sys.path.insert(0, PROJECT_DIR)
 
 from flask import Flask, render_template, request, redirect, url_for, jsonify, send_from_directory, Response, has_app_context, has_request_context, g
+from flask_babel import Babel, get_locale as babel_get_locale
 from flask_login import LoginManager, current_user
 from werkzeug.utils import secure_filename
 from werkzeug.security import check_password_hash
@@ -1829,6 +1830,16 @@ def on_library_change(events):
     if has_changes:
         post_library_change()
 
+def select_ui_locale():
+    cookie_lang = request.cookies.get(UI_LANGUAGE_COOKIE)
+    if cookie_lang in UI_LANGUAGES:
+        return cookie_lang
+    accepted = request.accept_languages.best_match(['en', 'zh', 'zh-CN', 'zh-SG', 'zh-Hans', 'zh-TW', 'zh-HK', 'zh-Hant'])
+    if accepted and accepted.lower().startswith('zh'):
+        return 'zh_Hans'
+    return UI_DEFAULT_LANGUAGE
+
+
 def create_app():
     app = Flask(__name__)
     app.config["SQLALCHEMY_DATABASE_URI"] = AEROFOIL_DB
@@ -1843,6 +1854,21 @@ def create_app():
     app.config['SECRET_KEY'] = secret_key
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
+    app.config.setdefault('BABEL_DEFAULT_LOCALE', UI_DEFAULT_LANGUAGE)
+    Babel(app, locale_selector=select_ui_locale)
+
+    @app.context_processor
+    def inject_ui_language():
+        try:
+            locale_code = str(babel_get_locale() or UI_DEFAULT_LANGUAGE)
+        except Exception:
+            locale_code = UI_DEFAULT_LANGUAGE
+        return {
+            'ui_language': locale_code,
+            'ui_languages': UI_LANGUAGES,
+            'ui_language_tag': locale_code.replace('_', '-'),
+        }
+
     db.init_app(app)
     migrate.init_app(app, db)
     login_manager.init_app(app)
@@ -1854,6 +1880,25 @@ def create_app():
 
 # Create app
 app = create_app()
+
+
+@app.route('/ui/language/<lang>')
+def switch_ui_language(lang):
+    lang = str(lang or '').strip()
+    next_url = request.args.get('next') or request.referrer or '/'
+    # Only allow same-site relative redirects.
+    if not next_url.startswith('/') or next_url.startswith('//'):
+        next_url = '/'
+    if lang not in UI_LANGUAGES:
+        return redirect(next_url)
+    resp = redirect(next_url)
+    resp.set_cookie(
+        UI_LANGUAGE_COOKIE,
+        lang,
+        max_age=UI_LANGUAGE_COOKIE_MAX_AGE,
+        samesite='Lax',
+    )
+    return resp
 
 
 @app.errorhandler(RequestEntityTooLarge)
