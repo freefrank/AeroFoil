@@ -1948,6 +1948,31 @@ def _build_local_fallback_info(lookup_id, _seen=None, preferred_language=None, p
     _set_local_file_metadata_cache(cache_key, info)
     return dict(info)
 
+def get_search_name_candidates(title_id):
+    """Names for a title across every loaded database (primary, fallback,
+    english). Library search matches any of them, not just the displayed name,
+    so e.g. an English query still finds a title shown with its CN name."""
+    title_key = str(title_id or '').strip().upper()
+    if not title_key:
+        return []
+    names = []
+    try:
+        if _titles_index_ready:
+            info = _get_title_info_from_index(title_key)
+            if info and info.get('name'):
+                names.append(str(info['name']))
+        if _fallback_titles_index_ready:
+            info = _get_fallback_region_title_info_from_index(title_key)
+            if info and info.get('name'):
+                names.append(str(info['name']))
+        if _english_titles_index_ready:
+            info = _get_english_title_info_from_index(title_key)
+            if info and info.get('name'):
+                names.append(str(info['name']))
+    except Exception:
+        pass
+    return names
+
 def get_game_info(title_id):
     global _titles_db
     global _titles_by_title_id

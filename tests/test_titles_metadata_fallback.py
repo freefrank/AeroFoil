@@ -116,6 +116,40 @@ class TitlesMetadataFallbackTests(unittest.TestCase):
         self.assertEqual(info['iconUrl'], 'https://example.invalid/us-icon.jpg')
 
 
+class SearchNameCandidatesTests(unittest.TestCase):
+    def setUp(self):
+        titles._reset_titledb_state()
+        titles._titles_index_ready = True
+
+    def tearDown(self):
+        titles._reset_titledb_state()
+
+    def test_collects_names_from_all_ready_databases(self):
+        titles._fallback_titles_index_ready = True
+        with patch(
+            'app.titles._get_title_info_from_index',
+            return_value={'name': '健身環大冒險'},
+        ), patch(
+            'app.titles._get_fallback_region_title_info_from_index',
+            return_value={'name': 'Ring Fit Adventure'},
+        ):
+            names = titles.get_search_name_candidates('01002FF008C24000')
+
+        self.assertEqual(names, ['健身環大冒險', 'Ring Fit Adventure'])
+
+    def test_skips_databases_that_are_not_ready(self):
+        with patch(
+            'app.titles._get_title_info_from_index',
+            return_value={'name': 'Primary Only'},
+        ), patch(
+            'app.titles._get_fallback_region_title_info_from_index',
+        ) as fallback_mock:
+            names = titles.get_search_name_candidates('01002FF008C24000')
+
+        self.assertEqual(names, ['Primary Only'])
+        fallback_mock.assert_not_called()
+
+
 class MetadataFallbackSettingsTests(unittest.TestCase):
     def test_normalize_keeps_order_dedupes_and_drops_invalid(self):
         normalized = settings._normalize_metadata_fallbacks(

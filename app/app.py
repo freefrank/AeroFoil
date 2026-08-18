@@ -548,13 +548,14 @@ shop_root_cache = {
 }
 _SHOP_ROOT_ENCRYPTED_CACHE_LIMIT = 8
 _SHOP_SECTIONS_ENCRYPTED_CACHE_LIMIT = 8
-_TITLES_METADATA_CACHE_VERSION = 4
+_TITLES_METADATA_CACHE_VERSION = 5
 titles_metadata_cache_lock = threading.Lock()
 titles_metadata_cache = {
     'version': _TITLES_METADATA_CACHE_VERSION,
     'state_token': None,
     'genres': [],
     'title_name_map': {},
+    'search_names_by_title_id': {},
     'genre_title_ids': {},
     'unrecognized_title_ids': set(),
     'rating_by_title_id': {},
@@ -1089,6 +1090,7 @@ def _build_titles_metadata_cache():
     genres_map = {}
     genre_title_ids = {}
     title_name_map = {}
+    search_names_by_title_id = {}
     unrecognized_title_ids = set()
     rating_by_title_id = {}
 
@@ -1097,6 +1099,7 @@ def _build_titles_metadata_cache():
             return {
                 'genres': [],
                 'title_name_map': {},
+                'search_names_by_title_id': {},
                 'genre_title_ids': {},
                 'unrecognized_title_ids': set(),
                 'rating_by_title_id': {},
@@ -1110,6 +1113,17 @@ def _build_titles_metadata_cache():
             info = titles.get_game_info(normalized_tid) or {}
             name = str(info.get('name') or '').strip()
             title_name_map[normalized_tid] = _normalize_library_search_text(name)
+            # Search matches the name from any configured database (primary,
+            # fallback, english), not just the displayed one.
+            search_names = set()
+            if title_name_map[normalized_tid]:
+                search_names.add(title_name_map[normalized_tid])
+            for alt_name in titles.get_search_name_candidates(normalized_tid):
+                normalized_alt = _normalize_library_search_text(alt_name)
+                if normalized_alt:
+                    search_names.add(normalized_alt)
+            if search_names:
+                search_names_by_title_id[normalized_tid] = search_names
             rating_by_title_id[normalized_tid] = _coerce_rating_value(info.get('rating'))
             if _is_titledb_unrecognized(info):
                 unrecognized_title_ids.add(normalized_tid)
@@ -1123,6 +1137,7 @@ def _build_titles_metadata_cache():
     return {
         'genres': genres,
         'title_name_map': title_name_map,
+        'search_names_by_title_id': search_names_by_title_id,
         'genre_title_ids': genre_title_ids,
         'unrecognized_title_ids': unrecognized_title_ids,
         'rating_by_title_id': rating_by_title_id,
@@ -1141,6 +1156,7 @@ def _get_cached_titles_metadata():
             return {
                 'genres': titles_metadata_cache.get('genres') or [],
                 'title_name_map': titles_metadata_cache.get('title_name_map') or {},
+                'search_names_by_title_id': titles_metadata_cache.get('search_names_by_title_id') or {},
                 'genre_title_ids': titles_metadata_cache.get('genre_title_ids') or {},
                 'unrecognized_title_ids': titles_metadata_cache.get('unrecognized_title_ids') or set(),
                 'rating_by_title_id': titles_metadata_cache.get('rating_by_title_id') or {},
@@ -1152,6 +1168,10 @@ def _get_cached_titles_metadata():
         titles_metadata_cache['state_token'] = state_token
         titles_metadata_cache['genres'] = list(fresh.get('genres') or [])
         titles_metadata_cache['title_name_map'] = dict(fresh.get('title_name_map') or {})
+        titles_metadata_cache['search_names_by_title_id'] = {
+            str(k): set(v or set())
+            for k, v in (fresh.get('search_names_by_title_id') or {}).items()
+        }
         titles_metadata_cache['genre_title_ids'] = {
             str(k): set(v or set())
             for k, v in (fresh.get('genre_title_ids') or {}).items()
@@ -6596,10 +6616,14 @@ def get_all_titles_api():
         if search_normalized:
             search_term = f"%{search_normalized}%"
             titles_metadata = _get_cached_titles_metadata()
+            search_names_map = titles_metadata.get('search_names_by_title_id') or {}
             title_ids_from_search = [
                 title_id
-                for title_id, lowered_name in (titles_metadata.get('title_name_map') or {}).items()
-                if _search_matches_normalized_text(search_normalized, lowered_name)
+                for title_id, candidate_names in search_names_map.items()
+                if any(
+                    _search_matches_normalized_text(search_normalized, candidate_name)
+                    for candidate_name in candidate_names
+                )
             ]
             search_filters = [
                 func.lower(Apps.app_id).like(search_term),
@@ -8117,6 +8141,7 @@ def _run_post_library_change_locked():
                 titles_metadata_cache['state_token'] = None
                 titles_metadata_cache['genres'] = []
                 titles_metadata_cache['title_name_map'] = {}
+                titles_metadata_cache['search_names_by_title_id'] = {}
                 titles_metadata_cache['genre_title_ids'] = {}
                 titles_metadata_cache['unrecognized_title_ids'] = set()
 
