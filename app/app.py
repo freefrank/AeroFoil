@@ -4453,15 +4453,15 @@ def request_prowlarr_search_api():
             titles.release_titledb()
 
     base_query = _normalize_download_search_query(resolved_name or title_id, downloads)
-    if not base_query:
+    if not download_query_has_meaningful_terms(base_query):
         # Non-ASCII primary names are stripped to nothing; fall back to the
         # first alternate database name that survives normalization.
         for candidate in candidate_names:
             candidate_normalized = _normalize_download_search_query(candidate, downloads)
-            if candidate_normalized:
+            if download_query_has_meaningful_terms(candidate_normalized):
                 base_query = candidate_normalized
                 break
-    if not base_query:
+    if not download_query_has_meaningful_terms(base_query):
         base_query = _normalize_download_search_query(title_id, downloads) or title_id
     prefix = _normalize_download_search_query(downloads.get('search_prefix') or '', downloads)
     full_query = base_query
@@ -5284,23 +5284,24 @@ def downloads_search():
         timeout_seconds = max(5, min(timeout_seconds, 180))
         search_limit = _get_prowlarr_search_limit(prowlarr_cfg)
         full_query = _normalize_download_search_query(query, downloads)
-        if not full_query and search_title_id:
-            # A non-ASCII display name (e.g. from a CN primary database) is
-            # stripped to nothing; fall back to an alternate database name.
+        if not download_query_has_meaningful_terms(full_query) and search_title_id:
+            # A non-ASCII display name (e.g. from a CN primary database) strips
+            # to nothing — or to filler like "DLC" — after normalization; fall
+            # back to an alternate database name.
             titles.load_titledb()
             try:
                 for candidate in titles.get_search_name_candidates(search_title_id):
                     candidate_normalized = _normalize_download_search_query(candidate, downloads)
-                    if candidate_normalized:
+                    if download_query_has_meaningful_terms(candidate_normalized):
                         full_query = candidate_normalized
                         break
             finally:
                 titles.release_titledb()
-        if not full_query and search_title_id:
+        if not download_query_has_meaningful_terms(full_query) and search_title_id:
             # No database has a Latin-script name; release names usually embed
             # the title id, so it is a workable last-resort query.
             full_query = _normalize_download_search_query(search_title_id, downloads) or search_title_id
-        if not full_query:
+        if not download_query_has_meaningful_terms(full_query):
             return jsonify({'success': False, 'message': _('Search query is empty after normalization. Try an English name.')})
         if apply_settings:
             prefix = _normalize_download_search_query(downloads.get('search_prefix') or '', downloads)

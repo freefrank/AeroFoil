@@ -27,7 +27,7 @@ from app.downloads.prowlarr import ProwlarrClient, filter_results, pick_best_res
 from app.downloads.versioning import extract_internal_update_version
 from app.library import _ensure_unique_path, _sanitize_component, enqueue_cleanup_roots, enqueue_organize_paths
 from app.settings import load_settings
-from app.utils import get_supported_content_extension, is_supported_content_path, is_wrapped_content_path
+from app.utils import download_query_has_meaningful_terms, get_supported_content_extension, is_supported_content_path, is_wrapped_content_path
 logger = logging.getLogger("downloads.manager")
 
 _state_lock = threading.Lock()
@@ -1178,10 +1178,10 @@ def _build_queries(update):
         return re.sub(r"\s+", " ", normalized).strip()
 
     title_name = _normalize_query(title_name)
-    if not title_name:
-        # A non-ASCII primary database name (e.g. a CN primary) is stripped to
-        # nothing by normalization; use the first candidate from the other
-        # configured databases that survives it (typically the English name).
+    if not download_query_has_meaningful_terms(title_name):
+        # A non-ASCII primary database name (e.g. a CN primary) strips to
+        # nothing — or to filler — by normalization; use the first candidate
+        # from the other configured databases that survives it.
         candidates = list(update.get("search_names") or [])
         if not candidates:
             try:
@@ -1190,10 +1190,10 @@ def _build_queries(update):
                 candidates = []
         for candidate in candidates:
             candidate_normalized = _normalize_query(candidate)
-            if candidate_normalized:
+            if download_query_has_meaningful_terms(candidate_normalized):
                 title_name = candidate_normalized
                 break
-    if not title_name:
+    if not download_query_has_meaningful_terms(title_name):
         title_name = _normalize_query(update.get("title_id")) or str(update.get("title_id") or "")
     prefix = _normalize_query(downloads.get("search_prefix") or "")
     suffix = _normalize_query(downloads.get("search_suffix") or "")

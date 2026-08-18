@@ -169,6 +169,35 @@ class DownloadQueryFallbackTests(unittest.TestCase):
         self.assertEqual(queries[0], 'RingFit Adventure')
         self.assertEqual(queries[1], 'RingFit Adventure update')
 
+    def test_build_queries_treats_generic_residue_as_empty(self):
+        from app.downloads import manager
+
+        # "健身環大冒險 DLC" normalizes to just "DLC", which identifies nothing.
+        update = {
+            'title_id': '010053301A00E000',
+            'title_name': '健身環大冒險 DLC',
+            'search_names': ['피트니스 러너'],
+            'version': 65536,
+        }
+        with patch(
+            'app.downloads.manager.load_settings',
+            return_value={'downloads': {}},
+        ):
+            queries = manager._build_queries(update)
+
+        self.assertEqual(queries[0], '010053301A00E000')
+
+    def test_meaningful_terms_helper(self):
+        from app.utils import download_query_has_meaningful_terms
+
+        self.assertFalse(download_query_has_meaningful_terms(''))
+        self.assertFalse(download_query_has_meaningful_terms('DLC'))
+        self.assertFalse(download_query_has_meaningful_terms('update'))
+        self.assertFalse(download_query_has_meaningful_terms('8'))
+        self.assertTrue(download_query_has_meaningful_terms('RingFit Adventure'))
+        self.assertTrue(download_query_has_meaningful_terms('010053301A00E000'))
+        self.assertTrue(download_query_has_meaningful_terms('Zelda update'))
+
     def test_build_queries_falls_back_to_title_id_without_candidates(self):
         from app.downloads import manager
 

@@ -369,3 +369,28 @@ def lookup_geoip(ip_value):
         'latitude': latitude,
         'longitude': longitude,
     }
+
+
+# Tokens that survive ASCII normalization of a CJK title but identify nothing
+# by themselves (UI templates append them to the display name).
+_GENERIC_DOWNLOAD_QUERY_TOKENS = {
+    'dlc', 'update', 'updates', 'base', 'game', 'games',
+    'nsp', 'nsz', 'xci', 'xcz', 'eshop',
+}
+
+
+def download_query_has_meaningful_terms(normalized_query):
+    """True when an ASCII-normalized search query still identifies a title.
+
+    A CJK display name strips to nothing (or to generic filler like "DLC"),
+    which used to slip past plain emptiness checks and hit the indexer with
+    a junk query. Meaningful means: a token with letters that is not filler,
+    or a long alphanumeric run (title ids)."""
+    for token in str(normalized_query or '').lower().split():
+        if token in _GENERIC_DOWNLOAD_QUERY_TOKENS:
+            continue
+        if len(token) >= 2 and any(ch.isalpha() for ch in token):
+            return True
+        if len(token) >= 8 and token.isalnum():
+            return True
+    return False
