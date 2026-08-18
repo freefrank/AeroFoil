@@ -5296,6 +5296,10 @@ def downloads_search():
                         break
             finally:
                 titles.release_titledb()
+        if not full_query and search_title_id:
+            # No database has a Latin-script name; release names usually embed
+            # the title id, so it is a workable last-resort query.
+            full_query = _normalize_download_search_query(search_title_id, downloads) or search_title_id
         if not full_query:
             return jsonify({'success': False, 'message': _('Search query is empty after normalization. Try an English name.')})
         if apply_settings:
