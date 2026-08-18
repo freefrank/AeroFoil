@@ -1500,7 +1500,7 @@ def _build_shop_sections_payload(limit, full_catalog=False):
             # Base-title rating governs the whole title (updates/DLC inherit it).
             rating = _coerce_rating_value((base_info or {}).get('rating'))
 
-            return {
+            item = {
                 'name': name,
                 'title_name': title_name,
                 'title_id': title_id,
@@ -1517,6 +1517,18 @@ def _build_shop_sections_payload(limit, full_catalog=False):
                 'filename': row.filename,
                 'download_count': int(row.download_count or 0)
             }
+            # Alternate names from the other configured databases, so shop
+            # clients can search in any language. Only emitted when they add
+            # something beyond the displayed name to keep the payload lean.
+            if titledb_loaded and title_id:
+                alternate_names = []
+                for candidate in titles.get_search_name_candidates(title_id):
+                    candidate = str(candidate or '').strip()
+                    if candidate and candidate != name and candidate != title_name and candidate not in alternate_names:
+                        alternate_names.append(candidate)
+                if alternate_names:
+                    item['search_names'] = alternate_names
+            return item
 
         base_items = [
             item for item in (_build_item(row) for row in rows if row.app_type == APP_TYPE_BASE)
