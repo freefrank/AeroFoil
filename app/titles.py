@@ -1280,6 +1280,12 @@ try:
     _TITLEDB_UNLOAD_DELAY_S = max(30, min(int(str(os.environ.get('AEROFOIL_TITLEDB_UNLOAD_DELAY_S') or 600).strip()), 86400))
 except (TypeError, ValueError):
     _TITLEDB_UNLOAD_DELAY_S = 600
+# Upstream behavior dropped every lookup cache on idle unload. Set this to 1
+# (together with AEROFOIL_TITLEDB_UNLOAD_DELAY_S=30) to restore it, e.g. on
+# hosts where every megabyte matters more than page-load latency.
+_TITLEDB_UNLOAD_CLEARS_CACHES = str(
+    os.environ.get('AEROFOIL_TITLEDB_UNLOAD_CLEARS_CACHES') or ''
+).strip().lower() in ('1', 'true', 'yes', 'on')
 
 @debounce(_TITLEDB_UNLOAD_DELAY_S)
 def unload_titledb():
@@ -1326,6 +1332,17 @@ def unload_titledb():
         # _reset_titledb_state when those files actually change. Dropping them
         # here made every post-unload library request rebuild thousands of
         # point lookups inline on top of the reload itself.
+        if _TITLEDB_UNLOAD_CLEARS_CACHES:
+            with _title_lookup_cache_lock:
+                _title_lookup_cache.clear()
+            with _english_title_lookup_cache_lock:
+                _english_title_lookup_cache.clear()
+            with _fallback_title_lookup_cache_lock:
+                _fallback_title_lookup_cache.clear()
+            with _identify_app_cache_lock:
+                _identify_app_cache.clear()
+            with _local_file_metadata_cache_lock:
+                _local_file_metadata_cache.clear()
         _bump_index_conn_generation()
         logger.info("TitleDBs unloaded.")
 
