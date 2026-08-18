@@ -104,3 +104,11 @@
 - 用户环境问题存档:其 compose 曾把 data 挂到 /data/titledb(错误路径),导致 TitleDB/缓存不持久、"每次启动 first time 下载"——已纠正为 ./data:/app/data。类似 issue 报告先查挂载。
 
 挂起项:generate_library 全量重生成实测 54s(62520 apps,大头是含描述/截图的全量 JSON 序列化 + 每 base title 版本点查 + 名称 LRU(32768)小于库规模导致的抖动)。用户决定:便宜优化(缓存版本查询/调大 LRU/流式写)不做,增量化(按 title 缓存条目、脏范围拼装)挂起待后续,可与 batch-3 一起按上游 PR 标准实施。
+
+Prowlarr 搜索批次(master @ `065d93c`,已发布于重打的 `v2.8.5-dev`):
+- `653e013` 自动任务/求档页:主库中文名 ASCII 归一化剥空 → 回退其他数据库英文名 → title_id
+- `bca9348` 三条搜索路径全部记录提交给 Prowlarr 的最终查询词(INFO)
+- `c7c5949` 详情弹窗搜索接口补 title_id 参数 + 同款回退 + 空查询显式报错(新翻译 1 条)
+- `065d93c` 找不到拉丁名时用 title_id 兜底(发布名普遍带 [titleid],用户提议)
+- 已知数据源问题:blawar titledb 的 US.en 对亚洲独占游戏沿用原区文字名(如 010053301A00E000 在 US.en 里是韩文名),自动回退无法覆盖,需自定义搜索词
+- 挂起想法:从已拥有文件的 NACP 提取 AmericanEnglish 名作为搜索候选最后一档(覆盖 titledb 无英文名但本地有文件的场景)
