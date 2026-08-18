@@ -118,3 +118,5 @@ Prowlarr 搜索批次(master @ `065d93c`,已发布于重打的 `v2.8.5-dev`):
 - `1e01591` 元数据缓存 stale-while-revalidate:失效保留旧快照 + 后台单飞刷新,消灭重建窗口内 /api/titles 卡骨架屏;>2s 请求打日志(dev.2)
 - `797f9f9` 搜索更新不再预检下载客户端,仅 Prowlarr 即可列结果(上游 #138 同类问题)(dev.3)
 - 次要卡源待办:TitleDB 闲时卸载后重载 ~3s(描述 JSON 大文件),归 batch-3 描述索引化
+
+上游沟通:已发总结型 issue https://github.com/luketanti/AeroFoil/issues/151(2026-08-18,用户指示),分组列出 fork 的 20 个 commit(链接到 fork)并征询作者哪些方向欢迎 PR。注意:batch-1 的 5 条 bug issue 仍未发(等用户测试收尾)——若作者在 #151 回应,规划 PR 时把两批内容合并考虑,避免重复开 issue。
