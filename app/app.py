@@ -549,6 +549,7 @@ shop_root_cache = {
 _SHOP_ROOT_ENCRYPTED_CACHE_LIMIT = 8
 _SHOP_SECTIONS_ENCRYPTED_CACHE_LIMIT = 8
 _TITLES_METADATA_CACHE_VERSION = 5
+_titles_metadata_refresh_in_progress = False
 titles_metadata_cache_lock = threading.Lock()
 titles_metadata_cache = {
     'version': _TITLES_METADATA_CACHE_VERSION,
@@ -1143,26 +1144,21 @@ def _build_titles_metadata_cache():
         'rating_by_title_id': rating_by_title_id,
     }
 
-def _get_cached_titles_metadata():
-    state_token = _get_titledb_aware_state_token()
-    with titles_metadata_cache_lock:
-        if (
-            titles_metadata_cache.get('state_token') == state_token
-            and int(titles_metadata_cache.get('version') or 0) == _TITLES_METADATA_CACHE_VERSION
-        ):
-            # Read-only contract: callers must not mutate these structures.
-            # Deep-copying a 10k-entry name map plus every genre set on each
-            # hit made cache hits O(titles).
-            return {
-                'genres': titles_metadata_cache.get('genres') or [],
-                'title_name_map': titles_metadata_cache.get('title_name_map') or {},
-                'search_names_by_title_id': titles_metadata_cache.get('search_names_by_title_id') or {},
-                'genre_title_ids': titles_metadata_cache.get('genre_title_ids') or {},
-                'unrecognized_title_ids': titles_metadata_cache.get('unrecognized_title_ids') or set(),
-                'rating_by_title_id': titles_metadata_cache.get('rating_by_title_id') or {},
-            }
+def _read_titles_metadata_snapshot_locked():
+    # Read-only contract: callers must not mutate these structures.
+    # Deep-copying a 10k-entry name map plus every genre set on each
+    # hit made cache hits O(titles).
+    return {
+        'genres': titles_metadata_cache.get('genres') or [],
+        'title_name_map': titles_metadata_cache.get('title_name_map') or {},
+        'search_names_by_title_id': titles_metadata_cache.get('search_names_by_title_id') or {},
+        'genre_title_ids': titles_metadata_cache.get('genre_title_ids') or {},
+        'unrecognized_title_ids': titles_metadata_cache.get('unrecognized_title_ids') or set(),
+        'rating_by_title_id': titles_metadata_cache.get('rating_by_title_id') or {},
+    }
 
-    fresh = _build_titles_metadata_cache()
+
+def _store_titles_metadata_cache(state_token, fresh):
     with titles_metadata_cache_lock:
         titles_metadata_cache['version'] = _TITLES_METADATA_CACHE_VERSION
         titles_metadata_cache['state_token'] = state_token
@@ -1178,7 +1174,60 @@ def _get_cached_titles_metadata():
         }
         titles_metadata_cache['unrecognized_title_ids'] = set(fresh.get('unrecognized_title_ids') or set())
         titles_metadata_cache['rating_by_title_id'] = dict(fresh.get('rating_by_title_id') or {})
+
+
+def _refresh_titles_metadata_cache():
+    """Build the metadata cache for the current state and store it."""
+    state_token = _get_titledb_aware_state_token()
+    fresh = _build_titles_metadata_cache()
+    _store_titles_metadata_cache(state_token, fresh)
     return fresh
+
+
+def _start_titles_metadata_refresh():
+    global _titles_metadata_refresh_in_progress
+    with titles_metadata_cache_lock:
+        if _titles_metadata_refresh_in_progress:
+            return
+        _titles_metadata_refresh_in_progress = True
+
+    def _run():
+        global _titles_metadata_refresh_in_progress
+        try:
+            with app.app_context():
+                start_ts = time.time()
+                _refresh_titles_metadata_cache()
+                logger.info(f'Titles metadata cache refreshed in {time.time() - start_ts:.1f}s.')
+        except Exception:
+            logger.exception('Background titles metadata refresh failed')
+        finally:
+            with titles_metadata_cache_lock:
+                _titles_metadata_refresh_in_progress = False
+
+    threading.Thread(target=_run, daemon=True).start()
+
+
+def _get_cached_titles_metadata():
+    state_token = _get_titledb_aware_state_token()
+    snapshot = None
+    cache_fresh = False
+    with titles_metadata_cache_lock:
+        version_ok = int(titles_metadata_cache.get('version') or 0) == _TITLES_METADATA_CACHE_VERSION
+        cache_fresh = version_ok and titles_metadata_cache.get('state_token') == state_token
+        if cache_fresh or (version_ok and titles_metadata_cache.get('title_name_map')):
+            snapshot = _read_titles_metadata_snapshot_locked()
+
+    if cache_fresh:
+        return snapshot
+    if snapshot is not None:
+        # Serve the stale snapshot and refresh in the background: rebuilding
+        # inline blocked page loads for the whole metadata build (a full
+        # per-title TitleDB sweep) after every scan or library change.
+        _start_titles_metadata_refresh()
+        return snapshot
+
+    # Nothing usable cached yet (first load): build inline.
+    return _refresh_titles_metadata_cache()
 
 def _get_cached_library_genres():
     metadata = _get_cached_titles_metadata()
@@ -6943,6 +6992,13 @@ def get_all_titles_api():
             duration_ms=int((time.time() - start_ts) * 1000),
         )
 
+    duration_ms = int((time.time() - start_ts) * 1000)
+    if duration_ms >= 2000:
+        logger.info(
+            "/api/titles took %sms (page=%s per_page=%s sort=%s search=%r)",
+            duration_ms, page, per_page, sort_key, search,
+        )
+
     return jsonify({
         'total': int(total),
         'page': int(page),
@@ -8182,14 +8238,11 @@ def _run_post_library_change_locked():
                 shop_sections_cache['state_token'] = None
                 shop_sections_cache['encrypted'] = {}
             _invalidate_shop_root_cache()
+            # Mark the metadata cache stale but keep its data: requests during
+            # the rebuild window serve the previous snapshot instead of paying
+            # a full inline rebuild each.
             with titles_metadata_cache_lock:
-                titles_metadata_cache['version'] = _TITLES_METADATA_CACHE_VERSION
                 titles_metadata_cache['state_token'] = None
-                titles_metadata_cache['genres'] = []
-                titles_metadata_cache['title_name_map'] = {}
-                titles_metadata_cache['search_names_by_title_id'] = {}
-                titles_metadata_cache['genre_title_ids'] = {}
-                titles_metadata_cache['unrecognized_title_ids'] = set()
 
             # Media cache index can be repopulated on demand.
             with _media_cache_lock:
@@ -8202,7 +8255,7 @@ def _run_post_library_change_locked():
                 _store_shop_sections_cache(payload, 50, now, state_token, persist_disk=True)
             # Rebuild the web metadata cache here rather than on the first
             # /api/titles request after the invalidation above.
-            _get_cached_titles_metadata()
+            _refresh_titles_metadata_cache()
         finally:
             titles.release_titledb()
             _release_process_memory()
