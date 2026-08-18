@@ -102,3 +102,5 @@
 - `7a2dbbf` 网页搜索匹配主库+备用库+英文库全部名字(CN 主库下搜英文名可命中)
 - `c0beae8` shop sections 载荷新增 search_names 别名数组(供 CyberFoil 类客户端多语言搜索;Tinfoil 本体搜索不受服务器控制)
 - 用户环境问题存档:其 compose 曾把 data 挂到 /data/titledb(错误路径),导致 TitleDB/缓存不持久、"每次启动 first time 下载"——已纠正为 ./data:/app/data。类似 issue 报告先查挂载。
+
+挂起项:generate_library 全量重生成实测 54s(62520 apps,大头是含描述/截图的全量 JSON 序列化 + 每 base title 版本点查 + 名称 LRU(32768)小于库规模导致的抖动)。用户决定:便宜优化(缓存版本查询/调大 LRU/流式写)不做,增量化(按 title 缓存条目、脏范围拼装)挂起待后续,可与 batch-3 一起按上游 PR 标准实施。
