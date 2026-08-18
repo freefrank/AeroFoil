@@ -112,3 +112,9 @@ Prowlarr 搜索批次(master @ `065d93c`,已发布于重打的 `v2.8.5-dev`):
 - `065d93c` 找不到拉丁名时用 title_id 兜底(发布名普遍带 [titleid],用户提议)
 - 已知数据源问题:blawar titledb 的 US.en 对亚洲独占游戏沿用原区文字名(如 010053301A00E000 在 US.en 里是韩文名),自动回退无法覆盖,需自定义搜索词
 - 挂起想法:从已拥有文件的 NACP 提取 AmericanEnglish 名作为搜索候选最后一档(覆盖 titledb 无英文名但本地有文件的场景)
+
+2.8.5-dev.x 批次(重发用 .1/.2/.3 后缀区分,Docker tag 不支持 +):
+- `82beb05` 归一化后只剩 "DLC"/"update" 等填充词的查询视同为空,走回退链(dev.1)
+- `1e01591` 元数据缓存 stale-while-revalidate:失效保留旧快照 + 后台单飞刷新,消灭重建窗口内 /api/titles 卡骨架屏;>2s 请求打日志(dev.2)
+- `797f9f9` 搜索更新不再预检下载客户端,仅 Prowlarr 即可列结果(上游 #138 同类问题)(dev.3)
+- 次要卡源待办:TitleDB 闲时卸载后重载 ~3s(描述 JSON 大文件),归 batch-3 描述索引化
