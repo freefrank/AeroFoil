@@ -1273,7 +1273,15 @@ def get_titledb_diagnostics():
             }
         }
 
-@debounce(30)
+# Delay before the big in-memory TitleDB structures (mainly the descriptions
+# dict) are released after the last use. The old 30s default meant almost any
+# navigation away from the library paid a multi-second reload on return.
+try:
+    _TITLEDB_UNLOAD_DELAY_S = max(30, min(int(str(os.environ.get('AEROFOIL_TITLEDB_UNLOAD_DELAY_S') or 600).strip()), 86400))
+except (TypeError, ValueError):
+    _TITLEDB_UNLOAD_DELAY_S = 600
+
+@debounce(_TITLEDB_UNLOAD_DELAY_S)
 def unload_titledb():
     global _cnmts_db
     global _titles_db
@@ -1287,6 +1295,7 @@ def unload_titledb():
     global _titles_desc_by_title_id
     global _titles_images_by_title_id
     global _english_titles_index_ready
+    global _fallback_titles_index_ready
     global identification_in_progress_count
     global _titles_db_loaded
 
@@ -1310,16 +1319,14 @@ def unload_titledb():
         _titles_desc_by_title_id = None
         _titles_images_by_title_id = None
         _english_titles_index_ready = False
+        _fallback_titles_index_ready = False
         _titles_db_loaded = False
-        with _title_lookup_cache_lock:
-            _title_lookup_cache.clear()
-        with _english_title_lookup_cache_lock:
-            _english_title_lookup_cache.clear()
-        with _identify_app_cache_lock:
-            _identify_app_cache.clear()
+        # The SQLite-index lookup LRUs and the local metadata cache are small,
+        # depend only on the index files, and are cleared by
+        # _reset_titledb_state when those files actually change. Dropping them
+        # here made every post-unload library request rebuild thousands of
+        # point lookups inline on top of the reload itself.
         _bump_index_conn_generation()
-        with _local_file_metadata_cache_lock:
-            _local_file_metadata_cache.clear()
         logger.info("TitleDBs unloaded.")
 
 def identify_file_from_filename(filename):
