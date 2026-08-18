@@ -96,3 +96,9 @@
 - 上游 issue 第一批**仍未发**(用户要求等其本地测试完成后再发,勿擅自发)
 - 以上修复中 `cccbcfb`(TitleDB 并发)、`60a1b41`(watcher)、`cbf6eac`(冷缓存)是上游 issue/PR 的新候选,可并入 batch 2/3
 - 用户库实测发现:健身环"缺失"是亚版 update 文件(0100F6B011028800)带出的 title 行,非 bug
+
+2026-08-18 增补(master @ `c0beae8`,已发布 `v2.8.4-dev`):
+- `eac3532` docker/run.sh 的 chown -R 改为按顶层属主判断(修每次启动静默数分钟;上游同款问题,issue 候选)
+- `7a2dbbf` 网页搜索匹配主库+备用库+英文库全部名字(CN 主库下搜英文名可命中)
+- `c0beae8` shop sections 载荷新增 search_names 别名数组(供 CyberFoil 类客户端多语言搜索;Tinfoil 本体搜索不受服务器控制)
+- 用户环境问题存档:其 compose 曾把 data 挂到 /data/titledb(错误路径),导致 TitleDB/缓存不持久、"每次启动 first time 下载"——已纠正为 ./data:/app/data。类似 issue 报告先查挂载。
