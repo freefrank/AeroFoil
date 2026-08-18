@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: AeroFoil VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-08-17 17:27-0600\n"
+"POT-Creation-Date: 2026-08-17 22:46-0600\n"
 "PO-Revision-Date: 2026-08-17 14:21+0000\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: zh_Hans\n"
@@ -18,291 +18,295 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.18.0\n"
 
-#: app/app.py:1775
+#: app/app.py:1807
 msgid "Title ID is required"
 msgstr "必须填写游戏 ID"
 
-#: app/app.py:1778
+#: app/app.py:1810
 #, python-format
 msgid "Title ID must be %(length)s characters"
 msgstr "游戏 ID 必须为 %(length)s 个字符"
 
-#: app/app.py:1780
+#: app/app.py:1812
 msgid "Title ID must contain only hexadecimal characters"
 msgstr "游戏 ID 只能包含十六进制字符"
 
-#: app/app.py:1786 app/app.py:1794
+#: app/app.py:1818 app/app.py:1826
 msgid "File size is unknown"
 msgstr "文件大小未知"
 
-#: app/app.py:1788
+#: app/app.py:1820
 #, python-format
 msgid "File size exceeds maximum limit of %(size)sMB"
 msgstr "文件大小超过 %(size)sMB 的上限"
 
-#: app/app.py:1796
+#: app/app.py:1828
 #, python-format
 msgid "File size exceeds maximum limit of %(size)sGB"
 msgstr "文件大小超过 %(size)sGB 的上限"
 
-#: app/app.py:1824
+#: app/app.py:1856
 msgid "Save sync requires username/password authentication."
 msgstr "存档同步需要用户名/密码认证。"
 
-#: app/app.py:1828
+#: app/app.py:1860
 msgid "Invalid save sync credentials."
 msgstr "存档同步凭据无效。"
 
-#: app/app.py:1831 app/app.py:2624 app/app.py:3951
+#: app/app.py:1863 app/app.py:2656 app/app.py:3983
 msgid "Account is frozen."
 msgstr "账户已被冻结。"
 
-#: app/app.py:1836
+#: app/app.py:1868
 #, python-format
 msgid "User \"%(username)s\" does not have access to the shop."
 msgstr "用户 \"%(username)s\" 没有访问商店的权限。"
 
-#: app/app.py:1839
+#: app/app.py:1871
 msgid "Backup access is required for save sync."
 msgstr "存档同步需要备份权限。"
 
-#: app/app.py:2310 app/app.py:6007 app/app.py:6142 app/app.py:6240
-#: app/app.py:6330
+#: app/app.py:2342 app/app.py:6068 app/app.py:6203 app/app.py:6301
+#: app/app.py:6391
 msgid "Save sync authorization failed."
 msgstr "存档同步授权失败。"
 
-#: app/app.py:2505
+#: app/app.py:2537
 #, python-format
 msgid "Upload too large. Maximum allowed is %(size)sGB per file."
 msgstr "上传文件过大。单个文件最大允许 %(size)sGB。"
 
-#: app/app.py:3889 app/app.py:4076 app/auth.py:581 app/auth.py:587
+#: app/app.py:3921 app/app.py:4108 app/auth.py:581 app/auth.py:587
 #: app/auth.py:605 app/auth.py:620 app/auth.py:622
 msgid "Forbidden"
 msgstr "禁止访问"
 
-#: app/app.py:4180
+#: app/app.py:4212
 msgid "An error occurred processing the request"
 msgstr "处理请求时发生错误"
 
-#: app/app.py:4196
+#: app/app.py:4228
 msgid "Invalid request_ids."
 msgstr "request_ids 无效。"
 
-#: app/app.py:4200
+#: app/app.py:4232
 msgid "Nothing to mark."
 msgstr "没有可标记的内容。"
 
-#: app/app.py:4267
+#: app/app.py:4299
 msgid "Marked seen."
 msgstr "已标记为已读。"
 
-#: app/app.py:4280
+#: app/app.py:4312
 msgid "Invalid request_id."
 msgstr "request_id 无效。"
 
-#: app/app.py:4285
+#: app/app.py:4317
 msgid "Request not found."
 msgstr "未找到该求档。"
 
-#: app/app.py:4403
+#: app/app.py:4435
 msgid "Missing title_id or title_name."
 msgstr "缺少 title_id 或 title_name。"
 
-#: app/app.py:4409 app/app.py:5232
+#: app/app.py:4441 app/app.py:5278
 msgid "Prowlarr is not configured."
 msgstr "未配置 Prowlarr。"
 
-#: app/app.py:4643
+#: app/app.py:4688
 msgid "Failed to clear client history."
 msgstr "清除客户端历史失败。"
 
-#: app/app.py:4661
+#: app/app.py:4706
 msgid "Failed to clear access history."
 msgstr "清除访问历史失败。"
 
-#: app/app.py:4673
+#: app/app.py:4718
 msgid "Missing IP."
 msgstr "缺少 IP。"
 
-#: app/app.py:4750
+#: app/app.py:4795
 msgid "TitleDB has not been initialized yet. Please wait for the initial update to complete or trigger it manually."
 msgstr "TitleDB 尚未初始化。请等待首次更新完成，或手动触发更新。"
 
-#: app/app.py:4760
+#: app/app.py:4805
 #, python-format
 msgid "The region/language pair %(region)s/%(language)s is not available."
 msgstr "区域/语言组合 %(region)s/%(language)s 不可用。"
 
-#: app/app.py:4781
+#: app/app.py:4826
 #, python-format
 msgid "The fallback database %(pair)s is not available."
 msgstr "备用数据库 %(pair)s 不可用。"
 
-#: app/app.py:5098
+#: app/app.py:5143
 #, python-format
 msgid "Missing indexer IDs: %(ids)s"
 msgstr "缺少索引器 ID：%(ids)s"
 
-#: app/app.py:5101
+#: app/app.py:5146
 #, python-format
 msgid "Prowlarr OK (%(version)s)"
 msgstr "Prowlarr 正常 (%(version)s)"
 
-#: app/app.py:5175
+#: app/app.py:5220
 #, python-format
 msgid "Download path not found: %(path)s"
 msgstr "未找到下载路径：%(path)s"
 
-#: app/app.py:5177
+#: app/app.py:5222
 #, python-format
 msgid "Download path not writable: %(path)s"
 msgstr "下载路径不可写：%(path)s"
 
-#: app/app.py:5194 app/app.py:5208
+#: app/app.py:5239 app/app.py:5253
 msgid "Missing title ID or version."
 msgstr "缺少游戏 ID 或版本。"
 
-#: app/app.py:5227
+#: app/app.py:5273
 msgid "Missing query."
 msgstr "缺少查询内容。"
 
-#: app/app.py:5278
+#: app/app.py:5300
+msgid "Search query is empty after normalization. Try an English name."
+msgstr "搜索词在归一化后为空。请尝试使用英文名称。"
+
+#: app/app.py:5339
 msgid "Missing download URL."
 msgstr "缺少下载 URL。"
 
-#: app/app.py:5479 app/app.py:5562
+#: app/app.py:5540 app/app.py:5623
 msgid "Missing file id."
 msgstr "缺少文件 ID。"
 
-#: app/app.py:5612 app/app.py:5621
+#: app/app.py:5673 app/app.py:5682
 msgid "Job not found."
 msgstr "未找到该任务。"
 
-#: app/app.py:5792
+#: app/app.py:5853
 msgid "No file provided"
 msgstr "未提供文件"
 
-#: app/app.py:5869
+#: app/app.py:5930
 #, python-format
 msgid "Unable to parse upload request: %(error)s"
 msgstr "无法解析上传请求：%(error)s"
 
-#: app/app.py:5877 app/app.py:5878
+#: app/app.py:5938 app/app.py:5939
 msgid "No files uploaded."
 msgstr "没有已上传的文件。"
 
-#: app/app.py:5889 app/app.py:5890
+#: app/app.py:5950 app/app.py:5951
 msgid "No library path configured."
 msgstr "未配置游戏库路径。"
 
-#: app/app.py:5899
+#: app/app.py:5960
 #, python-format
 msgid "Cannot access library path: %(path)s"
 msgstr "无法访问游戏库路径：%(path)s"
 
-#: app/app.py:5916
+#: app/app.py:5977
 msgid "A file has an invalid or empty filename."
 msgstr "有文件的文件名无效或为空。"
 
-#: app/app.py:5934
+#: app/app.py:5995
 #, python-format
 msgid "%(filename)s: unsupported extension '%(ext)s'."
 msgstr "%(filename)s：不支持的扩展名 '%(ext)s'。"
 
-#: app/app.py:5961
+#: app/app.py:6022
 #, python-format
 msgid "Uploaded %(count)s file(s)."
 msgstr "已上传 %(count)s 个文件。"
 
-#: app/app.py:5963
+#: app/app.py:6024
 #, python-format
 msgid "Skipped %(count)s."
 msgstr "已跳过 %(count)s 个。"
 
-#: app/app.py:5968
+#: app/app.py:6029
 msgid "All selected files were skipped."
 msgstr "所选文件全部被跳过。"
 
-#: app/app.py:5970 app/templates/cheats.html:112 app/templates/upload.html:241
+#: app/app.py:6031 app/templates/cheats.html:112 app/templates/upload.html:241
 msgid "Upload failed."
 msgstr "上传失败。"
 
-#: app/app.py:6127
+#: app/app.py:6188
 msgid "Failed to list saves."
 msgstr "获取存档列表失败。"
 
-#: app/app.py:6146
+#: app/app.py:6207
 msgid "Invalid title_id for save upload."
 msgstr "存档上传的 title_id 无效。"
 
-#: app/app.py:6149 app/app.py:6153
+#: app/app.py:6210 app/app.py:6214
 msgid "No save archive provided."
 msgstr "未提供存档压缩包。"
 
-#: app/app.py:6160
+#: app/app.py:6221
 msgid "Save archive is empty."
 msgstr "存档压缩包为空。"
 
-#: app/app.py:6163
+#: app/app.py:6224
 #, python-format
 msgid "Save archive exceeds maximum limit of %(size)sGB."
 msgstr "存档压缩包超过 %(size)sGB 的上限。"
 
-#: app/app.py:6176
+#: app/app.py:6237
 msgid "Uploaded file is not a valid zip archive."
 msgstr "上传的文件不是有效的 zip 压缩包。"
 
-#: app/app.py:6186
+#: app/app.py:6247
 msgid "Failed to store save archive."
 msgstr "保存存档压缩包失败。"
 
-#: app/app.py:6229 app/templates/saves.html:519
+#: app/app.py:6290 app/templates/saves.html:519
 msgid "Save uploaded successfully."
 msgstr "存档上传成功。"
 
-#: app/app.py:6254
+#: app/app.py:6315
 msgid "Invalid title_id for save download."
 msgstr "存档下载的 title_id 无效。"
 
-#: app/app.py:6276 app/app.py:6288 app/app.py:6350
+#: app/app.py:6337 app/app.py:6349 app/app.py:6411
 msgid "Save archive not found."
 msgstr "未找到存档压缩包。"
 
-#: app/app.py:6334
+#: app/app.py:6395
 msgid "Invalid title_id for save delete."
 msgstr "存档删除的 title_id 无效。"
 
-#: app/app.py:6340
+#: app/app.py:6401
 msgid "Invalid save_id for save delete."
 msgstr "存档删除的 save_id 无效。"
 
-#: app/app.py:6370
+#: app/app.py:6431
 msgid "Save backup deleted successfully."
 msgstr "存档备份删除成功。"
 
-#: app/app.py:7625
+#: app/app.py:7690
 msgid "Cheat access is disabled for this account."
 msgstr "此账户已禁用金手指功能。"
 
-#: app/app.py:7652
+#: app/app.py:7717
 msgid "Cheat note must be 1000 characters or less."
 msgstr "金手指备注不能超过 1000 个字符。"
 
-#: app/app.py:7658
+#: app/app.py:7723
 msgid "Provide a cheat file or paste cheat content."
 msgstr "请提供金手指文件或粘贴金手指内容。"
 
-#: app/app.py:7691
+#: app/app.py:7756
 msgid "Configure an HTTP(S) cheat ZIP URL first."
 msgstr "请先配置 HTTP(S) 金手指 ZIP URL。"
 
-#: app/app.py:7697
+#: app/app.py:7762
 #, python-format
 msgid "Cheat sync failed: %(error)s"
 msgstr "金手指同步失败：%(error)s"
 
-#: app/app.py:8156
+#: app/app.py:8222
 msgid "Conversion in progress. Try again after conversion finishes."
 msgstr "转换正在进行中。请在转换完成后重试。"
 

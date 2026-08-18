@@ -5261,6 +5261,7 @@ def manual_search_update_options():
 @access_required('admin')
 def downloads_search():
     query = request.args.get('query', '').strip()
+    search_title_id = (request.args.get('title_id') or '').strip().upper()
     apply_settings = request.args.get('apply_settings', '').strip() in ('1', 'true', 'yes')
     extra_blacklist_terms = []
     for raw_value in request.args.getlist('extra_blacklist'):
@@ -5283,6 +5284,20 @@ def downloads_search():
         timeout_seconds = max(5, min(timeout_seconds, 180))
         search_limit = _get_prowlarr_search_limit(prowlarr_cfg)
         full_query = _normalize_download_search_query(query, downloads)
+        if not full_query and search_title_id:
+            # A non-ASCII display name (e.g. from a CN primary database) is
+            # stripped to nothing; fall back to an alternate database name.
+            titles.load_titledb()
+            try:
+                for candidate in titles.get_search_name_candidates(search_title_id):
+                    candidate_normalized = _normalize_download_search_query(candidate, downloads)
+                    if candidate_normalized:
+                        full_query = candidate_normalized
+                        break
+            finally:
+                titles.release_titledb()
+        if not full_query:
+            return jsonify({'success': False, 'message': _('Search query is empty after normalization. Try an English name.')})
         if apply_settings:
             prefix = _normalize_download_search_query(downloads.get('search_prefix') or '', downloads)
             suffix = _normalize_download_search_query(downloads.get('search_suffix') or '', downloads)
@@ -5291,6 +5306,7 @@ def downloads_search():
             if suffix and not full_query.lower().endswith(suffix.lower()):
                 full_query = f"{full_query} {suffix}".strip()
         client = ProwlarrClient(prowlarr_cfg['url'], prowlarr_cfg['api_key'], timeout_seconds=timeout_seconds)
+        logger.info(f'Prowlarr search (manual): "{full_query}" (title {search_title_id or "-"})')
         results = client.search(
             full_query,
             indexer_ids=prowlarr_cfg.get('indexer_ids') or [],

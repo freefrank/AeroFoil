@@ -2984,7 +2984,7 @@
         runDetailsDownloadSearch({
             button,
             request: function () {
-                return $.getJSON(`/api/downloads/search?query=${encodeURIComponent(query)}&apply_settings=1&extra_blacklist=update`);
+                return $.getJSON(`/api/downloads/search?query=${encodeURIComponent(query)}&title_id=${encodeURIComponent(titleId || '')}&apply_settings=1&extra_blacklist=update`);
             },
             actionLabel: {{ _('Queue download')|tojson }},
             buildExtraData: function () {
@@ -3010,7 +3010,7 @@
         runDetailsDownloadSearch({
             button,
             request: function () {
-                return $.getJSON(`/api/downloads/search?query=${encodeURIComponent(query)}`);
+                return $.getJSON(`/api/downloads/search?query=${encodeURIComponent(query)}&title_id=${encodeURIComponent(titleId || '')}`);
             },
             actionLabel: {{ _('Queue update')|tojson }},
             buildExtraData: function () {
@@ -3035,7 +3035,7 @@
             button,
             statusMessage: {{ _('Searching Prowlarr for {label}...')|tojson }}.replace('{label}', label),
             request: function () {
-                return $.getJSON(`/api/downloads/search?query=${encodeURIComponent(query)}&apply_settings=1`);
+                return $.getJSON(`/api/downloads/search?query=${encodeURIComponent(query)}&title_id=${encodeURIComponent(titleId || '')}&apply_settings=1`);
             },
             actionLabel: {{ _('Queue DLC')|tojson }},
             buildExtraData: function () {
