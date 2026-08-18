@@ -219,6 +219,45 @@ class DownloadQueryFallbackTests(unittest.TestCase):
         self.assertEqual(queries[0], '01002FF008C24000')
 
 
+class SearchUpdateOptionsTests(unittest.TestCase):
+    def test_search_works_without_a_download_client(self):
+        from app.downloads import manager
+
+        fake_results = [{
+            'title': 'Game [0100AAAA00000000][v65536]',
+            'indexer': 'idx',
+            'size': 100,
+            'seeders': 5,
+            'leechers': 0,
+            'download_url': 'magnet:?xt=urn:btih:abc',
+            'protocol': 'torrent',
+            'age_minutes': 99999,
+            'age_label': 'old',
+            'published_at': None,
+        }]
+
+        class FakeClient:
+            def __init__(self, *args, **kwargs):
+                pass
+
+            def search(self, *args, **kwargs):
+                return list(fake_results)
+
+        with patch.object(manager, 'ProwlarrClient', FakeClient), patch.object(
+            manager, 'load_settings',
+            return_value={'downloads': {'prowlarr': {'url': 'http://prowlarr', 'api_key': 'key'}}},
+        ), patch.object(manager.titles_lib, 'load_titledb'), patch.object(
+            manager.titles_lib, 'release_titledb'
+        ), patch.object(
+            manager.titles_lib, 'get_game_info', return_value={'name': 'Game'}
+        ):
+            ok, message, results = manager.search_update_options('0100AAAA00000000', 65536)
+
+        self.assertTrue(ok)
+        self.assertEqual(len(results), 1)
+        self.assertEqual(results[0]['protocol'], 'torrent')
+
+
 class MetadataFallbackSettingsTests(unittest.TestCase):
     def test_normalize_keeps_order_dedupes_and_drops_invalid(self):
         normalized = settings._normalize_metadata_fallbacks(
