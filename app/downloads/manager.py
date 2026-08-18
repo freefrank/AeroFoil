@@ -1166,6 +1166,23 @@ def _build_queries(update):
         return re.sub(r"\s+", " ", normalized).strip()
 
     title_name = _normalize_query(title_name)
+    if not title_name:
+        # A non-ASCII primary database name (e.g. a CN primary) is stripped to
+        # nothing by normalization; use the first candidate from the other
+        # configured databases that survives it (typically the English name).
+        candidates = list(update.get("search_names") or [])
+        if not candidates:
+            try:
+                candidates = titles_lib.get_search_name_candidates(update.get("title_id"))
+            except Exception:
+                candidates = []
+        for candidate in candidates:
+            candidate_normalized = _normalize_query(candidate)
+            if candidate_normalized:
+                title_name = candidate_normalized
+                break
+    if not title_name:
+        title_name = _normalize_query(update.get("title_id")) or str(update.get("title_id") or "")
     prefix = _normalize_query(downloads.get("search_prefix") or "")
     suffix = _normalize_query(downloads.get("search_suffix") or "")
     base = f"{prefix} {title_name}".strip() if prefix else title_name
@@ -1211,6 +1228,10 @@ def _get_missing_updates():
             missing.append({
                 "title_id": title_id,
                 "title_name": title_name,
+                # Alternate database names, resolved while TitleDB is loaded;
+                # _build_queries falls back to them when the primary name does
+                # not survive ASCII normalization.
+                "search_names": titles_lib.get_search_name_candidates(title_id),
                 "version": highest_available,
             })
         return missing

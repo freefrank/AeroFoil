@@ -4442,15 +4442,27 @@ def request_prowlarr_search_api():
 
     # Prefer TitleDB name if we can resolve it.
     resolved_name = title_name
+    candidate_names = []
     if title_id:
         titles.load_titledb()
         try:
             info = titles.get_game_info(title_id) or {}
             resolved_name = (info.get('name') or '').strip() or resolved_name
+            candidate_names = titles.get_search_name_candidates(title_id)
         finally:
             titles.release_titledb()
 
     base_query = _normalize_download_search_query(resolved_name or title_id, downloads)
+    if not base_query:
+        # Non-ASCII primary names are stripped to nothing; fall back to the
+        # first alternate database name that survives normalization.
+        for candidate in candidate_names:
+            candidate_normalized = _normalize_download_search_query(candidate, downloads)
+            if candidate_normalized:
+                base_query = candidate_normalized
+                break
+    if not base_query:
+        base_query = _normalize_download_search_query(title_id, downloads) or title_id
     prefix = _normalize_download_search_query(downloads.get('search_prefix') or '', downloads)
     full_query = base_query
     if prefix and not full_query.lower().startswith(prefix.lower()):

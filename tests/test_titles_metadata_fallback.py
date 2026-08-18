@@ -150,6 +150,46 @@ class SearchNameCandidatesTests(unittest.TestCase):
         fallback_mock.assert_not_called()
 
 
+class DownloadQueryFallbackTests(unittest.TestCase):
+    def test_build_queries_uses_ascii_candidate_when_primary_name_strips_empty(self):
+        from app.downloads import manager
+
+        update = {
+            'title_id': '01002FF008C24000',
+            'title_name': '健身環大冒險',
+            'search_names': ['健身環大冒險', 'RingFit Adventure'],
+            'version': 262144,
+        }
+        with patch(
+            'app.downloads.manager.load_settings',
+            return_value={'downloads': {}},
+        ):
+            queries = manager._build_queries(update)
+
+        self.assertEqual(queries[0], 'RingFit Adventure')
+        self.assertEqual(queries[1], 'RingFit Adventure update')
+
+    def test_build_queries_falls_back_to_title_id_without_candidates(self):
+        from app.downloads import manager
+
+        update = {
+            'title_id': '01002FF008C24000',
+            'title_name': '健身環大冒險',
+            'search_names': [],
+            'version': 262144,
+        }
+        with patch(
+            'app.downloads.manager.load_settings',
+            return_value={'downloads': {}},
+        ), patch(
+            'app.downloads.manager.titles_lib.get_search_name_candidates',
+            return_value=[],
+        ):
+            queries = manager._build_queries(update)
+
+        self.assertEqual(queries[0], '01002FF008C24000')
+
+
 class MetadataFallbackSettingsTests(unittest.TestCase):
     def test_normalize_keeps_order_dedupes_and_drops_invalid(self):
         normalized = settings._normalize_metadata_fallbacks(
